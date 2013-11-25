@@ -37,6 +37,7 @@ LINK_DIRECTORIES( ${STATE_OBSERVATION_LIBRARY_DIRS})
 
 ADD_LIBRARY(${LIBRARY_NAME}
   SHARED
+  dynamic-graph-imu-attitude-estimation.cc
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
   )
 
