@@ -50,9 +50,14 @@ namespace sotStateObservation
                     "A state observer which takes an IMU and gives the attitude\n";
             }
 
-            void setStateGuess (const ::dynamicgraph::Vector & xh0, unsigned k)
+            void setCurrentTime (const unsigned & time)
             {
-                filter_.setState(convertVector<stateObservation::Vector>(xh0),k);
+                currentTime_=time;
+            }
+
+            void setStateGuess (const ::dynamicgraph::Vector & xh0)
+            {
+                filter_.setState(convertVector<stateObservation::Vector>(xh0),currentTime_);
             }
 
             void setStateGuessCovariance (const ::dynamicgraph::Matrix & p)
@@ -60,12 +65,12 @@ namespace sotStateObservation
                 filter_.setStateCovariance(convertMatrix<stateObservation::Matrix>(p));
             }
 
-            void setSensorsNoiseCovariance (const ::dynamicgraph::Matrix & q, unsigned k)
+            void setSensorsNoiseCovariance (const ::dynamicgraph::Matrix & q)
             {
                 filter_.setQ(convertMatrix<stateObservation::Matrix>(q));
             }
 
-            void setProcessNoiseCovariance (const ::dynamicgraph::Matrix & r, unsigned k)
+            void setProcessNoiseCovariance (const ::dynamicgraph::Matrix & r)
             {
                 filter_.setR(convertMatrix<stateObservation::Matrix>(r));
             }
@@ -107,6 +112,15 @@ namespace sotStateObservation
 
             ///initalization of the functor
             stateObservation::IMUDynamicalSystem imuFunctor_;
+
+
+            unsigned currentTime_;
+
+
+            ///Sizes of the states for the state, the measurement, and the input vector
+            static const unsigned stateSize=18;
+            static const unsigned measurementSize=6;
+            static const unsigned inputSize=6;
 
         };
 
