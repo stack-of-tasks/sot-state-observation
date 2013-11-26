@@ -74,6 +74,4 @@ namespace sotStateObservation
 
 }
 
-typedef maal::boost::Matrix Matrix;
-
 #endif // SOTSTATEOBSERVATIONTOOLSDEFINITIONS
