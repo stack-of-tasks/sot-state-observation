@@ -103,6 +103,7 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> attitudeSOUT;
 
+
             ///initialization of the extended Kalman filter
             stateObservation::ExtendedKalmanFilter filter_;
 
