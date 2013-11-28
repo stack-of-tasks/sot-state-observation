@@ -33,12 +33,13 @@ SET(${PROJECT_NAME}_test_CXXFLAGS "-I${PROJECT_SOURCE_DIR}/include/ ${${PROJECT_
 include_directories(${Boost_INCLUDE_DIR} ${PROJECT_INCLUDE_DIR})
 
 SET(tests
+    instanciation-test
   )
 
 FOREACH(test ${tests})
   SET(EXECUTABLE_NAME "${test}_exe")
   ADD_EXECUTABLE(${EXECUTABLE_NAME}
-    ${test}.cpp ${${PROJECT_NAME}_ABSOLUTE_HEADERS})
+    ${test}.cc ${${PROJECT_NAME}_ABSOLUTE_HEADERS})
 
   #TARGET_LINK_LIBRARIES(${EXECUTABLE_NAME}
     #controller-pd
@@ -60,7 +61,7 @@ SET(execs
 FOREACH(exec ${execs})
   SET(EXECUTABLE_NAME "${test}_exe")
   ADD_EXECUTABLE(${EXECUTABLE_NAME}
-    ${test}.cpp ${${PROJECT_NAME}_ABSOLUTE_HEADERS})
+    ${test}.cc ${${PROJECT_NAME}_ABSOLUTE_HEADERS})
 
   #TARGET_LINK_LIBRARIES(${EXECUTABLE_NAME}
     #controller-pd
