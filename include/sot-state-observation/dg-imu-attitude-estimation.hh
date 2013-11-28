@@ -24,7 +24,7 @@ namespace sotStateObservation
         /**
            \brief
         */
-        class DynamicGraphIMUAttitudeEstimation :
+        class DGIMUAttitudeEstimation :
             public dynamicgraph::Entity,
             private boost::noncopyable //
         {
@@ -32,9 +32,9 @@ namespace sotStateObservation
             /**
             \brief Constructor by name
             */
-            DynamicGraphIMUAttitudeEstimation(const std::string& inName);
+            DGIMUAttitudeEstimation(const std::string& inName);
 
-            ~DynamicGraphIMUAttitudeEstimation();
+            ~DGIMUAttitudeEstimation();
 
             /// Each entity should provide the name of the class it belongs to
             virtual const std::string& getClassName (void) const

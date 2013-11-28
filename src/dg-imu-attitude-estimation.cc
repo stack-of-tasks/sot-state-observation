@@ -11,10 +11,10 @@
 
 namespace sotStateObservation
 {
-    DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( DynamicGraphIMUAttitudeEstimation,
+    DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( DGIMUAttitudeEstimation,
                                           "DGIMUAttitudeEstimation" );
 
-    DynamicGraphIMUAttitudeEstimation::DynamicGraphIMUAttitudeEstimation
+    DGIMUAttitudeEstimation::DGIMUAttitudeEstimation
                 ( const std::string & inName):
         Entity(inName),
         measurementSIN(0x0 , "DGIMUAttitudeEstimation("+inName+")::input(vector)::measurement"),
@@ -35,7 +35,7 @@ namespace sotStateObservation
         inputSIN.setConstant(input);
         attitudeSOUT.setConstant(attitude);
 
-        attitudeSOUT.setFunction(boost::bind(&DynamicGraphIMUAttitudeEstimation::computeAttitude,
+        attitudeSOUT.setFunction(boost::bind(&DGIMUAttitudeEstimation::computeAttitude,
 				    this, _1, _2));
 
         std::ostringstream stateSizeString;
@@ -59,8 +59,8 @@ namespace sotStateObservation
 
         addCommand(std::string("setStateGuess"),
 	     new
-	     ::dynamicgraph::command::Setter <DynamicGraphIMUAttitudeEstimation,dynamicgraph::Vector>
-	     (*this, &DynamicGraphIMUAttitudeEstimation::setStateGuess, docstring));
+	     ::dynamicgraph::command::Setter <DGIMUAttitudeEstimation,dynamicgraph::Vector>
+	     (*this, &DGIMUAttitudeEstimation::setStateGuess, docstring));
 
 
          //setStateGuessCovariance
@@ -73,8 +73,8 @@ namespace sotStateObservation
 
         addCommand(std::string("setStateGuessCovariance"),
 	     new
-	     ::dynamicgraph::command::Setter <DynamicGraphIMUAttitudeEstimation,dynamicgraph::Matrix>
-	     (*this, &DynamicGraphIMUAttitudeEstimation::setStateGuessCovariance, docstring));
+	     ::dynamicgraph::command::Setter <DGIMUAttitudeEstimation,dynamicgraph::Matrix>
+	     (*this, &DGIMUAttitudeEstimation::setStateGuessCovariance, docstring));
 
 
         //setSensorsNoiseCovariance
@@ -87,8 +87,8 @@ namespace sotStateObservation
 
         addCommand(std::string("setSensorsNoiseCovariance"),
 	     new
-	     ::dynamicgraph::command::Setter <DynamicGraphIMUAttitudeEstimation,dynamicgraph::Matrix>
-	     (*this, &DynamicGraphIMUAttitudeEstimation::setSensorsNoiseCovariance, docstring));
+	     ::dynamicgraph::command::Setter <DGIMUAttitudeEstimation,dynamicgraph::Matrix>
+	     (*this, &DGIMUAttitudeEstimation::setSensorsNoiseCovariance, docstring));
 
 
         //setProcessNoiseCovariance
@@ -101,8 +101,8 @@ namespace sotStateObservation
 
         addCommand(std::string("setProcessNoiseCovariance"),
 	     new
-	     ::dynamicgraph::command::Setter <DynamicGraphIMUAttitudeEstimation,dynamicgraph::Matrix>
-	     (*this, &DynamicGraphIMUAttitudeEstimation::setProcessNoiseCovariance, docstring));
+	     ::dynamicgraph::command::Setter <DGIMUAttitudeEstimation,dynamicgraph::Matrix>
+	     (*this, &DGIMUAttitudeEstimation::setProcessNoiseCovariance, docstring));
 
 
         filter_.setState(stateObservation::Vector::Zero(stateSize), attitudeSOUT.getTime());
@@ -126,11 +126,11 @@ namespace sotStateObservation
 
     }
 
-    DynamicGraphIMUAttitudeEstimation::~DynamicGraphIMUAttitudeEstimation()
+    DGIMUAttitudeEstimation::~DGIMUAttitudeEstimation()
     {
     }
 
-    dynamicgraph::Vector& DynamicGraphIMUAttitudeEstimation::computeAttitude
+    dynamicgraph::Vector& DGIMUAttitudeEstimation::computeAttitude
                   (dynamicgraph::Vector & Attitude, const int& inTime)
     {
         const dynamicgraph::Vector & measurement = measurementSIN(inTime);
