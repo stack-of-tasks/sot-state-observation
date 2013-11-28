@@ -16,25 +16,26 @@ namespace sotStateObservation
     DGIMUFlexibilityEstimation::DGIMUFlexibilityEstimation
                 ( const std::string & inName):
         Entity(inName),
-        measurementSIN(0x0 , "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::measurement"),
-        inputSIN(0x0 , "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::input"),
-        contactsNbrSIN(0x0 , "DynamicGraphIMUAttitudeEstimation("+inName+")::input(unsigned)::input"),
-        contact1SIN(0x0, "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::input"),
-        contact2SIN(0x0, "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::input"),
-        contact3SIN(0x0, "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::input"),
-        contact4SIN(0x0, "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::input"),
+        measurementSIN(0x0 , "DGIMUFlexibilityEstimation("+inName+")::input(vector)::measurement"),
+        inputSIN(0x0 , "DGIMUFlexibilityEstimation("+inName+")::input(vector)::input"),
+        contactsNbrSIN(0x0 , "DGIMUFlexibilityEstimation("+inName+")::input(unsigned)::contactNbr"),
+        contact1SIN(0x0, "DGIMUFlexibilityEstimation("+inName+")::input(vector)::contact1"),
+        contact2SIN(0x0, "DGIMUFlexibilityEstimation("+inName+")::input(vector)::contact2"),
+        contact3SIN(0x0, "DGIMUFlexibilityEstimation("+inName+")::input(vector)::contact3"),
+        contact4SIN(0x0, "DGIMUFlexibilityEstimation("+inName+")::input(vector)::contact4"),
         flexibilitySOUT(measurementSIN << inputSIN,
-                        "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::attitude")
+                        "DGIMUFlexibilityEstimation("+inName+")::input(vector)::flexibility")
     {
-        signalRegistration (contactsNbrSIN);
-        signalRegistration (contact1SIN);
-        signalRegistration (contact2SIN);
-        signalRegistration (contact3SIN);
-        signalRegistration (contact4SIN);
 
         signalRegistration (measurementSIN);
         signalRegistration (inputSIN);
         signalRegistration (flexibilitySOUT);
+
+        signalRegistration (contact1SIN);
+        signalRegistration (contact2SIN);
+        signalRegistration (contact3SIN);
+        signalRegistration (contact4SIN);
+        signalRegistration (contactsNbrSIN);
 
         dynamicgraph::Vector measure(measurementSize);
         dynamicgraph::Vector input(inputSize);
