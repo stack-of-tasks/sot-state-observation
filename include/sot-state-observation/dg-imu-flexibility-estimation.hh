@@ -71,10 +71,33 @@ namespace sotStateObservation
 
         private:
             /**
-            Compute the control law
             */
             ::dynamicgraph::Vector& computeFlexibility
-                        (::dynamicgraph::Vector & Flexibility, const int& inTime);
+                        (::dynamicgraph::Vector & flexibility, const int& inTime);
+
+            ::dynamicgraph::Vector& computeFlexPosition
+                        (::dynamicgraph::Vector & flexibilityPosition, const int& inTime);
+
+            ::dynamicgraph::Vector& computeFlexVelocity
+                        (::dynamicgraph::Vector & flexibilityVelocity, const int& inTime);
+
+            ::dynamicgraph::Vector& computeFlexAcceleration
+                        (::dynamicgraph::Vector & flexibilityAcceleration, const int& inTime);
+
+            ::dynamicgraph::Vector& computeFlexThetaU
+                        (::dynamicgraph::Vector & flexibilityThetaU, const int& inTime);
+
+            ::dynamicgraph::Matrix& computeFlexRotationMatrix
+                        (::dynamicgraph::Matrix & flexibilityRotationMatrix, const int& inTime);
+
+            ::dynamicgraph::Vector& computeFlexOmega
+                        (::dynamicgraph::Vector & flexibilityOmega, const int& inTime);
+
+            ::dynamicgraph::Vector& computeFlexOmegaDot
+                        (::dynamicgraph::Vector & flexibilityOmegaDot, const int& inTime);
+
+
+
 
             /**
             \brief Measurement of the IMU
@@ -110,6 +133,23 @@ namespace sotStateObservation
             \brief Position of the fourth contact
             */
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector , int> contact4SIN;
+
+                        /**
+            \brief Different parts of the vector of the flexibility estimation vector
+            */
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexPositionSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexVelocitySOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexAccelerationSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexThetaUSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Matrix, int> flexRotationMatrixSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexOmegaSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexOmegaDotSOUT;
 
 
             /**
