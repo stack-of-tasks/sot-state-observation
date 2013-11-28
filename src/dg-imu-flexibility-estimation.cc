@@ -23,7 +23,7 @@ namespace sotStateObservation
         contact2SIN(0x0, "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::input"),
         contact3SIN(0x0, "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::input"),
         contact4SIN(0x0, "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::input"),
-        flexibilitySOUT(measurementSIN,
+        flexibilitySOUT(measurementSIN << inputSIN,
                         "DynamicGraphIMUAttitudeEstimation("+inName+")::input(vector)::attitude")
     {
         signalRegistration (contactsNbrSIN);
@@ -94,6 +94,29 @@ namespace sotStateObservation
     {
         const dynamicgraph::Vector & measurement = measurementSIN(inTime);
         const dynamicgraph::Vector & input = inputSIN(inTime);
+        const unsigned & contactNb = contactsNbrSIN(inTime);
+
+        estimator_.setContactsNumber(contactNb);
+
+        if (contactNb>=1)
+        {
+            estimator_.setContactPosition(1,convertVector<stateObservation::Vector>(contact1SIN(inTime)));
+
+            if (contactNb>=2)
+            {
+                estimator_.setContactPosition(2,convertVector<stateObservation::Vector>(contact4SIN(inTime)));
+
+                if (contactNb>=3)
+                {
+                    estimator_.setContactPosition(3,convertVector<stateObservation::Vector>(contact3SIN(inTime)));
+
+                    if (contactNb==4)
+                    {
+                        estimator_.setContactPosition(4,convertVector<stateObservation::Vector>(contact4SIN(inTime)));
+                    }
+                }
+            }
+        }
 
         estimator_.setMeasurement(convertVector<stateObservation::Vector>(measurement));
         estimator_.setMeasurementInput(convertVector<stateObservation::Vector>(input));
