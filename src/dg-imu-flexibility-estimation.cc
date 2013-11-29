@@ -72,6 +72,27 @@ namespace sotStateObservation
         flexibilitySOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexibility,
 				    this, _1, _2));
 
+        flexPositionSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexPosition,
+				    this, _1, _2));
+
+        flexVelocitySOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexVelocity,
+				    this, _1, _2));
+
+        flexAccelerationSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexAcceleration,
+				    this, _1, _2));
+
+        flexThetaUSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexThetaU,
+				    this, _1, _2));
+
+        flexRotationMatrixSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexRotationMatrix,
+				    this, _1, _2));
+
+        flexOmegaSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexOmega,
+				    this, _1, _2));
+
+        flexOmegaDotSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexOmegaDot,
+				    this, _1, _2));
+
         std::ostringstream stateSizeString;
         stateSizeString << stateSize;
 
