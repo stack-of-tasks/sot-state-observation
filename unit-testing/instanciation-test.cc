@@ -9,7 +9,8 @@ using namespace sotStateObservation;
 struct instanciator
 {
     instanciator():
-        f("Hey"),
+        f("Hey")
+        ,
         a("Ho")
     {
         std::cout << "Instanciation succeeded" << std::endl;
@@ -25,5 +26,4 @@ int main()
 {
     instanciator i;
     return 0;
-
 }
