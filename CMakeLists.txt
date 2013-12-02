@@ -44,6 +44,7 @@ SEARCH_FOR_EIGEN()
 ADD_REQUIRED_DEPENDENCY("dynamic-graph >= 1.0.0")
 ADD_REQUIRED_DEPENDENCY("sot-core >= 1.0.0")
 ADD_REQUIRED_DEPENDENCY("state-observation")
+ADD_REQUIRED_DEPENDENCY("dynamic-graph-python")
 
 SET(${PROJECT_NAME}_HEADERS
     include/sot-state-observation/dg-imu-attitude-estimation.hh
