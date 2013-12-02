@@ -64,10 +64,27 @@ namespace sotStateObservation
         dynamicgraph::Vector measure(measurementSize);
         dynamicgraph::Vector input(inputSize);
         dynamicgraph::Vector flexibility(stateSize);
+        dynamicgraph::Vector flexPosition(3);
+        dynamicgraph::Vector flexVelocity(3);
+        dynamicgraph::Vector flexAcceleration(3);
+        dynamicgraph::Vector flexThetaU(3);
+        dynamicgraph::Matrix flexRotationMatrix(3,3);
+        dynamicgraph::Vector flexOmega(3);
+        dynamicgraph::Vector flexOmegaDot(3);
+
+        flexRotationMatrix.setIdentity();
+
 
         measurementSIN.setConstant(measure);
         inputSIN.setConstant(input);
         flexibilitySOUT.setConstant(flexibility);
+        flexPositionSOUT.setConstant(flexPosition);
+        flexVelocitySOUT.setConstant(flexVelocity);
+        flexAccelerationSOUT.setConstant(flexAcceleration);
+        flexThetaUSOUT.setConstant(flexThetaU);
+        flexRotationMatrixSOUT.setConstant(flexRotationMatrix);
+        flexOmegaSOUT.setConstant(flexOmega);
+        flexOmegaDotSOUT.setConstant(flexOmegaDot);
 
         flexibilitySOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexibility,
 				    this, _1, _2));
@@ -243,4 +260,3 @@ namespace sotStateObservation
         return flexibilityOmegaDot;
     }
 }
-

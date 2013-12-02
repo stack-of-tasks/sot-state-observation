@@ -23,6 +23,7 @@ namespace sotStateObservation
                         "DGIMUAttitudeEstimation("+inName+")::output(vector)::attitude"),
         filter_(stateSize, measurementSize, inputSize, false)
     {
+
         signalRegistration (measurementSIN);
         signalRegistration (inputSIN);
         signalRegistration (attitudeSOUT);
