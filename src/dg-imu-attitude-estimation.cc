@@ -105,6 +105,18 @@ namespace sotStateObservation
 	     ::dynamicgraph::command::Setter <DGIMUAttitudeEstimation,dynamicgraph::Matrix>
 	     (*this, &DGIMUAttitudeEstimation::setProcessNoiseCovariance, docstring));
 
+	     //setSamplingPeriod
+        docstring =
+                "\n"
+                "    Set the sampling period of the system \n"
+                "    takes a floating point mumber as input \n"
+                "\n";
+
+        addCommand(std::string("setSamplingPeriod"),
+	     new
+	     ::dynamicgraph::command::Setter <DGIMUAttitudeEstimation,double>
+	     (*this, &DGIMUAttitudeEstimation::setSamplingPeriod, docstring));
+
 
         filter_.setState(stateObservation::Vector::Zero(stateSize), attitudeSOUT.getTime());
 

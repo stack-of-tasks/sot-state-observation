@@ -146,6 +146,19 @@ namespace sotStateObservation
 	     new
 	     ::dynamicgraph::command::Setter <DGIMUFlexibilityEstimation,dynamicgraph::Matrix>
                 (*this, &DGIMUFlexibilityEstimation::setFlexibilityGuessCovariance, docstring));
+
+         //setStateGuessCovariance
+        docstring =
+                "\n"
+                "    Set the sampling period of the system \n"
+                "    takes a floating point mumber as input \n"
+                "\n";
+
+        addCommand(std::string("setSamplingPeriod"),
+	     new
+	     ::dynamicgraph::command::Setter <DGIMUFlexibilityEstimation,double>
+                (*this, &DGIMUFlexibilityEstimation::setSamplingPeriod, docstring));
+
     }
 
     DGIMUFlexibilityEstimation::~DGIMUFlexibilityEstimation()

@@ -56,6 +56,11 @@ namespace sotStateObservation
                 estimator_.setFlexibilityGuessCovariance(convertMatrix<stateObservation::Matrix>(p));
             }
 
+            void setSamplingPeriod(const double & dt)
+            {
+                estimator_.setSamplingPeriod(dt);
+            }
+
 
 
 

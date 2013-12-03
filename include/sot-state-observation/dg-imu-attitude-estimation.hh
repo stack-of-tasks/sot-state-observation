@@ -69,6 +69,11 @@ namespace sotStateObservation
                 filter_.setQ(convertMatrix<stateObservation::Matrix>(q));
             }
 
+            void setSamplingPeriod (const double & dt)
+            {
+                imuFunctor_.setSamplingPeriod(dt);
+            }
+
 
 
             /**
