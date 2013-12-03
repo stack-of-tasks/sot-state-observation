@@ -74,6 +74,11 @@ namespace sotStateObservation
                 imuFunctor_.setSamplingPeriod(dt);
             }
 
+            void increment()
+            {
+                attitudeSOUT(attitudeSOUT.getTime()+1);
+            }
+
 
 
             /**

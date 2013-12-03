@@ -117,6 +117,17 @@ namespace sotStateObservation
 	     ::dynamicgraph::command::Setter <DGIMUAttitudeEstimation,double>
 	     (*this, &DGIMUAttitudeEstimation::setSamplingPeriod, docstring));
 
+	     //setStateGuessCovariance
+         docstring  =
+                "\n"
+                "    Increments the time index of the output signal \n"
+                "    takes no argument \n"
+                "\n";
+
+        addCommand(std::string("increment"),
+                    ::dynamicgraph::command::makeCommandVoid0(*this, & DGIMUAttitudeEstimation::increment ,
+    					docstring));
+
 
         filter_.setState(stateObservation::Vector::Zero(stateSize), attitudeSOUT.getTime());
 

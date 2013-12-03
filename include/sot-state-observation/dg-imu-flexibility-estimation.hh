@@ -61,6 +61,11 @@ namespace sotStateObservation
                 estimator_.setSamplingPeriod(dt);
             }
 
+            void increment()
+            {
+                flexibilitySOUT(flexibilitySOUT.getTime()+1);
+            }
+
 
 
 

@@ -159,6 +159,18 @@ namespace sotStateObservation
 	     ::dynamicgraph::command::Setter <DGIMUFlexibilityEstimation,double>
                 (*this, &DGIMUFlexibilityEstimation::setSamplingPeriod, docstring));
 
+        //setStateGuessCovariance
+        docstring  =
+                "\n"
+                "    Increments the time index of the output signal \n"
+                "    takes no argument \n"
+                "\n";
+
+        addCommand(std::string("increment"),
+                    ::dynamicgraph::command::makeCommandVoid0(*this, & DGIMUFlexibilityEstimation::increment ,
+    					docstring));
+
+
     }
 
     DGIMUFlexibilityEstimation::~DGIMUFlexibilityEstimation()
