@@ -192,21 +192,21 @@ namespace sotStateObservation
 
         estimator_.setContactsNumber(contactNb);
 
-        if (contactNb>=1)
+        if (contactNb>0)
         {
-            estimator_.setContactPosition(1,convertVector<stateObservation::Vector>(contact1SIN(inTime)));
+            estimator_.setContactPosition(0,convertVector<stateObservation::Vector>(contact1SIN(inTime)));
 
-            if (contactNb>=2)
+            if (contactNb>1)
             {
-                estimator_.setContactPosition(2,convertVector<stateObservation::Vector>(contact4SIN(inTime)));
+                estimator_.setContactPosition(1,convertVector<stateObservation::Vector>(contact4SIN(inTime)));
 
-                if (contactNb>=3)
+                if (contactNb>2)
                 {
-                    estimator_.setContactPosition(3,convertVector<stateObservation::Vector>(contact3SIN(inTime)));
+                    estimator_.setContactPosition(2,convertVector<stateObservation::Vector>(contact3SIN(inTime)));
 
                     if (contactNb==4)
                     {
-                        estimator_.setContactPosition(4,convertVector<stateObservation::Vector>(contact4SIN(inTime)));
+                        estimator_.setContactPosition(3,convertVector<stateObservation::Vector>(contact4SIN(inTime)));
                     }
                 }
             }
