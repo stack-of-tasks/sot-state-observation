@@ -71,6 +71,7 @@ namespace sotStateObservation
         dynamicgraph::Matrix flexRotationMatrix(3,3);
         dynamicgraph::Vector flexOmega(3);
         dynamicgraph::Vector flexOmegaDot(3);
+        dynamicgraph::Vector contactPosition(3);
 
         flexRotationMatrix.setIdentity();
 
@@ -85,6 +86,11 @@ namespace sotStateObservation
         flexRotationMatrixSOUT.setConstant(flexRotationMatrix);
         flexOmegaSOUT.setConstant(flexOmega);
         flexOmegaDotSOUT.setConstant(flexOmegaDot);
+        contactsNbrSIN.setConstant(0);
+        contact1SIN.setConstant(contactPosition);
+        contact2SIN.setConstant(contactPosition);
+        contact3SIN.setConstant(contactPosition);
+        contact4SIN.setConstant(contactPosition);
 
         flexibilitySOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexibility,
 				    this, _1, _2));
