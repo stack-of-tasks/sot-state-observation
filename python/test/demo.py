@@ -1,9 +1,12 @@
+import sys
 import numpy as np
 import matplotlib.pyplot as pl
 import dynamic_graph as dg
 import dynamic_graph.signal_base as dgsb
 import dynamic_graph.sot.core.sot_state_observation as sotso
 from math import sin
+
+np.set_printoptions(threshold=sys.maxsize)
 
 def interact():
     import readline # optional, will allow Up/Down/History in the console
@@ -17,10 +20,9 @@ a= sotso.DGIMUFlexibilityEstimation('flextimator')
 a.setSamplingPeriod(0.005)
 
 meas = a.signal('measurement')
-meas.value = (0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 )
 
 inputs = a.signal('input')
-inputs.value = (0.0, 0.0, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
 
 contactNbr = a.signal('contactNbr')
 contactNbr.value = 1
@@ -30,11 +32,12 @@ contact1.value = (0,0,0);
 
 flex=a.signal('flexibility')
 
-lastTime = 500
+lastTime = 5000
 
 values = []
 for x in xrange(lastTime):
-    meas.value = (0.0 , 0.0 , 9.81 , 1.0 , 0.0 , 0.0 )
+    meas.value = (0.0 ,  9.81 , 0.0 , 0.0 , 0.0 , 0.0 )
+    inputs.value = (0.0, 0.0, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     values.append(flex.value)
     a.increment()
 
@@ -56,10 +59,12 @@ ax1.plot(x,y[1])
 ax1.plot(x,y[2])
 
 # plot velocity variables
-ax2.plot(x,y[6])
-ax2.plot(x,y[7])
-ax2.plot(x,y[8])
+ax2.plot(x,y[9])
+ax2.plot(x,y[10])
+ax2.plot(x,y[11])
 
 leg = ax1.legend(("X position ", "Y position", "Z position"))
 leg = ax2.legend(("X thetamu", "Y thetamu", "Z thetamu"))
 pl.show()
+
+interact()
