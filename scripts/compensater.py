@@ -185,7 +185,7 @@ class CompensaterApplication:
             self.sot.down("taskposture")
         if keep: task.keep()
 
-    def pop(self,task):
+    def rm(self,task):
         if isinstance(task,str): taskName=task
         elif "task" in task.__dict__:  taskName=task.task.name
         else: taskName=task.name
@@ -247,7 +247,7 @@ class CompensaterApplication:
         print
         print a0Mc*cMh0
         
-        self.pop(self.taskRH)
+        self.rm(self.taskRH)
         self.push(self.taskCompensate)
 
 
