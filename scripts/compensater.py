@@ -70,6 +70,10 @@ class CompensaterApplication:
     def closeGripper(self):
         self.taskGripper.gotoq(None,rhand=(self.gripperClose,),lhand=(self.gripperClose,))
 
+    #initialization is separated from the creation of the tasks because if we want to switch
+    #to second order controlm the initialization will remain while the creation is 
+    #changed
+
     def initTasks(self):
         self.initTaskContact()
         self.initTaskGaze()
@@ -237,10 +241,6 @@ class CompensaterApplication:
         print ccMh0 
         print
         print matrix(self.robot.dynamic.RF.value)
-        print
-        print a0Mc
-        print
-        print a0Mc*cMh0
         
         self.rm(self.taskRH)
         self.push(self.taskCompensate)
