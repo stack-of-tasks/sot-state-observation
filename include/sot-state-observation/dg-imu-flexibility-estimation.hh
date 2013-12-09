@@ -85,11 +85,15 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexibility
                         (::dynamicgraph::Vector & flexibility, const int& inTime);
 
+            ::dynamicgraph::Vector& computeFlexPoseThetaU
+                        (::dynamicgraph::Vector & flexibilityThetaU, const int& inTime);
+
             ::dynamicgraph::Vector& computeFlexPosition
                         (::dynamicgraph::Vector & flexibilityPosition, const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexVelocity
                         (::dynamicgraph::Vector & flexibilityVelocity, const int& inTime);
+
 
             ::dynamicgraph::Vector& computeFlexAcceleration
                         (::dynamicgraph::Vector & flexibilityAcceleration, const int& inTime);
@@ -147,6 +151,9 @@ namespace sotStateObservation
                         /**
             \brief Different parts of the vector of the flexibility estimation vector
             */
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexPoseThetaUSOUT;
+
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexPositionSOUT;
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexVelocitySOUT;
@@ -163,7 +170,7 @@ namespace sotStateObservation
 
 
             /**
-            \brief Estimation of the attitude
+            \brief Estimation of the flexibility
             */
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexibilitySOUT;
 

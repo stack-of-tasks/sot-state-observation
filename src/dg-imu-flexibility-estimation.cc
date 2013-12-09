@@ -25,6 +25,8 @@ namespace sotStateObservation
         contact4SIN(0x0, "DGIMUFlexibilityEstimation("+inName+")::input(vector)::contact4"),
         flexibilitySOUT(measurementSIN << inputSIN,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexibility"),
+        flexPoseThetaUSOUT(flexibilitySOUT,
+                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexPoseThetaU"),
         flexPositionSOUT(flexibilitySOUT,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexPosition"),
         flexVelocitySOUT(flexibilitySOUT,
@@ -45,6 +47,7 @@ namespace sotStateObservation
         signalRegistration (inputSIN);
         signalRegistration (flexibilitySOUT);
 
+        signalRegistration (flexPoseThetaUSOUT);
         signalRegistration (flexPositionSOUT);
         signalRegistration (flexVelocitySOUT);
         signalRegistration (flexAccelerationSOUT);
@@ -64,6 +67,7 @@ namespace sotStateObservation
         dynamicgraph::Vector measure(measurementSize);
         dynamicgraph::Vector input(inputSize);
         dynamicgraph::Vector flexibility(stateSize);
+        dynamicgraph::Vector flexPoseThetaU(6);
         dynamicgraph::Vector flexPosition(3);
         dynamicgraph::Vector flexVelocity(3);
         dynamicgraph::Vector flexAcceleration(3);
@@ -79,6 +83,7 @@ namespace sotStateObservation
         measurementSIN.setConstant(measure);
         inputSIN.setConstant(input);
         flexibilitySOUT.setConstant(flexibility);
+        flexPoseThetaUSOUT.setConstant(flexPoseThetaU);
         flexPositionSOUT.setConstant(flexPosition);
         flexVelocitySOUT.setConstant(flexVelocity);
         flexAccelerationSOUT.setConstant(flexAcceleration);
@@ -93,6 +98,9 @@ namespace sotStateObservation
         contact4SIN.setConstant(contactPosition);
 
         flexibilitySOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexibility,
+				    this, _1, _2));
+
+        flexPoseThetaUSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexPoseThetaU,
 				    this, _1, _2));
 
         flexPositionSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexPosition,
@@ -228,6 +236,21 @@ namespace sotStateObservation
         flexibilityPosition = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector().head(3));
 
         return flexibilityPosition;
+    }
+
+    ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeFlexPoseThetaU
+                        (::dynamicgraph::Vector & flexibilityPoseThetaU, const int& inTime)
+    {
+        flexibilitySOUT(inTime);
+
+        stateObservation::Vector v = stateObservation::Vector::Zero(6,1);
+        v.head(3) = estimator_.getFlexibilityVector().head(3);
+        v.tail(3) = estimator_.getFlexibilityVector().segment(9,3);
+
+        flexibilityPoseThetaU = convertVector<dynamicgraph::Vector>(v);
+
+        return flexibilityPoseThetaU;
+
     }
 
 
