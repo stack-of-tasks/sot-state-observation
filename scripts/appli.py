@@ -6,7 +6,7 @@ appli.withTraces()
 if 'usingRobotViewer' in locals() and usingRobotViewer:    refreshList.append(lambda: appli.updateDisplay());    appli.initDisplay(); go()
 
 # --- SHORTCUTS
-pop          = appli.pop
+rm           = appli.rm
 push         = appli.push
 dyn          = appli.robot.dynamic
 sot          = appli.sot
