@@ -1,3 +1,4 @@
+import sys
 # --- ROBOT DYNAMIC SIMULATION -------------------------------------------------
 from dynamic_graph.sot.hrp2_14.robot import Robot
 robot = Robot( 'robot' )
