@@ -87,25 +87,21 @@ class CompensaterApplication:
         # or written in cMh
         #    cMh !!=!! cMa aMa0 a0Mh0 
 
-        self.a0Ma = PoseRollPitchYawToMatrixHomo('a0Ma')
-        self.a0Ma.sin.value = [0,]*6
+        # c : central frame of the robot
+        # cc : central frame for the controller  (without the flexibility)
+        # ccMc= flexibility 
+        self.ccMc = PoseRollPitchYawToMatrixHomo('ccMc')
+        self.ccMc.sin.value = [0,]*6
 
-        self.cMa = Inverse_of_matrixHomo('cMa')
-        plug(self.robot.dynamic.LF,self.cMa.sin)
+        # href : the reference 'desired' position of the hand
+        self.ccMhref = Multiply_of_matrixHomo('ccMhref')
+        plug(self.ccMc.sout,self.ccMhref.sin1)
+        # You need to set up a reference value here: plug( -- ,self.ccMhref.sin2)
 
-        self.aMa0 = Inverse_of_matrixHomo('aMa0')
-        plug(self.a0Ma.sout,self.aMa0.sin)
+        plug(self.ccMhref.sout,self.taskCompensate.featureDes.position)
 
-        self.cMa0 = Multiply_of_matrixHomo('cMa0')
-        plug(self.cMa.sout,self.cMa0.sin1)
-        plug(self.aMa0.sout,self.cMa0.sin2)
-
-        self.cMh0 = Multiply_of_matrixHomo('cMh0')
-        plug(self.cMa0.sout,self.cMh0.sin1)
-        # You need to set up a reference value here: plug( -- ,self.cMh0.sin2)
-        
-        plug(self.cMh0.sout,self.taskCompensate.featureDes.position)
         self.taskCompensate.feature.frame('desired')
+
 
     def initTaskHalfSitting(self):
         self.taskHalfStitting.gotoq(None,self.robot.halfSitting)
@@ -235,11 +231,10 @@ class CompensaterApplication:
 
     def startCompensate(self):
         '''Start to compensate for the hand movements.'''
-        cMh0 = matrix(self.robot.dynamic.rh.value)
-        a0Mc = linalg.inv(matrix(self.robot.dynamic.LF.value))
-        
-        self.cMh0.sin2.value = matrixToTuple(a0Mc*cMh0)
-        print cMh0
+        ccMh0 = matrix(self.robot.dynamic.rh.value)
+     
+        self.ccMhref.sin2.value = matrixToTuple(ccMh0)
+        print ccMh0 
         print
         print matrix(self.robot.dynamic.RF.value)
         print
