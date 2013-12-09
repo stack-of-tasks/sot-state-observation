@@ -94,7 +94,7 @@ class CompensaterApplication:
         # c : central frame of the robot
         # cc : central frame for the controller  (without the flexibility)
         # ccMc= flexibility 
-        self.ccMc = PoseRollPitchYawToMatrixHomo('ccMc')
+        self.ccMc = PoseUThetaToMatrixHomo('ccMc')
         self.ccMc.sin.value = [0,]*6
 
         # href : the reference 'desired' position of the hand
