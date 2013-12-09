@@ -31,15 +31,18 @@ contact1 = a.signal('contact1')
 contact1.value = (0,0,0);
 
 flex=a.signal('flexibility')
+flexptu = a.signal('flexPoseThetaU')
 
-lastTime = 5000
+lastTime = 500
 
 values = []
+
 for x in xrange(lastTime):
-    meas.value = (0.0 ,  9.81 , 0.0 , 0.0 , 0.0 , 0.0 )
+    meas.value = (0.0 ,  9.81 , 0.0 , 1.0 , 0.0 , 0.0 )
     inputs.value = (0.0, 0.0, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-    values.append(flex.value)
-    a.increment()
+    flexptu.recompute(x)
+    values.append(flexptu.value)
+
 
 
 
@@ -54,17 +57,23 @@ ax2 = fig.add_subplot(122)
 
 
 # plot configuration variables
+#ax1.plot(x,y[0])
+#ax1.plot(x,y[1])
+#ax1.plot(x,y[2])
+
 ax1.plot(x,y[0])
 ax1.plot(x,y[1])
 ax1.plot(x,y[2])
 
 # plot velocity variables
-ax2.plot(x,y[9])
-ax2.plot(x,y[10])
-ax2.plot(x,y[11])
+ax2.plot(x,y[3])
+ax2.plot(x,y[4])
+ax2.plot(x,y[5])
+
+
 
 leg = ax1.legend(("X position ", "Y position", "Z position"))
 leg = ax2.legend(("X thetamu", "Y thetamu", "Z thetamu"))
 pl.show()
 
-interact()
+
