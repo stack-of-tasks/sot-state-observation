@@ -36,18 +36,18 @@ a = appli
 s = optionalparentheses(appli.nextStep)
 
 #### Flexibility Estimator ##
-a= sotso.DGIMUFlexibilityEstimation('flextimator')
-a.setSamplingPeriod(0.005)
+est= sotso.DGIMUFlexibilityEstimation('flextimator')
+est.setSamplingPeriod(0.005)
 
-meas = a.signal('measurement')
-inputs = a.signal('input')
-contactNbr = a.signal('contactNbr')
+meas = est.signal('measurement')
+inputs = est.signal('input')
+contactNbr = est.signal('contactNbr')
 contactNbr.value = 1
 
-contact1 = a.signal('contact1')
+contact1 = est.signal('contact1')
 contact1.value = (0,0,0);
 
-flex=a.signal('flexPoseThetaU')
+flex=est.signal('flexPoseThetaU')
 
 
 plug(flex,appli.ccMc.sin)
