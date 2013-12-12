@@ -76,10 +76,8 @@ class CompensaterApplication:
 
     def initTasks(self):
         self.initTaskContact()
-        self.initTaskGaze()
         self.initTaskBalance()
         self.initTaskPosture()
-        self.initTaskGripper()
         self.initTaskHalfSitting()
         self.initTaskCompensate()
 
@@ -110,23 +108,10 @@ class CompensaterApplication:
     def initTaskHalfSitting(self):
         self.taskHalfStitting.gotoq(None,self.robot.halfSitting)
 
-    def initTaskGripper(self):
-        self.gripperOpen = 0.6
-        self.gripperClose = 0.05
-        self.closeGripper()
-
     def initTaskContact(self):
         # --- CONTACTS
         self.contactRF.feature.frame('desired')
         self.contactLF.feature.frame('desired')
-
-    def initTaskGaze(self):
-        # --- GAZE ---
-        headMcam=array([[0.0,0.0,1.0,0.081],[1.,0.0,0.0,0.072],[0.0,1.,0.0,0.031],[0.0,0.0,0.0,1.0]])
-        headMcam = dot(headMcam,rotate('x',10*pi/180))
-        self.taskGaze.opmodif = matrixToTuple(headMcam)
-        self.taskGaze.featureDes.xy.value = (0,0)
-        #plug("translation [x,y,z] signal",self.taskGaze.proj.point3D)
 
     def initTaskBalance(self):
         # --- BALANCE ---
@@ -164,8 +149,6 @@ class CompensaterApplication:
             self.contactRF.gain.setConstant(10)
             self.contactLF.gain.setConstant(10)
             self.taskChest.gain.setConstant(10)
-            self.taskGaze.gain.setByPoint(3,0.5,0.01,0.8)
-            self.taskGripper.gain.setConstant(3)
             self.taskRH.gain.setByPoint(2,0.8,0.01,0.8)
             self.taskCompensate.gain.setByPoint(2,0.8,0.01,0.8)
             self.taskHalfStitting.gain.setByPoint(2,0.8,0.01,0.8)
