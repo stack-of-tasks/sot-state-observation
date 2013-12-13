@@ -66,6 +66,11 @@ namespace sotStateObservation
                 flexibilitySOUT(flexibilitySOUT.getTime()+1);
             }
 
+            int getFlexTime() const
+            {
+                return flexibilitySOUT.getTime();
+            }
+
 
 
 
@@ -101,8 +106,8 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexThetaU
                         (::dynamicgraph::Vector & flexibilityThetaU, const int& inTime);
 
-            ::dynamicgraph::Matrix& computeFlexRotationMatrix
-                        (::dynamicgraph::Matrix & flexibilityRotationMatrix, const int& inTime);
+            ::dynamicgraph::Matrix& computeFlexTransformationMatrix
+                        (::dynamicgraph::Matrix & flexibilityTransformationMatrix, const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexOmega
                         (::dynamicgraph::Vector & flexibilityOmega, const int& inTime);
@@ -162,7 +167,7 @@ namespace sotStateObservation
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexThetaUSOUT;
 
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Matrix, int> flexRotationMatrixSOUT;
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Matrix, int> flexTransformationMatrixSOUT;
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexOmegaSOUT;
 
@@ -172,7 +177,7 @@ namespace sotStateObservation
             /**
             \brief Estimation of the flexibility
             */
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexibilitySOUT;
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> flexibilitySOUT;
 
 
             stateObservation::flexibilityEstimation::FixedContactEKFFlexEstimatorIMU estimator_;
