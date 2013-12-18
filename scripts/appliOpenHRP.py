@@ -78,6 +78,8 @@ inputStack3.selec2(0,6)
 plug(inputStack3.sout,inputs)
 
 
-flex=est.signal('flexPoseThetaU')
-plug(flex,appli.ccMc.sin)
+flex=est.signal('flexMatrixInverse')
+plug(flex,appli.ccMc)
+#appli.nextStep()
+
 

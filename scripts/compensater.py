@@ -222,23 +222,28 @@ class CompensaterApplication:
     # COMPENATION ######################################
 
     def initTaskCompensate(self):
-        # w is the world, c is the egocenter (the central reference point of
-        # the robot kinematics).
         # The constraint is:
-        #    wMh0 !!=!! wMh = wMa0 a0Ma aMc cMh
-        # or written in cMh
-        #    cMh !!=!! cMa aMa0 a0Mh0 
+        #    cMhref !!=!! cMh = cMcc ccMh
+        # or written in ccMh
+        #    ccMh !!=!! ccMc cMhref
 
         # c : central frame of the robot
         # cc : central frame for the controller  (without the flexibility)
-        # ccMc= flexibility 
-        self.ccMc = PoseUThetaToMatrixHomo('ccMc')
-        self.ccMc.sin.value = [0,]*6
+        # cMcc= flexibility
+        # ccMc= flexibility inverted
 
         # href : the reference 'desired' position of the hand
+        self.ccMcBox = MatrixToHomo ("ccMc")
+        self.ccMc = self.ccMcBox.sin
+        
         self.ccMhref = Multiply_of_matrixHomo('ccMhref')
-        plug(self.ccMc.sout,self.ccMhref.sin1)
-        # You need to set up a reference value here: plug( -- ,self.ccMhref.sin2)
+        plug(self.ccMcBox.sout, self.ccMhref.sin1)
+
+        self.cMhref = self.ccMhref.sin2
+        # You need to set up the inverted flexibility : plug( ..., self.ccMc)
+        # You need to set up a reference value here: plug( ... ,self.cMhref)
+
+        
 
         plug(self.ccMhref.sout,self.taskCompensate.featureDes.position)
 
@@ -246,12 +251,10 @@ class CompensaterApplication:
 
     def startCompensate(self):
         '''Start to compensate for the hand movements.'''
-        ccMh0 = matrix(self.robot.dynamic.rh.value)
+        
      
-        self.ccMhref.sin2.value = matrixToTuple(ccMh0)
-        print ccMh0 
-        print
-        print matrix(self.robot.dynamic.RF.value)
+        self.cMhref.value = self.robot.dynamic.rh.value
+        print matrix(self.cMhref.value)
         
         self.rm(self.taskRH)
         self.push(self.taskCompensate)
