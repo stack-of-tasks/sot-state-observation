@@ -80,6 +80,4 @@ plug(inputStack3.sout,inputs)
 
 flex=est.signal('flexMatrixInverse')
 plug(flex,appli.ccMc)
-#appli.nextStep()
-
-
+appli.nextStep()
