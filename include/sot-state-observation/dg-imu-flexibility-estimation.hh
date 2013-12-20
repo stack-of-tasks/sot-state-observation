@@ -106,8 +106,8 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexThetaU
                         (::dynamicgraph::Vector & flexibilityThetaU, const int& inTime);
 
-            ::dynamicgraph::Matrix& computeFlexTransformationMatrix
-                        (::dynamicgraph::Matrix & flexibilityTransformationMatrix, const int& inTime);
+            ::dynamicgraph::sot::MatrixHomogeneous& computeFlexTransformationMatrix
+                        (::dynamicgraph::sot::MatrixHomogeneous & flexibilityTransformationMatrix, const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexOmega
                         (::dynamicgraph::Vector & flexibilityOmega, const int& inTime);

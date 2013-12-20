@@ -36,7 +36,7 @@ namespace sotStateObservation
         flexThetaUSOUT(flexibilitySOUT,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexThetaU"),
         flexTransformationMatrixSOUT(flexibilitySOUT,
-                        "DGIMUFlexibilityEstimation("+inName+")::output(Matrix)::flexTransformationMatrix"),
+                        "DGIMUFlexibilityEstimation("+inName+")::output(homogeneousMatrix)::flexTransformationMatrix"),
         flexOmegaSOUT(flexibilitySOUT,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexOmega"),
         flexOmegaDotSOUT(flexibilitySOUT,
@@ -297,8 +297,8 @@ namespace sotStateObservation
         return flexibilityThetaU;
     }
 
-    ::dynamicgraph::Matrix& DGIMUFlexibilityEstimation::computeFlexTransformationMatrix
-                        (::dynamicgraph::Matrix & flexibilityTransformationMatrix, const int& inTime)
+    ::dynamicgraph::sot::MatrixHomogeneous& DGIMUFlexibilityEstimation::computeFlexTransformationMatrix
+                        (::dynamicgraph::sot::MatrixHomogeneous & flexibilityTransformationMatrix, const int& inTime)
     {
         flexibilitySOUT(inTime);
 
