@@ -125,9 +125,9 @@ class CompensaterApplication:
             self.contactRF.gain.setConstant(10)
             self.contactLF.gain.setConstant(10)
             self.taskChest.gain.setConstant(10)
-            self.taskRH.gain.setByPoint(2,0.8,0.01,0.8)
-            self.taskCompensate.gain.setByPoint(2,0.8,0.01,0.8)
-            self.taskHalfStitting.gain.setByPoint(2,0.8,0.01,0.8)
+            self.taskRH.gain.setByPoint(4,0.2,0.01,0.8)
+            self.taskCompensate.gain.setByPoint(2,0.2,0.01,0.8)
+            self.taskHalfStitting.gain.setByPoint(2,0.2,0.01,0.8)
          
     # --- SOLVER ----------------------------------------------------------------
 
@@ -232,13 +232,11 @@ class CompensaterApplication:
         # cMcc= flexibility
         # ccMc= flexibility inverted
 
-        # href : the reference 'desired' position of the hand
-        self.ccMcBox = MatrixToHomo ("ccMc")
-        self.ccMc = self.ccMcBox.sin
+        
         
         self.ccMhref = Multiply_of_matrixHomo('ccMhref')
-        plug(self.ccMcBox.sout, self.ccMhref.sin1)
 
+        self.ccMc = self.ccMhref.sin1
         self.cMhref = self.ccMhref.sin2
         # You need to set up the inverted flexibility : plug( ..., self.ccMc)
         # You need to set up a reference value here: plug( ... ,self.cMhref)
