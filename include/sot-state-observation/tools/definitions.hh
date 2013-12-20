@@ -3,6 +3,7 @@
 
 #include <state-observation/tools/definitions.hpp>
 #include <dynamic-graph/linear-algebra.h>
+#include <boost/type_traits/is_same.hpp>
 
 
 namespace sotStateObservation
@@ -71,6 +72,37 @@ namespace sotStateObservation
     {
         return v0;
     }
+
+    template <typename Vector_t>
+    inline Vector_t subvector(const Vector_t &, unsigned , unsigned )
+    {
+        BOOST_STATIC_ASSERT((boost::is_same<Vector_t, maal::boost::Vector>::value
+                            ||boost::is_same<Vector_t, Eigen::VectorXd>::value));
+    }
+
+    template <>
+    inline maal::boost::Vector subvector
+        (const maal::boost::Vector& v, unsigned begin, unsigned length)
+    {
+        BOOST_ASSERT(v.size()<=(begin+length) && begin>=0 && "The subvector is incorrectly set.");
+
+        maal::boost::Vector v2(length);
+
+        for (unsigned i=0 ; i<length ; i)
+        {
+            v2 (i)= v(i+begin);
+        }
+        return v;
+
+    }
+
+    template <>
+    inline Eigen::VectorXd subvector
+        (const Eigen::VectorXd & v, unsigned begin, unsigned length)
+    {
+        return v.segment(begin,length);
+    }
+
 
 }
 
