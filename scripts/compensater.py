@@ -24,7 +24,7 @@ def rtToHomo(R,T=None):
 class CompensaterApplication:
 
     threePhaseScrew = True
-    tracesRealTime = False
+    tracesRealTime = True
 
     def __init__(self,robot):
 
