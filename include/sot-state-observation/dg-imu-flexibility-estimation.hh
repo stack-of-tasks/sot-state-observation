@@ -93,8 +93,6 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexibility
                         (::dynamicgraph::Vector & flexibility, const int& inTime);
 
-            ::dynamicgraph::Vector& computeFlexPoseThetaU
-                        (::dynamicgraph::Vector & flexibilityThetaU, const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexPosition
                         (::dynamicgraph::Vector & flexibilityPosition, const int& inTime);
@@ -102,15 +100,11 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexVelocity
                         (::dynamicgraph::Vector & flexibilityVelocity, const int& inTime);
 
-
             ::dynamicgraph::Vector& computeFlexAcceleration
                         (::dynamicgraph::Vector & flexibilityAcceleration, const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexThetaU
                         (::dynamicgraph::Vector & flexibilityThetaU, const int& inTime);
-
-            ::dynamicgraph::sot::MatrixHomogeneous& computeFlexTransformationMatrix
-                        (::dynamicgraph::sot::MatrixHomogeneous & flexibilityTransformationMatrix, const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexOmega
                         (::dynamicgraph::Vector & flexibilityOmega, const int& inTime);
@@ -118,13 +112,30 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexOmegaDot
                         (::dynamicgraph::Vector & flexibilityOmegaDot, const int& inTime);
 
+
+
+            ::dynamicgraph::sot::MatrixHomogeneous& computeFlexTransformationMatrix
+                        (::dynamicgraph::sot::MatrixHomogeneous & flexibilityTransformationMatrix, const int& inTime);
+
+            ::dynamicgraph::Vector& computeFlexPoseThetaU
+                        (::dynamicgraph::Vector & flexibilityThetaU, const int& inTime);
+
+            ::dynamicgraph::Vector& computeFlexVelocityVector
+                        (::dynamicgraph::Vector & flexVelocityVector, const int& inTime);
+
+
+
             ::dynamicgraph::Vector& computeFlexInverse
                         (::dynamicgraph::Vector & flexInverse, const int& inTime);
 
             ::dynamicgraph::sot::MatrixHomogeneous& computeFlexMatrixInverse
                         (::dynamicgraph::sot::MatrixHomogeneous & flexMatrixInverse, const int& inTime);
 
+            ::dynamicgraph::Vector& computeFlexInversePoseThetaU
+                        (::dynamicgraph::Vector & flexInversePoseThetaU, const int& inTime);
 
+            ::dynamicgraph::Vector& computeFlexInverseVelocityVector
+                        (::dynamicgraph::Vector & flexInverseVelocityVector, const int& inTime);
 
 
             /**
@@ -166,8 +177,6 @@ namespace sotStateObservation
             \brief Different parts of the vector of the flexibility estimation vector
             */
 
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexPoseThetaUSOUT;
-
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexPositionSOUT;
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexVelocitySOUT;
@@ -176,17 +185,16 @@ namespace sotStateObservation
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexThetaUSOUT;
 
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::sot::MatrixHomogeneous, int> flexTransformationMatrixSOUT;
-
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexVelocityVectorSOUT;
-
-
-
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexOmegaSOUT;
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexOmegaDotSOUT;
 
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexPoseThetaUSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::sot::MatrixHomogeneous, int> flexTransformationMatrixSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexVelocityVectorSOUT;
 
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexInverseSOUT;
