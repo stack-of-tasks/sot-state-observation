@@ -12,6 +12,9 @@
 #include <dynamic-graph/signal-time-dependent.h>
 #include <dynamic-graph/linear-algebra.h>
 
+#include <sot/core/matrix-homogeneous.hh>
+
+#include <state-observation/tools/miscellaneous-algorithms.hpp>
 #include <state-observation/flexibility-estimation/fixed-contact-ekf-flex-estimator-imu.hpp>
 
 #include <sot-state-observation/tools/definitions.hh>
@@ -115,6 +118,12 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexOmegaDot
                         (::dynamicgraph::Vector & flexibilityOmegaDot, const int& inTime);
 
+            ::dynamicgraph::Vector& computeFlexInverse
+                        (::dynamicgraph::Vector & flexInverse, const int& inTime);
+
+            ::dynamicgraph::sot::MatrixHomogeneous& computeFlexMatrixInverse
+                        (::dynamicgraph::sot::MatrixHomogeneous & flexMatrixInverse, const int& inTime);
+
 
 
 
@@ -167,11 +176,26 @@ namespace sotStateObservation
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexThetaUSOUT;
 
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Matrix, int> flexTransformationMatrixSOUT;
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::sot::MatrixHomogeneous, int> flexTransformationMatrixSOUT;
+
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexVelocityVectorSOUT;
+
+
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexOmegaSOUT;
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexOmegaDotSOUT;
+
+
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexInverseSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::sot::MatrixHomogeneous, int> flexMatrixInverseSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector,int> flexInversePoseThetaUSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector,int> flexInverseVelocityVectorSOUT;
 
 
             /**

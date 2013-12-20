@@ -40,7 +40,11 @@ namespace sotStateObservation
         flexOmegaSOUT(flexibilitySOUT,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexOmega"),
         flexOmegaDotSOUT(flexibilitySOUT,
-                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexOmegaDot")
+                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexOmegaDot"),
+        flexInverseSOUT (flexibilitySOUT,
+                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexInverse"),
+        flexMatrixInverseSOUT(flexibilitySOUT,
+                        "DGIMUFlexibilityEstimation("+inName+")::output(homogeneousMatrix)::flexMatrixInverse")
     {
 
         signalRegistration (measurementSIN);
@@ -55,6 +59,8 @@ namespace sotStateObservation
         signalRegistration (flexTransformationMatrixSOUT);
         signalRegistration (flexOmegaSOUT);
         signalRegistration (flexOmegaDotSOUT);
+        signalRegistration (flexInverseSOUT);
+        signalRegistration (flexMatrixInverseSOUT);
 
         signalRegistration (contact1SIN);
         signalRegistration (contact2SIN);
@@ -72,7 +78,7 @@ namespace sotStateObservation
         dynamicgraph::Vector flexVelocity(3);
         dynamicgraph::Vector flexAcceleration(3);
         dynamicgraph::Vector flexThetaU(3);
-        dynamicgraph::Matrix flexTransformationMatrix(3,3);
+        dynamicgraph::Matrix flexTransformationMatrix(4,4);
         dynamicgraph::Vector flexOmega(3);
         dynamicgraph::Vector flexOmegaDot(3);
         dynamicgraph::Vector contactPosition(3);
@@ -91,6 +97,8 @@ namespace sotStateObservation
         flexTransformationMatrixSOUT.setConstant(flexTransformationMatrix);
         flexOmegaSOUT.setConstant(flexOmega);
         flexOmegaDotSOUT.setConstant(flexOmegaDot);
+        flexInverseSOUT.setConstant(flexibility);
+        flexMatrixInverseSOUT.setConstant(flexTransformationMatrix);
         contactsNbrSIN.setConstant(0);
         contact1SIN.setConstant(contactPosition);
         contact2SIN.setConstant(contactPosition);
@@ -122,6 +130,12 @@ namespace sotStateObservation
 				    this, _1, _2));
 
         flexOmegaDotSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexOmegaDot,
+				    this, _1, _2));
+
+        flexInverseSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexInverse,
+				    this, _1, _2));
+
+        flexMatrixInverseSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexMatrixInverse,
 				    this, _1, _2));
 
         std::ostringstream stateSizeString;
@@ -245,7 +259,8 @@ namespace sotStateObservation
     {
         flexibilitySOUT(inTime);
 
-        flexibilityPosition = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector().head(3));
+        flexibilityPosition = convertVector<dynamicgraph::Vector>
+                    (estimator_.getFlexibilityVector().segment(stateObservation::kine::pos,3));
 
         return flexibilityPosition;
     }
@@ -258,8 +273,8 @@ namespace sotStateObservation
         flexibilitySOUT(inTime);
 
         stateObservation::Vector v = stateObservation::Vector::Zero(6,1);
-        v.head(3) = estimator_.getFlexibilityVector().head(3);
-        v.tail(3) = estimator_.getFlexibilityVector().segment(9,3);
+        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::pos,3);
+        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::ori,3);
 
         flexibilityPoseThetaU = convertVector<dynamicgraph::Vector>(v);
 
@@ -272,7 +287,8 @@ namespace sotStateObservation
     {
         flexibilitySOUT(inTime);
 
-        flexibilityVelocity = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector().segment(3,3));
+        flexibilityVelocity = convertVector<dynamicgraph::Vector>
+            (estimator_.getFlexibilityVector().segment(stateObservation::kine::linVel,3));
 
         return flexibilityVelocity;
     }
@@ -282,7 +298,8 @@ namespace sotStateObservation
     {
         flexibilitySOUT(inTime);
 
-        flexibilityAcceleration = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector().segment(6,3));
+        flexibilityAcceleration = convertVector<dynamicgraph::Vector>
+                (estimator_.getFlexibilityVector().segment(stateObservation::kine::linAcc,3));
 
         return flexibilityAcceleration;
     }
@@ -292,7 +309,8 @@ namespace sotStateObservation
     {
         flexibilitySOUT(inTime);
 
-        flexibilityThetaU = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector().segment(9,3));
+        flexibilityThetaU = convertVector<dynamicgraph::Vector>
+                (estimator_.getFlexibilityVector().segment(stateObservation::kine::ori,3));
 
         return flexibilityThetaU;
     }
@@ -312,7 +330,8 @@ namespace sotStateObservation
     {
         flexibilitySOUT(inTime);
 
-        flexibilityOmega = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector().segment(12,3));
+        flexibilityOmega = convertVector<dynamicgraph::Vector>
+                (estimator_.getFlexibilityVector().segment(stateObservation::kine::angVel,3));
 
         return flexibilityOmega;
     }
@@ -322,8 +341,28 @@ namespace sotStateObservation
     {
         flexibilitySOUT(inTime);
 
-        flexibilityOmegaDot = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector().segment(15,3));
+        flexibilityOmegaDot = convertVector<dynamicgraph::Vector>
+                            (estimator_.getFlexibilityVector().segment(stateObservation::kine::angAcc,3));
 
         return flexibilityOmegaDot;
+    }
+
+
+    ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeFlexInverse
+                        (::dynamicgraph::Vector & flexInverse, const int& inTime)
+    {
+        flexibilitySOUT(inTime);
+
+        flexInverse = convertVector<dynamicgraph::Vector>
+            (stateObservation::kine::invertState(estimator_.getFlexibilityVector()));
+    }
+
+    ::dynamicgraph::sot::MatrixHomogeneous& DGIMUFlexibilityEstimation::computeFlexMatrixInverse
+                        (::dynamicgraph::sot::MatrixHomogeneous & flexMatrixInverse, const int& inTime)
+    {
+        flexibilitySOUT(inTime);
+
+        flexMatrixInverse = convertMatrix<dynamicgraph::Matrix>
+            (stateObservation::kine::invertHomoMatrix(estimator_.getFlexibility()));
     }
 }
