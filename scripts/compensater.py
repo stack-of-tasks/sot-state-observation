@@ -167,7 +167,7 @@ class CompensaterApplication:
             self.robot.tracer = Tracer('trace')
             self.robot.device.after.addSignal('{0}.triger'.format(self.robot.tracer.name))
         self.robot.tracer.open('/tmp/','','.dat')
-        self.robot.tracer.add( self.taskRH.task.name+'.error','erh' )
+        #self.robot.tracer.add( self.taskRH.task.name+'.error','erh' )
         self.robot.startTracer()
         
     def stopTraces(self):
