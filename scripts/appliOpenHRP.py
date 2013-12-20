@@ -48,34 +48,27 @@ plug(sensorStack.sout,meas);
 
 
 imuPos = MatrixHomoToPose('imuPos')
-imuOri = MatrixToUTheta('imuOri')
-imuRotM = HomoToRotation('imuRot')
+imuOri = MatrixToUTheta('imuOriUTheta')
+imuRotM = HomoToRotation('imuOriM')
 
 plug(robot.frames['accelerometer'].position,imuPos.sin)
 plug(robot.frames['accelerometer'].position,imuRotM.sin)
 plug(imuRotM.sout,imuOri.sin)
 
-
-inputStack1 = Stack_of_vector ('sv2')
-inputStack2 = Stack_of_vector ('sv3')
-inputStack3 = Stack_of_vector ('sv4')
+inputStack1 = Stack_of_vector ('imuReferencePoseThetaU')
+inputStack2 = Stack_of_vector ('estimatorInput')
 
 plug(imuPos.sout,inputStack1.sin1)
-inputStack1.sin2.value =(0.0 ,  0.0 , 0.0 , 0.0 , 0.0 , 0.0 )
+plug(imuOri.sout,inputStack2.sin2)
 inputStack1.selec1(0,3)
-inputStack1.selec2(0,6)
+inputStack1.selec2(0,3)
 
 plug(imuOri.sout,inputStack2.sin1)
-inputStack2.sin2.value =(0.0 ,  0.0 , 0.0 )
-inputStack2.selec1(0,3)
-inputStack2.selec2(0,3)
+inputStack2.sin2.value =(0.0 ,  0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 ,  0.0 , 0.0 )
+inputStack2.selec1(0,6)
+inputStack2.selec2(0,9)
 
-plug(inputStack1.sout,inputStack3.sin1)
-plug(inputStack2.sout,inputStack3.sin2)
-inputStack3.selec1(0,9)
-inputStack3.selec2(0,6)
-
-plug(inputStack3.sout,inputs)
+plug(inputStack2.sout,inputs)
 
 
 flex=est.signal('flexMatrixInverse')
