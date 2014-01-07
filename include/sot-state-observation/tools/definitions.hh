@@ -103,6 +103,68 @@ namespace sotStateObservation
         return v.segment(begin,length);
     }
 
+    template <typename Vector_t>
+    inline Vector_t setSubvector(Vector_t &, unsigned , const Vector_t & )
+    {
+        BOOST_STATIC_ASSERT((boost::is_same<Vector_t, maal::boost::Vector>::value
+                            ||boost::is_same<Vector_t, Eigen::VectorXd>::value));
+    }
+
+    template <>
+    inline maal::boost::Vector setSubvector
+        (maal::boost::Vector& v, unsigned begin, const maal::boost::Vector &vin)
+    {
+
+        BOOST_ASSERT (v.size()>=(begin+vin.size())
+                             && "The subvector is incorrectly set.");
+
+        unsigned l = vin.size();
+        for (unsigned i=0 ; i < l ; ++i)
+        {
+            v (i+begin)= vin(i);
+        }
+        return v;
+    }
+
+    template <>
+    inline Eigen::VectorXd setSubvector
+        (Eigen::VectorXd & v, unsigned begin, const Eigen::VectorXd &vin)
+    {
+
+        BOOST_ASSERT (v.size()>=(begin+vin.size())
+                            && "The subvector is incorrectly set.");
+
+        v.segment(begin,v.size())=vin;
+        return v;
+    }
+
+    template <typename Vector_t>
+    inline Vector_t crossProduct(const Vector_t & v1, const Vector_t & v2 )
+    {
+        return v1^v2;
+    }
+
+    template<>
+    inline Eigen::VectorXd crossProduct
+                (const Eigen::VectorXd & v1, const Eigen::VectorXd & v2)
+    {
+        return Eigen::Vector3d(v1).cross(Eigen::Vector3d(v2));
+    }
+
+    template<>
+    inline maal::boost::Vector crossProduct
+                (const maal::boost::Vector & v1, const maal::boost::Vector& v2)
+    {
+        maal::boost::Vector v(3);
+
+        v(0) = v1(1) * v2(2) - v1(2) * v2(1) ;
+        v(1) = v1(2) * v2(0) - v1(0) * v2(2) ;
+        v(2) = v1(0) * v2(1) - v1(1) * v2(0) ;
+
+        return v;
+    }
+
+
 
 }
 
