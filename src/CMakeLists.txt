@@ -36,6 +36,7 @@ ADD_LIBRARY(${LIBRARY_NAME}
   SHARED
   dg-imu-attitude-estimation.cc
   dg-imu-flexibility-estimation.cc
+  moving-frame-transformation.cc
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
   )
 
@@ -63,12 +64,10 @@ INSTALL(TARGETS ${LIBRARY_NAME}
 
 STRING(REPLACE - _ PYTHON_LIBRARY_NAME ${LIBRARY_NAME})
 
-
-
-
 SET(NEW_ENTITY_CLASS
 #  DGIMUFlexibilityEstimation
 #  DGIMUAttitudeEstimation
+#  MovingFrameTransformation
   )
 
 DYNAMIC_GRAPH_PYTHON_MODULE("sot/core/${PYTHON_LIBRARY_NAME}" ${LIBRARY_NAME} wrap)
