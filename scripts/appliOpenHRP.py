@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as pl
 import dynamic_graph as dg
 import dynamic_graph.signal_base as dgsb
-import dynamic_graph.sot.core.sot_state_observation as sotso
+
 from math import sin
 from dynamic_graph.sot.core import Stack_of_vector
 
@@ -72,5 +72,9 @@ plug(inputStack2.sout,inputs)
 
 
 flex=est.signal('flexMatrixInverse')
+flexdot = est.signal('flexVelocityVector')
+
 plug(flex,appli.ccMc)
+plug(flexdot,appli.ccVc)
+
 appli.nextStep()

@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as pl
 import dynamic_graph as dg
 import dynamic_graph.signal_base as dgsb
-import dynamic_graph.sot.core.sot_state_observation as sotso
+
 from math import sin
 
 appli = CompensaterApplication(robot)
@@ -47,9 +47,10 @@ contact1 = est.signal('contact1')
 contact1.value = (0,0,0);
 
 flex=est.signal('flexMatrixInverse')
-
+flexdot = est.signal('flexVelocityVector')
 
 plug(flex,appli.ccMc)
+plug(flexdot,appli.ccVc)
 
 meas.value = (0.0 , 0.0,  9.81 , 0.0 , 0.0 , 0.0)
 inputs.value = (0.0, 0.0, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
