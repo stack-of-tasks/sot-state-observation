@@ -115,7 +115,8 @@ namespace sotStateObservation
 
 
             ::dynamicgraph::sot::MatrixHomogeneous& computeFlexTransformationMatrix
-                        (::dynamicgraph::sot::MatrixHomogeneous & flexibilityTransformationMatrix, const int& inTime);
+                        (::dynamicgraph::sot::MatrixHomogeneous & flexibilityTransformationMatrix,
+                                                            const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexPoseThetaU
                         (::dynamicgraph::Vector & flexibilityThetaU, const int& inTime);
@@ -129,13 +130,21 @@ namespace sotStateObservation
                         (::dynamicgraph::Vector & flexInverse, const int& inTime);
 
             ::dynamicgraph::sot::MatrixHomogeneous& computeFlexMatrixInverse
-                        (::dynamicgraph::sot::MatrixHomogeneous & flexMatrixInverse, const int& inTime);
+                        (::dynamicgraph::sot::MatrixHomogeneous & flexMatrixInverse,
+                                                            const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexInversePoseThetaU
                         (::dynamicgraph::Vector & flexInversePoseThetaU, const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexInverseVelocityVector
                         (::dynamicgraph::Vector & flexInverseVelocityVector, const int& inTime);
+
+            ::dynamicgraph::Vector& computeFlexInverseVelocity
+                        (::dynamicgraph::Vector & flexInverseVelocity, const int& inTime);
+
+            ::dynamicgraph::Vector& computeFlexInverseOmega
+                        (::dynamicgraph::Vector & flexInverseOmega, const int &inTime);
+
 
 
             /**
@@ -173,43 +182,68 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector , int> contact4SIN;
 
-                        /**
-            \brief Different parts of the vector of the flexibility estimation vector
-            */
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexPositionSOUT;
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexVelocitySOUT;
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexAccelerationSOUT;
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexThetaUSOUT;
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexOmegaSOUT;
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexOmegaDotSOUT;
-
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexPoseThetaUSOUT;
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::sot::MatrixHomogeneous, int> flexTransformationMatrixSOUT;
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexVelocityVectorSOUT;
-
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> flexInverseSOUT;
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::sot::MatrixHomogeneous, int> flexMatrixInverseSOUT;
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector,int> flexInversePoseThetaUSOUT;
-
-            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector,int> flexInverseVelocityVectorSOUT;
-
-
             /**
             \brief Estimation of the flexibility
             */
-            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> flexibilitySOUT;
+            dynamicgraph::Signal < ::dynamicgraph::Vector, int> flexibilitySOUT;
+
+            /**
+            \brief Different parts of the vector of the flexibility estimation vector
+            */
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> flexPositionSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> flexVelocitySOUT;
+
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> flexAccelerationSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> flexThetaUSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> flexOmegaSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> flexOmegaDotSOUT;
+
+            /**
+            \brief Transformed parts of the flexibility state vector
+            */
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> flexPoseThetaUSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::sot::MatrixHomogeneous, int>
+                                                flexTransformationMatrixSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> flexVelocityVectorSOUT;
+
+
+            /**
+            \brief Various parts of the inverse flexibility
+            */
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector, int> flexInverseSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::sot::MatrixHomogeneous, int>
+                                                        flexMatrixInverseSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> flexInversePoseThetaUSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> flexInverseVelocityVectorSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> flexInverseVelocitySOUT;
+
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> flexInverseOmegaSOUT;
+
 
 
             stateObservation::flexibilityEstimation::FixedContactEKFFlexEstimatorIMU estimator_;
