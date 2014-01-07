@@ -236,68 +236,31 @@ class CompensaterApplication:
         # ccMc= flexibility inverted
 
         
-        
-        self.ccMhref = Multiply_of_matrixHomo('ccMhref') # reference matrix homo in the control frame
+        self.transformer = sotso.MovingFrameTransformation('tranformation')
 
-        self.ccMc = self.ccMhref.sin1 # inverted flexibility
-        self.cMhref = self.ccMhref.sin2 # reference position in the world control frame
+        self.ccMc = self.transformer.gMl # inverted flexibility
+        self.cMhref = self.transformer.lM0 # reference position in the world control frame
         # You need to set up the inverted flexibility : plug( ..., self.ccMc)
         # You need to set up a reference value here: plug( ... ,self.cMhref)
+
+        self.ccVc = self.transformer.gVl # inverted flexibility velocity
+        self.cVhref = self.transformer.lV0 # reference velocity in the world control frame
+        # You need to set up the inverted flexibility velocity : plug( ..., self.ccVc)
+        # You need to set up a reference velocity value here: plug( ... ,self.cVhref)
+
+        self.ccMhref = self.transformer.gM0 # reference matrix homo in the control frame
+        self.ccVhref = self.transformer.gV0
         
-        self.FlexInvPos = MatrixHomoToPose('FlexInvPos') # flexibility inverse position splitter 
-        self.FlexInvRot = HomoToRotation('FlexInvRot') # flexibilitty inverse rotation splitter
-
-        plug ( self.ccMc,  self.FlexInvPos.sin) # POSSIBLE de brancher un input dans un input ?
-        plug ( self.ccMc,  self.FlexInvRot.sin) # POSSIBLE de brancher un input dans un input ?
-
-        self.ccPc = self.FlexInvPos.sout # flexibility inverse position       
-        self.ccRc = self.FlexInvRot.sout # flexibilitty inverse rotation
-
-        
-
-        self.ccOmegaref = Add_of_vector('ccOmegaref') #reference linear velocity in control frame
-        self.ccVelref = Add_of_vector('ccVelref')     #reference angular velocity in control frame
-
-        self.ccOmegac = self.ccOmegaref.sin2 # flexibility inverse angular velocity
-        self.ccVelc   = self.ccVelref.sin2 # flexibility inverse linear velocity
-
-        self.ccRcOmegaRef = Multiply_of_matrix('ccRcOmegaRef')
-
-        self.cOmegaRef = self.ccRcOmegaRef.sin2
-        plug(self.self.ccRc, self.ccRcOmegaRef.sin1)
-        plug(self.ccRcOmegaRef.sout , self.ccOmegaref.sin1)
-
-        
-        self.ccRcVelRef = Multiply_of_matrix('ccRcVelRef')
-
-        self.cVelRef = self.ccRcVelRef.sin2
-        plug(self.self.ccRc, self.ccRcVelRef.sin1)
-        
-
-        self.ccMhrefDot = Stack_of_vector ('ccMhrefDot') # reference velocity in control frame
-        self.ccMhrefDot.selec1(0,3)
-        self.ccMhrefDot.selec2(0,3)
-        plug(self.ccOmegaref, self.ccMhrefDot.sin1) 
-        plug(self.ccVelref, self.ccMhrefDot.sin2) 
-
-        
-
-        plug(self.ccMhref.sout,self.taskCompensate.featureDes.position)
-        #plug(self.ccMhrefDot.sout,self.taskCompensate.featureDes.velocity)
-
-
-        
-
+        plug(self.ccMhref,self.taskCompensate.featureDes.position)
+        plug(self.ccVhref,self.taskCompensate.featureDes.velocity)
 
         self.taskCompensate.feature.frame('desired')
 
-        
-
     def startCompensate(self):
         '''Start to compensate for the hand movements.'''
-        
      
         self.cMhref.value = self.robot.dynamic.rh.value
+        self.cVhref.value = (0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0)
         print matrix(self.cMhref.value)
         
         self.rm(self.taskRH)
