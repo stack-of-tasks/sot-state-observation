@@ -2,6 +2,7 @@
 
 #include <sot-state-observation/dg-imu-attitude-estimation.hh>
 #include <sot-state-observation/dg-imu-flexibility-estimation.hh>
+#include <sot-state-observation/moving-frame-transformation.hh>
 
 
 using namespace sotStateObservation;
@@ -12,6 +13,8 @@ struct instanciator
         f("Hey")
         ,
         a("Ho")
+        ,
+        t("Hu")
     {
         std::cout << "Instanciation succeeded" << std::endl;
 
@@ -20,6 +23,7 @@ struct instanciator
 
     DGIMUFlexibilityEstimation f;
     DGIMUAttitudeEstimation a;
+    MovingFrameTransformation t;
 };
 
 int main()
