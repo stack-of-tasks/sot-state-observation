@@ -198,9 +198,6 @@ class CompensaterApplication:
         self.push(self.taskRH)
         None
 
-    
-
-
     def goHalfSitting(self):
         '''End of application, go to final pose.'''
         self.sot.clear()
@@ -238,7 +235,6 @@ class CompensaterApplication:
         # cMcc= flexibility
         # ccMc= flexibility inverted
 
-        
         self.transformer = sotso.MovingFrameTransformation('tranformation')
 
         self.ccMc = self.transformer.gMl # inverted flexibility
@@ -269,9 +265,3 @@ class CompensaterApplication:
         
         self.rm(self.taskRH)
         self.push(self.taskCompensate)
-
-   
-
-
-
-
