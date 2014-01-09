@@ -179,7 +179,7 @@ class CompensaterApplication:
     def dumpTracer(self):
         self.robot.tracer.dump()
     
-    def startTrace(self)
+    def startTrace(self):
         self.robot.startTracer()
 
     # --- RUN --------------------------------------------------------------
@@ -205,7 +205,8 @@ class CompensaterApplication:
         self.push(self.contactRF,True)
         self.push(self.taskLim)
         self.push(self.taskHalfStitting)
-        self.stopTraces()
+        self.stopTrace()
+
     # --- SEQUENCER ---
     seqstep = 0
     def nextStep(self,step=None):
