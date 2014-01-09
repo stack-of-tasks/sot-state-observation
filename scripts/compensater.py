@@ -14,6 +14,7 @@ from dynamic_graph.sot.dyninv import SolverKine
 from dynamic_graph.tracer_real_time import *
 
 import dynamic_graph.sot.core.sot_state_observation as sotso
+from dynamic_graph.sot.application.velocity.precomputed_meta_tasks import initialize
 
 SolverKine.toList = lambda sot: map(lambda x: x[1:-1],sot.dispStack().split('|')[1:])
 
@@ -45,7 +46,6 @@ class CompensaterApplication:
         self.initialStack()
 
     def initGeneralApplication(self):
-        from dynamic_graph.sot.application.velocity.precomputed_meta_tasks import initialize
         self.solver = initialize(self.robot)
 
 
