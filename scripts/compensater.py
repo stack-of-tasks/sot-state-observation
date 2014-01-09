@@ -256,7 +256,8 @@ class CompensaterApplication:
         
         plug(self.ccMhref,self.taskCompensate.featureDes.position)
         plug(self.ccVhref,self.taskCompensate.featureDes.velocity)
-
+        
+        self.taskCompensate.task.setWithDerivative (True)
         self.taskCompensate.feature.frame('desired')
 
     def startCompensate(self):
