@@ -165,19 +165,22 @@ class CompensaterApplication:
     # --- TRACES -----------------------------------------------------------
     def withTraces(self):
         if self.tracesRealTime:
+            self.robot.tracerSize = 2**20
             self.robot.initializeTracer()
         else:
             self.robot.tracer = Tracer('trace')
             self.robot.device.after.addSignal('{0}.triger'.format(self.robot.tracer.name))
         self.robot.tracer.open('/tmp/','','.dat')
         #self.robot.tracer.add( self.taskRH.task.name+'.error','erh' )
-        self.robot.startTracer()
         
-    def stopTraces(self):
+    def stopTrace(self):
         self.robot.stopTracer()
 
-    def trace(self):
+    def dumpTracer(self):
         self.robot.tracer.dump()
+    
+    def startTrace(self)
+        self.robot.startTracer()
 
     # --- RUN --------------------------------------------------------------
     def initialStack(self):
@@ -205,7 +208,7 @@ class CompensaterApplication:
         self.push(self.contactRF,True)
         self.push(self.taskLim)
         self.push(self.taskHalfStitting)
-
+        self.stopTraces()
     # --- SEQUENCER ---
     seqstep = 0
     def nextStep(self,step=None):
