@@ -30,7 +30,7 @@ tr           = appli.robot.tracer
 gopen        = optionalparentheses(appli.openGripper)
 gclose       = optionalparentheses(appli.closeGripper)
 
-t = optionalparentheses(appli.trace)
+t = optionalparentheses(appli.dumpTracer)
 a = appli
 s = optionalparentheses(appli.nextStep)
 
@@ -51,6 +51,8 @@ flexdot = est.signal('flexInverseVelocityVector')
 
 plug(flex,appli.ccMc)
 plug(flexdot,appli.ccVc)
+
+appli.robot.tracer.add( est.name +'.flexInverseVelocityVector'  ,'flex' )
 
 meas.value = (0.0 , 0.0,  9.81 , 0.0 , 0.0 , 0.0)
 inputs.value = (0.0, 0.0, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)

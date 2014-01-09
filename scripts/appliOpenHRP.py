@@ -64,15 +64,25 @@ inputStack1.selec1(0,3)
 inputStack1.selec2(0,3)
 
 plug(imuOri.sout,inputStack2.sin1)
-inputStack2.sin2.value =(0.0 ,  0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 ,  0.0 , 0.0 )
+inputStack2.sin2.value =( 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 )
 inputStack2.selec1(0,6)
 inputStack2.selec2(0,9)
 
 plug(inputStack2.sout,inputs)
 
 
+
 flex=est.signal('flexMatrixInverse')
 flexdot = est.signal('flexInverseVelocityVector')
+
+appli.robot.tracer.add( est.name +'.flexInverseVelocityVector'  ,'flexV' )
+appli.robot.tracer.add( est.name +'.flexibility'  ,'flex' )
+appli.startTracer
+
+
+
+
+appli.trace()
 
 plug(flex,appli.ccMc)
 plug(flexdot,appli.ccVc)
