@@ -173,13 +173,13 @@ class CompensaterApplication:
         self.robot.tracer.open('/tmp/','','.dat')
         #self.robot.tracer.add( self.taskRH.task.name+'.error','erh' )
         
-    def stopTrace(self):
+    def stopTracer(self):
         self.robot.stopTracer()
 
     def dumpTracer(self):
         self.robot.tracer.dump()
     
-    def startTrace(self):
+    def startTracer(self):
         self.robot.startTracer()
 
     # --- RUN --------------------------------------------------------------
@@ -205,7 +205,7 @@ class CompensaterApplication:
         self.push(self.contactRF,True)
         self.push(self.taskLim)
         self.push(self.taskHalfStitting)
-        self.stopTrace()
+        self.stopTracer()
 
     # --- SEQUENCER ---
     seqstep = 0
