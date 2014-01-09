@@ -72,7 +72,7 @@ plug(inputStack2.sout,inputs)
 
 
 flex=est.signal('flexMatrixInverse')
-flexdot = est.signal('flexVelocityVector')
+flexdot = est.signal('flexInverseVelocityVector')
 
 plug(flex,appli.ccMc)
 plug(flexdot,appli.ccVc)

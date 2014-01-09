@@ -47,7 +47,7 @@ contact1 = est.signal('contact1')
 contact1.value = (0,0,0);
 
 flex=est.signal('flexMatrixInverse')
-flexdot = est.signal('flexVelocityVector')
+flexdot = est.signal('flexInverseVelocityVector')
 
 plug(flex,appli.ccMc)
 plug(flexdot,appli.ccVc)
