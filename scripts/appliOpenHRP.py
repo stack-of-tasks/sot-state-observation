@@ -77,12 +77,12 @@ flexdot = est.signal('flexInverseVelocityVector')
 
 appli.robot.tracer.add( est.name +'.flexInverseVelocityVector'  ,'flexV' )
 appli.robot.tracer.add( est.name +'.flexibility'  ,'flex' )
-appli.startTracer
+appli.robot.tracer.add( robot.device.name + '.forceLLEG', 'forceLLEG')
+appli.robot.tracer.add( robot.device.name + '.forceRLEG', 'forceRLEG')
+appli.robot.tracer.add( robot.device.name + '.accelerometer', 'accelerometer')
+appli.robot.tracer.add( robot.device.name + '.gyrometer', 'gyrometer')
 
-
-
-
-appli.trace()
+appli.startTracer()
 
 plug(flex,appli.ccMc)
 plug(flexdot,appli.ccVc)
