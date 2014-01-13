@@ -205,7 +205,6 @@ class CompensaterApplication:
         self.push(self.contactRF,True)
         self.push(self.taskLim)
         self.push(self.taskHalfStitting)
-        self.stopTracer()
 
     # --- SEQUENCER ---
     seqstep = 0
