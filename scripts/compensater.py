@@ -165,7 +165,7 @@ class CompensaterApplication:
     # --- TRACES -----------------------------------------------------------
     def withTraces(self):
         if self.tracesRealTime:
-            self.robot.tracerSize = 2**20
+            self.robot.tracerSize = 2**26
             self.robot.initializeTracer()
         else:
             self.robot.tracer = Tracer('trace')
