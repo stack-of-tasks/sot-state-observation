@@ -8,6 +8,8 @@
 #include <sot-state-observation/dg-imu-flexibility-estimation.hh>
 
 
+
+
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( DGIMUFlexibilityEstimation,
@@ -57,7 +59,10 @@ namespace sotStateObservation
         flexInverseVelocitySOUT(flexInverseSOUT,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexInverseVelocity"),
         flexInverseOmegaSOUT(flexInverseSOUT,
-                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexInverseOmega")
+                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexInverseOmega"),
+
+        simulatedSensorsSOUT(flexibilitySOUT,
+                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::simulatedSensors")
 
     {
 
@@ -84,6 +89,8 @@ namespace sotStateObservation
         signalRegistration (flexInverseVelocitySOUT);
         signalRegistration (flexInverseOmegaSOUT);
 
+        signalRegistration (simulatedSensorsSOUT);
+
         signalRegistration (contact1SIN);
         signalRegistration (contact2SIN);
         signalRegistration (contact3SIN);
@@ -96,6 +103,8 @@ namespace sotStateObservation
         dynamicgraph::Vector input(inputSize);
 
         dynamicgraph::Vector flexibility(stateSize);
+
+        dynamicgraph::Vector simulatedMeasurement(measurementSize);
 
         dynamicgraph::Vector flexPosition(3);
         dynamicgraph::Vector flexVelocity(3);
@@ -142,6 +151,8 @@ namespace sotStateObservation
         flexInverseVelocityVectorSOUT.setConstant(flexInverseVelocityVector);
         flexInverseVelocitySOUT.setConstant(flexInverseVelocity);
         flexInverseOmegaSOUT.setConstant(flexInverseOmega);
+
+        simulatedSensorsSOUT.setConstant(simulatedMeasurement);
 
         contactsNbrSIN.setConstant(0);
 
@@ -198,6 +209,9 @@ namespace sotStateObservation
                     this, _1, _2));
 
         flexInverseOmegaSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexInverseOmega,
+                    this, _1, _2));
+
+        simulatedSensorsSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeSimulatedSensors,
                     this, _1, _2));
 
 
@@ -500,5 +514,14 @@ namespace sotStateObservation
         flexInverseOmega = getSubvector(fi,stateObservation::kine::angVel,3);
 
         return flexInverseOmega;
+    }
+
+    ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeSimulatedSensors
+                        (::dynamicgraph::Vector & sensorSignal, const int& inTime)
+    {
+        flexibilitySOUT(inTime);
+
+        return sensorSignal = convertVector <dynamicgraph::Vector>
+                                        (estimator_.getSimulatedMeasurement());
     }
 }

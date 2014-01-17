@@ -145,6 +145,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexInverseOmega
                         (::dynamicgraph::Vector & flexInverseOmega, const int &inTime);
 
+            ::dynamicgraph::Vector& computeSimulatedSensors
+                        (::dynamicgraph::Vector & sensorSignal, const int &inTime);
+
 
 
             /**
@@ -244,9 +247,15 @@ namespace sotStateObservation
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> flexInverseOmegaSOUT;
 
+            /**
+            \brief A simulation of the sensors' signals
+            */
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> simulatedSensorsSOUT;
 
 
-            stateObservation::flexibilityEstimation::FixedContactEKFFlexEstimatorIMU estimator_;
+            stateObservation::flexibilityEstimation::
+                                        FixedContactEKFFlexEstimatorIMU estimator_;
 
 
             ///Sizes of the states for the state, the measurement, and the input vector
