@@ -1,17 +1,16 @@
 # Launch it with py ../robotViewerLauncher.py +compensater.py +appli.py 
 import sys
 import numpy as np
-import matplotlib.pyplot as pl
 import dynamic_graph as dg
 import dynamic_graph.signal_base as dgsb
 
 from math import sin
 from dynamic_graph.sot.core import Stack_of_vector
 
-from dynamic_graph.sot.application.compensater import *
+from dynamic_graph.sot.application.stabilizer.compensater import *
 
 
-appli = CompensaterApplication(robot)
+appli = OneHandCompensater(robot)
 appli.withTraces()
 
 #### Flexibility Estimator ##
@@ -70,17 +69,28 @@ inputStack2.selec2(0,9)
 
 plug(inputStack2.sout,inputs)
 
-
-
 flex=est.signal('flexMatrixInverse')
 flexdot = est.signal('flexInverseVelocityVector')
 
-appli.robot.tracer.add( est.name +'.flexInverseVelocityVector'  ,'flexV' )
-appli.robot.tracer.add( est.name +'.flexibility'  ,'flex' )
-appli.robot.tracer.add( robot.device.name + '.forceLLEG', 'forceLLEG')
-appli.robot.tracer.add( robot.device.name + '.forceRLEG', 'forceRLEG')
-appli.robot.tracer.add( robot.device.name + '.accelerometer', 'accelerometer')
-appli.robot.tracer.add( robot.device.name + '.gyrometer', 'gyrometer')
+hMcc = Inverse_of_matrixHomo('hMcc')
+plug(appli.robot.dynamic.rh,hMcc.sin)
+hMhref = Multiply_of_matrixHomo('hMhref')
+plug(hMcc.sout    ,hMhref.sin1)
+plug(appli.ccMhref,hMhref.sin2)
+hMhrefVector = MatrixHomoToPoseUTheta('hMhrefVector')
+plug(hMhref.sout,hMhrefVector.sin)
+
+
+appli.robot.addTrace( est.name,'flexInverseVelocityVector' )
+appli.robot.addTrace( est.name,'flexibility'  )
+appli.robot.addTrace( robot.device.name, 'forceLLEG')
+appli.robot.addTrace( robot.device.name, 'forceRLEG')
+appli.robot.addTrace( robot.device.name, 'accelerometer')
+appli.robot.addTrace( robot.device.name, 'gyrometer')
+appli.robot.addTrace( est.name , 'simulatedSensors' )
+appli.robot.addTrace( hMhrefVector.name,'sout')
+appli.robot.addTrace( appli.taskCompensate.task.name,'error')
+appli.robot.addTrace( appli.robot.dynamic.name,'chest')
 
 appli.startTracer()
 

@@ -25,7 +25,7 @@ def rtToHomo(R,T=None):
     if T!=None: M[0:3,3]=T
     return matrix(M)
 
-class CompensaterApplication:
+class OneHandCompensater:
 
     threePhaseScrew = True
     tracesRealTime = True
@@ -95,7 +95,8 @@ class CompensaterApplication:
     def initTaskBalance(self):
         # --- BALANCE ---
         self.taskChest.feature.frame('desired')
-        self.taskChest.feature.selec.value = '011000'
+        #self.taskChest.feature.selec.value = '111111'
+        self.taskChest.feature.selec.value = '111000'
         
         ljl = matrix(self.robot.dynamic.lowerJl.value).T
         ujl = matrix(self.robot.dynamic.upperJl.value).T
@@ -129,7 +130,8 @@ class CompensaterApplication:
             self.contactLF.gain.setConstant(10)
             self.taskChest.gain.setConstant(10)
             self.taskRH.gain.setByPoint(4,0.2,0.01,0.8)
-            self.taskCompensate.gain.setByPoint(2,0.2,0.01,0.8)
+            self.taskCompensate.gain.setByPoint(4,0.2,0.01,0.8)
+            #self.taskCompensate.gain.setConstant(2)
             self.taskHalfStitting.gain.setByPoint(2,0.2,0.01,0.8)
          
     # --- SOLVER ----------------------------------------------------------------

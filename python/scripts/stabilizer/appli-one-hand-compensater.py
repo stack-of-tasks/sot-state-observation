@@ -7,7 +7,7 @@ import dynamic_graph.signal_base as dgsb
 
 from math import sin
 
-appli = CompensaterApplication(robot)
+appli = OneHandCompensater(robot)
 appli.withTraces()
 
 if 'usingRobotViewer' in locals() and usingRobotViewer:    refreshList.append(lambda: appli.updateDisplay());    appli.initDisplay(); go()
@@ -52,7 +52,9 @@ flexdot = est.signal('flexInverseVelocityVector')
 plug(flex,appli.ccMc)
 plug(flexdot,appli.ccVc)
 
-appli.robot.tracer.add( est.name +'.flexInverseVelocityVector'  ,'flex' )
+appli.robot.addTrace( est.name,'flexInverseVelocityVector' )
+appli.robot.addTrace( est.name,'flexibility'  )
+appli.robot.addTrace( est.name , 'simulatedSensors' )
 
 meas.value = (0.0 , 0.0,  9.81 , 0.0 , 0.0 , 0.0)
 inputs.value = (0.0, 0.0, 1.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
