@@ -457,7 +457,6 @@ namespace sotStateObservation
     {
         ::dynamicgraph::Vector fi=flexInverseSOUT(inTime);
 
-
         flexInversePoseThetaU.resize(6);
 
         setSubvector(flexInversePoseThetaU, 0,
@@ -473,7 +472,6 @@ namespace sotStateObservation
     {
         ::dynamicgraph::Vector fi=flexInverseSOUT(inTime);
 
-
         flexInverseVelocityVector.resize(6);
 
         setSubvector(flexInverseVelocityVector, 0,
@@ -482,14 +480,12 @@ namespace sotStateObservation
                             getSubvector(fi,stateObservation::kine::angVel,3));
 
         return flexInverseVelocityVector;
-
     }
 
     ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeFlexInverseVelocity
                         (::dynamicgraph::Vector & flexInverseVelocity, const int& inTime)
     {
         ::dynamicgraph::Vector fi=flexInverseSOUT(inTime);
-
 
         flexInverseVelocity = getSubvector(fi,stateObservation::kine::linVel,3);
 

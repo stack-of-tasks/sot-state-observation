@@ -163,7 +163,7 @@ namespace sotStateObservation
         filter_.setMeasurement(convertVector<stateObservation::Vector>(measurement),inTime);
         filter_.setInput(convertVector<stateObservation::Vector>(input),inTime-1);
 
-        Attitude = convertVector<dynamicgraph::Vector>(filter_.getEstimateState(inTime));
+        Attitude = convertVector<dynamicgraph::Vector>(filter_.getEstimatedState(inTime));
 
         return Attitude;
     }
