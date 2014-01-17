@@ -1,5 +1,7 @@
 #include <sstream>
 
+#include <dynamic-graph/command-setter.h>
+
 #include <dynamic-graph/factory.h>
 #include <jrl/mal/matrixabstractlayervector3jrlmath.hh>
 #include <sot-state-observation/moving-frame-transformation.hh>
@@ -13,6 +15,7 @@ namespace sotStateObservation
     MovingFrameTransformation::MovingFrameTransformation
                                         ( const std::string & inName):
         Entity(inName),
+        velocityFactor_(1),
         gMlSIN(0x0 , "MovingFrameTransformation("+inName+")::input(MatrixHomogeneous)::gMl"),
         gVlSIN(0x0 , "MovingFrameTransformation("+inName+")::input(vector)::gVl"),
         lM0SIN(0x0 , "MovingFrameTransformation("+inName+")::input(MatrixHomogeneous)::lM0"),
@@ -37,7 +40,7 @@ namespace sotStateObservation
         gMlSIN.setConstant(homoMatrix);
         gVlSIN.setConstant(velocity);
         lM0SIN.setConstant(homoMatrix);
-        lV0SIN.setConstant(velocity);
+        lV0SIN.setConstant (velocity);
         gM0SOUT.setConstant(homoMatrix);
         gV0SOUT.setConstant(velocity);
 
@@ -48,7 +51,20 @@ namespace sotStateObservation
         gV0SOUT.setFunction(boost::bind(&MovingFrameTransformation::computegV0,
 				    this, _1, _2));
 
+        std::string docstring;
 
+        //setStateGuess
+        docstring =
+                "\n"
+                "    Set a multiplier to the velocity of \n"
+                "    the global to local frame (mainly for debugging)\n"
+                "    takes a floating point mumbers as input \n"
+                "\n";
+
+        addCommand(std::string("setgVlFactor"),
+	     new
+	     dynamicgraph::command::Setter <MovingFrameTransformation,double>
+	     (*this, &MovingFrameTransformation::setgVlFactor, docstring));
 
     }
 
@@ -61,8 +77,13 @@ namespace sotStateObservation
     {
         dynamicgraph::sot::MatrixHomogeneous gMl (gMlSIN(inTime));
         dynamicgraph::sot::MatrixHomogeneous lM0 (lM0SIN(inTime));
+
         dynamicgraph::Vector gVl (gVlSIN(inTime));
         dynamicgraph::Vector lV0 (lV0SIN(inTime));
+
+        gVl = gVl * velocityFactor_;
+
+
 
         dynamicgraph::Matrix gRl(3,3);
 
@@ -96,8 +117,10 @@ namespace sotStateObservation
     ::dynamicgraph::sot::MatrixHomogeneous& MovingFrameTransformation::computegM0
                 (::dynamicgraph::sot::MatrixHomogeneous & homo, const int& inTime)
     {
-        ::dynamicgraph::sot::MatrixHomogeneous gMl = gMlSIN(inTime);
         ::dynamicgraph::sot::MatrixHomogeneous lM0 = lM0SIN(inTime);
+        ::dynamicgraph::sot::MatrixHomogeneous gMl = gMlSIN(inTime);
+
+        //gMl.setIdentity();
 
         homo = gMl * lM0;
 
