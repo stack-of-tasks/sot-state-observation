@@ -148,6 +148,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeSimulatedSensors
                         (::dynamicgraph::Vector & sensorSignal, const int &inTime);
 
+            ::dynamicgraph::Vector& computeInovation
+                        (::dynamicgraph::Vector & inovation, const int &inTime);
+
 
 
             /**
@@ -254,6 +257,13 @@ namespace sotStateObservation
                                 < ::dynamicgraph::Vector,int> simulatedSensorsSOUT;
 
 
+            /**
+            \brief A simulation of the sensors' signals
+            */
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> inovationSOUT;
+
+
             stateObservation::flexibilityEstimation::
                                         FixedContactEKFFlexEstimatorIMU estimator_;
 
@@ -262,6 +272,8 @@ namespace sotStateObservation
             static const unsigned stateSize=18;
             static const unsigned measurementSize=6;
             static const unsigned inputSize=15;
+
+            unsigned contactNumber_;
 
         };
 

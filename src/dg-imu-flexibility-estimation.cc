@@ -62,7 +62,9 @@ namespace sotStateObservation
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexInverseOmega"),
 
         simulatedSensorsSOUT(flexibilitySOUT,
-                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::simulatedSensors")
+                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::simulatedSensors"),
+        inovationSOUT(flexibilitySOUT,
+                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::inovation")
 
     {
 
@@ -90,6 +92,9 @@ namespace sotStateObservation
         signalRegistration (flexInverseOmegaSOUT);
 
         signalRegistration (simulatedSensorsSOUT);
+        signalRegistration (inovationSOUT);
+
+
 
         signalRegistration (contact1SIN);
         signalRegistration (contact2SIN);
@@ -105,6 +110,7 @@ namespace sotStateObservation
         dynamicgraph::Vector flexibility(stateSize);
 
         dynamicgraph::Vector simulatedMeasurement(measurementSize);
+        dynamicgraph::Vector inovation(stateSize);
 
         dynamicgraph::Vector flexPosition(3);
         dynamicgraph::Vector flexVelocity(3);
@@ -153,6 +159,7 @@ namespace sotStateObservation
         flexInverseOmegaSOUT.setConstant(flexInverseOmega);
 
         simulatedSensorsSOUT.setConstant(simulatedMeasurement);
+        inovationSOUT.setConstant(inovation);
 
         contactsNbrSIN.setConstant(0);
 
@@ -214,6 +221,9 @@ namespace sotStateObservation
         simulatedSensorsSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeSimulatedSensors,
                     this, _1, _2));
 
+        inovationSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeInovation,
+                    this, _1, _2));
+
 
 
         std::ostringstream stateSizeString;
@@ -226,6 +236,8 @@ namespace sotStateObservation
         inputSizeString << inputSize;
 
         std::string docstring;
+
+        contactNumber_=0;
 
         //setStateGuess
         docstring =
@@ -302,7 +314,13 @@ namespace sotStateObservation
         const dynamicgraph::Vector & input = inputSIN(inTime);
         const unsigned & contactNb = contactsNbrSIN(inTime);
 
-        estimator_.setContactsNumber(contactNb);
+        if (contactNumber_!= contactNb)
+        {
+            contactNumber_ = contactNb;
+
+            estimator_.setContactsNumber(contactNb);
+        }
+
 
         if (contactNb>0)
         {
@@ -310,7 +328,7 @@ namespace sotStateObservation
 
             if (contactNb>1)
             {
-                estimator_.setContactPosition(1,convertVector<stateObservation::Vector>(contact4SIN(inTime)));
+                estimator_.setContactPosition(1,convertVector<stateObservation::Vector>(contact2SIN(inTime)));
 
                 if (contactNb>2)
                 {
@@ -323,6 +341,7 @@ namespace sotStateObservation
                 }
             }
         }
+
 
         estimator_.setMeasurement(convertVector<stateObservation::Vector>(measurement));
         estimator_.setMeasurementInput(convertVector<stateObservation::Vector>(input));
@@ -523,5 +542,14 @@ namespace sotStateObservation
 
         return sensorSignal = convertVector <dynamicgraph::Vector>
                                         (estimator_.getSimulatedMeasurement());
+    }
+
+    ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeInovation
+                        (::dynamicgraph::Vector & inovation, const int& inTime)
+    {
+        flexibilitySOUT(inTime);
+
+        return inovation = convertVector <dynamicgraph::Vector>
+                                        (estimator_.getInovation());
     }
 }
