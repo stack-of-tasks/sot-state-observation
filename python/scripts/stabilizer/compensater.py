@@ -352,6 +352,9 @@ class TwoHandsCompensater:
         self.taskChest.feature.frame('desired')
         #self.taskChest.feature.selec.value = '111111'
         self.taskChest.feature.selec.value = '111000'
+
+
+        #self.taskCom.feature.selec.value = '111'
         
         ljl = matrix(self.robot.dynamic.lowerJl.value).T
         ujl = matrix(self.robot.dynamic.upperJl.value).T
@@ -378,6 +381,10 @@ class TwoHandsCompensater:
 
         self.taskPosture.task.jacobian.value = matrixToTuple(weight)
         self.taskPosture.task.task.value = (0,)*weight.shape[0]
+        mask = '000000000000111100000000000000'
+        # robot.dynamic.displaySignals ()
+        # robot.dynamic.Jchest.value
+        self.taskPosture.feature.selec.value = mask
 
     def initTaskGains(self, setup = "medium"):
         if setup == "medium":
@@ -523,21 +530,41 @@ class TwoHandsCompensater:
         
         self.transformerL = sotso.MovingFrameTransformation('tranformation_left')
 
-        self.ccMc_L = self.transformerL.gMl # inverted flexibility
-        self.cMlhref = self.transformerL.lM0 # reference position in the world control frame
-        # You need to set up the inverted flexibility : plug( ..., self.ccMc)
-        # You need to set up a reference value here: plug( ... ,self.cMhref)
+        plug(self.ccMrhref,self.taskCompensateL.featureDes.position)
+        plug(self.ccVrhref,self.taskCompensateL.featureDes.velocity)
 
-        self.ccVc_L = self.transformerL.gVl # inverted flexibility velocity
-        self.cVlhref = self.transformerL.lV0 # reference velocity in the world control frame
-        # You need to set up the inverted flexibility velocity : plug( ..., self.ccVc)
-        # You need to set up a reference velocity value here: plug( ... ,self.cVhref)
+        self.sym = Multiply_of_matrixHomo('sym')
 
-        self.ccMlhref = self.transformerL.gM0 # reference matrix homo in the control frame
-        self.ccVlhref = self.transformerL.gV0
+        self.sym.sin1.value =((1, 0, 0, 0), (0, -1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))
+        plug (self.ccMrhref,self.sym.sin2)
+        plug (self.sym.sout,self.taskCompensateL.featureDes.position)
+
+
+        self.symVel = Multiply_matrix_vector('symvel')
+        self.symVel.sin1.value =((1,0,0,0,0,0),(0,-1,0,0,0,0),(0,0,0,1,0,0),(0,0,0,1,0,0),(0,0,0,0,-1,0),(0,0,0,0,0,1))
+        plug (self.ccVrhref,self.symVel.sin2)
+        plug (self.symVel.sout,self.taskCompensateL.featureDes.velocity)
+        self.taskCompensateL.feature.selec.value='000111'
         
-        plug(self.ccMlhref,self.taskCompensateL.featureDes.position)
-        plug(self.ccVlhref,self.taskCompensateL.featureDes.velocity)
+
+        
+
+
+        #self.ccMc_L = self.transformerL.gMl # inverted flexibility
+        #self.cMlhref = self.transformerL.lM0 # reference position in the world control frame
+        ## You need to set up the inverted flexibility : plug( ..., self.ccMc)
+        ## You need to set up a reference value here: plug( ... ,self.cMhref)
+
+        #self.ccVc_L = self.transformerL.gVl # inverted flexibility velocity
+        #self.cVlhref = self.transformerL.lV0 # reference velocity in the world control frame
+        ## You need to set up the inverted flexibility velocity : plug( ..., self.ccVc)
+        ## You need to set up a reference velocity value here: plug( ... ,self.cVhref)
+
+        #self.ccMlhref = self.transformerL.gM0 # reference matrix homo in the control frame
+        #self.ccVlhref = self.transformerL.gV0
+        
+        #plug(self.ccMlhref,self.taskCompensateL.featureDes.position)
+        #plug(self.ccVlhref,self.taskCompensateL.featureDes.velocity)
         
         self.taskCompensateL.task.setWithDerivative (True)
         self.taskCompensateL.feature.frame('desired')
@@ -552,9 +579,9 @@ class TwoHandsCompensater:
 
         #######
 
-        self.cMlhref.value = self.robot.dynamic.lh.value
-        self.cVlhref.value = (0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0)
-        print matrix(self.cMlhref.value)
+        #self.cMlhref.value = self.robot.dynamic.lh.value
+        #self.cVlhref.value = (0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0)
+        #print matrix(self.cMlhref.value)
 
         ######
         
