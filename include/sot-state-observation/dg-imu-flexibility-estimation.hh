@@ -54,14 +54,49 @@ namespace sotStateObservation
                 estimator_.setFlexibilityGuess(convertVector<stateObservation::Vector>(xh0));
             }
 
-            void setFlexibilityGuessCovariance (const ::dynamicgraph::Matrix & p)
+            void setFlexibilityCovariance (const ::dynamicgraph::Matrix & p)
             {
-                estimator_.setFlexibilityGuessCovariance(convertMatrix<stateObservation::Matrix>(p));
+                estimator_.setFlexibilityCovariance(convertMatrix<stateObservation::Matrix>(p));
+            }
+
+            ::dynamicgraph::Matrix  getFlexibilityCovariance () const
+            {
+                return convertMatrix<dynamicgraph::Matrix>(estimator_.getFlexibilityCovariance());
             }
 
             void setSamplingPeriod(const double & dt)
             {
                 estimator_.setSamplingPeriod(dt);
+            }
+
+            void setVirtualMeasurementsCovariance(const double & dt)
+            {
+                estimator_.setVirtualMeasurementsCovariance(dt);
+            }
+
+            double getVirtualMeasurementsCovariance() const
+            {
+                return estimator_.getVirtualMeasurementsCovariance();
+            }
+
+            void setProcessNoiseCovariance(const ::dynamicgraph::Matrix & q)
+            {
+                estimator_.setProcessNoiseCovariance(convertMatrix<stateObservation::Matrix>(q));
+            }
+
+            ::dynamicgraph::Matrix getProcessNoiseCovariance() const
+            {
+                return convertMatrix<dynamicgraph::Matrix>( estimator_.getProcessNoiseCovariance());
+            }
+
+            void setMeasurementNoiseCovariance(const ::dynamicgraph::Matrix & r)
+            {
+                estimator_.setMeasurementNoiseCovariance(convertMatrix<stateObservation::Matrix>(r));
+            }
+
+            ::dynamicgraph::Matrix getMeasurementNoiseCovariance() const
+            {
+                return convertMatrix<dynamicgraph::Matrix>( estimator_.getMeasurementNoiseCovariance());
             }
 
             void increment()

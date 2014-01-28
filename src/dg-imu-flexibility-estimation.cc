@@ -260,10 +260,103 @@ namespace sotStateObservation
                 "    floating point mumbers as input \n"
                 "\n";
 
-        addCommand(std::string("setFlexibilityGuessCovariance"),
+        addCommand(std::string("setFlexibilityCovariance"),
 	     new
 	     ::dynamicgraph::command::Setter <DGIMUFlexibilityEstimation,dynamicgraph::Matrix>
-                (*this, &DGIMUFlexibilityEstimation::setFlexibilityGuessCovariance, docstring));
+                (*this, &DGIMUFlexibilityEstimation::setFlexibilityCovariance, docstring));
+
+        //getStateCovariance
+        docstring =
+                "\n"
+                "    Get the covariance matrix of the current flexibility estimation \n"
+                "    provides " + stateSizeString.str() + " tuples of" + stateSizeString.str() + "\n"
+                "    floating point mumbers as input \n"
+                "\n";
+
+        addCommand(std::string("getFlexibilityCovariance"),
+	     new
+	     ::dynamicgraph::command::Getter <DGIMUFlexibilityEstimation,dynamicgraph::Matrix>
+                (*this, &DGIMUFlexibilityEstimation::getFlexibilityCovariance, docstring));
+
+         //setProcessNoiseCovariance
+        docstring =
+                "\n"
+                "    Set the covariance matrix of the process noise \n"
+                "    takes " + stateSizeString.str() + " tuples of" + stateSizeString.str() + "\n"
+                "    floating point mumbers as input \n"
+                "\n";
+
+        addCommand(std::string("setProcessNoiseCovariance"),
+	     new
+	     ::dynamicgraph::command::Setter <DGIMUFlexibilityEstimation,dynamicgraph::Matrix>
+                (*this, &DGIMUFlexibilityEstimation::setProcessNoiseCovariance, docstring));
+
+
+         //getProcessNoiseCovariance
+        docstring =
+                "\n"
+                "    Get the covariance matrix of the process noise \n"
+                "    provides" + stateSizeString.str() + " tuples of" + stateSizeString.str() + "\n"
+                "    floating point mumbers as input \n"
+                "\n";
+
+        addCommand(std::string("getProcessNoiseCovariance"),
+	     new
+	     ::dynamicgraph::command::Getter <DGIMUFlexibilityEstimation,dynamicgraph::Matrix>
+                (*this, &DGIMUFlexibilityEstimation::getProcessNoiseCovariance, docstring));
+
+
+        //setVirtualMeasurementNoiseCovariance
+        docstring =
+                "\n"
+                "    Set the covariance matrix of the measuement noise \n"
+                "    takes a floating point mumber as input \n"
+                "\n";
+
+        addCommand(std::string("setVirtualMeasurementsCovariance"),
+	     new
+	     ::dynamicgraph::command::Setter <DGIMUFlexibilityEstimation,double>
+                (*this, &DGIMUFlexibilityEstimation::setVirtualMeasurementsCovariance, docstring));
+
+        //getVirtualMeasurementNoiseCovariance
+        docstring =
+                "\n"
+                "    Get the covariance matrix of the measuement noise \n"
+                "    gets a floating point mumbers as input \n"
+                "\n";
+
+        addCommand(std::string("getVirtualMeasurementNoiseCovariance"),
+	     new
+	     ::dynamicgraph::command::Getter <DGIMUFlexibilityEstimation,double>
+                (*this, &DGIMUFlexibilityEstimation::getVirtualMeasurementsCovariance, docstring));
+
+
+                 //setMeasurementNoiseCovariance
+        docstring =
+                "\n"
+                "    Set the covariance matrix of the measuement noise \n"
+                "    takes " + measurementSizeString.str() + " tuples of" +  measurementSizeString.str()+ "\n"
+                "    floating point mumbers as input \n"
+                "\n";
+
+        addCommand(std::string("setMeasurementNoiseCovariance"),
+	     new
+	     ::dynamicgraph::command::Setter <DGIMUFlexibilityEstimation,dynamicgraph::Matrix>
+                (*this, &DGIMUFlexibilityEstimation::setMeasurementNoiseCovariance, docstring));
+
+        //getMeasurementNoiseCovariance
+        docstring =
+                "\n"
+                "    Get the covariance matrix of the measuement noise \n"
+                "    provides " + measurementSizeString.str() + " tuples of" +  measurementSizeString.str()+ "\n"
+                "    floating point mumbers as input \n"
+                "\n";
+
+        addCommand(std::string("getMeasurementNoiseCovariance"),
+	     new
+	     ::dynamicgraph::command::Getter <DGIMUFlexibilityEstimation,dynamicgraph::Matrix>
+                (*this, &DGIMUFlexibilityEstimation::getMeasurementNoiseCovariance, docstring));
+
 
          //setSamplingPeriod
         docstring =
