@@ -63,6 +63,9 @@ namespace sotStateObservation
 
         simulatedSensorsSOUT(flexibilitySOUT,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::simulatedSensors"),
+        predictedSensorsSOUT(flexibilitySOUT,
+                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::predictedSensors"),
+
         inovationSOUT(flexibilitySOUT,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::inovation")
 
@@ -95,6 +98,7 @@ namespace sotStateObservation
         signalRegistration (flexInverseOmegaSOUT);
 
         signalRegistration (simulatedSensorsSOUT);
+        signalRegistration (predictedSensorsSOUT);
         signalRegistration (inovationSOUT);
 
 
@@ -162,6 +166,7 @@ namespace sotStateObservation
         flexInverseOmegaSOUT.setConstant(flexInverseOmega);
 
         simulatedSensorsSOUT.setConstant(simulatedMeasurement);
+        predictedSensorsSOUT.setConstant(simulatedMeasurement);
         inovationSOUT.setConstant(inovation);
 
         contactsNbrSIN.setConstant(0);
@@ -222,6 +227,9 @@ namespace sotStateObservation
                     this, _1, _2));
 
         simulatedSensorsSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeSimulatedSensors,
+                    this, _1, _2));
+
+        predictedSensorsSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeSimulatedSensors,
                     this, _1, _2));
 
         inovationSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeInovation,
@@ -647,6 +655,15 @@ namespace sotStateObservation
 
         return sensorSignal = convertVector <dynamicgraph::Vector>
                                         (estimator_.getSimulatedMeasurement());
+    }
+
+        ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computePredictedSensors
+                        (::dynamicgraph::Vector & sensorSignal, const int& inTime)
+    {
+        flexibilitySOUT(inTime);
+
+        return sensorSignal = convertVector <dynamicgraph::Vector>
+                                        (estimator_.getPredictedMeaurement());
     }
 
     ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeInovation

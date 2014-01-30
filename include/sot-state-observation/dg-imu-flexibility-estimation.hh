@@ -188,6 +188,10 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeInovation
                         (::dynamicgraph::Vector & inovation, const int &inTime);
 
+            ::dynamicgraph::Vector& computePredictedSensors
+                        (::dynamicgraph::Vector & sensorSignal, const int &inTime);
+
+
 
 
             /**
@@ -292,6 +296,9 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> simulatedSensorsSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> predictedSensorsSOUT;
 
 
             /**
