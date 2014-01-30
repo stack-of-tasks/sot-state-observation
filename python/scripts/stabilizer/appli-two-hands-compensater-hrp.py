@@ -83,19 +83,39 @@ hMrhrefVector = MatrixHomoToPoseUTheta('hMhrefVector')
 plug(hMrhref.sout,hMrhrefVector.sin)
 
 
+
+
 appli.robot.addTrace( est.name,'flexInverseVelocityVector' )
+appli.robot.addTrace( est.name,'flexTransformationMatrix' )
+appli.robot.addTrace( est.name,'flexVelocityVector')
 appli.robot.addTrace( est.name,'flexibility'  )
 appli.robot.addTrace( est.name, 'input')
 appli.robot.addTrace( est.name, 'measurement')
 appli.robot.addTrace( est.name, 'inovation')
+appli.robot.addTrace( est.name, 'predictedSensors')
+appli.robot.addTrace( est.name , 'simulatedSensors' )
+
 appli.robot.addTrace( robot.device.name, 'forceLLEG')
 appli.robot.addTrace( robot.device.name, 'forceRLEG')
 appli.robot.addTrace( robot.device.name, 'accelerometer')
 appli.robot.addTrace( robot.device.name,  'gyrometer')
-appli.robot.addTrace( est.name , 'simulatedSensors' )
+
 appli.robot.addTrace( hMrhrefVector.name,'sout')
+
 appli.robot.addTrace( appli.taskCompensateR.task.name,'error')
+appli.robot.addTrace( appli.taskCompensateR.featureDes.name, 'position')
+appli.robot.addTrace( appli.taskCompensateR.featureDes.name, 'velocity')
+
+appli.robot.addTrace( appli.transformerR.name, 'gM0')
+appli.robot.addTrace( appli.transformerR.name, 'gV0')
+appli.robot.addTrace( appli.transformerR.name, 'lM0')
+appli.robot.addTrace( appli.transformerR.name, 'lV0')
+appli.robot.addTrace( appli.transformerR.name, 'gMl')
+appli.robot.addTrace( appli.transformerR.name, 'gVl')
+
 appli.robot.addTrace( appli.robot.dynamic.name,'chest')
+appli.robot.addTrace( appli.robot.device.name,'state')
+appli.robot.addTrace( appli.robot.device.name,'robotState')
 
 appli.startTracer()
 
