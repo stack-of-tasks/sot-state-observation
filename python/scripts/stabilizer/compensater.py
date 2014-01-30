@@ -547,6 +547,15 @@ class TwoHandsCompensater:
         self.taskCompensateL.feature.selec.value='000111'
         
 
+        self.cMrhref.value = (matrixToTuple(diag([1,1,1,1])))
+        self.cVrhref.value = (0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0)
+
+#TEST        
+        #self.multiplierTest = Multiply_of_matrixHomo("multiplierTest")
+        #self.ccMc_R=self.multiplierTest.sin1
+        #self.cMrhref=self.multiplierTest.sin2
+        #plug(self.multiplierTest.sout,self.taskCompensateR.featureDes.position)
+
         
 
 
