@@ -7,6 +7,8 @@
 #ifndef SOT_DYNAMIC_GRAPH_IMU_FLEXIBILITY_ESTIMATION_HH
 #define SOT_DYNAMIC_GRAPH_IMU_FLEXIBILITY_ESTIMATION_HH
 
+#define SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
+
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/signal-ptr.h>
 #include <dynamic-graph/signal-time-dependent.h>
@@ -309,6 +311,9 @@ namespace sotStateObservation
             static const unsigned inputSize=15;
 
             unsigned contactNumber_;
+#ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
+            int currentTime_;
+#endif
 
         };
 

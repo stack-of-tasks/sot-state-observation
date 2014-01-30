@@ -67,6 +67,9 @@ namespace sotStateObservation
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::inovation")
 
     {
+#ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
+        currentTime_=0;
+#endif
 
         signalRegistration (measurementSIN);
         signalRegistration (inputSIN);
@@ -402,6 +405,11 @@ namespace sotStateObservation
                   (dynamicgraph::Vector & flexibility, const int& inTime)
     {
         //std::cout << "computeFlexibility " << inTime << std::endl;
+#ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
+        if (inTime!=currentTime_)
+        {
+            currentTime_=inTime;
+#endif
 
         const dynamicgraph::Vector & measurement = measurementSIN(inTime);
         const dynamicgraph::Vector & input = inputSIN(inTime);
@@ -438,6 +446,10 @@ namespace sotStateObservation
 
         estimator_.setMeasurement(convertVector<stateObservation::Vector>(measurement));
         estimator_.setMeasurementInput(convertVector<stateObservation::Vector>(input));
+
+#ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
+        }
+#endif
 
         flexibility = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
 
