@@ -117,8 +117,8 @@ namespace sotStateObservation
     ::dynamicgraph::sot::MatrixHomogeneous& MovingFrameTransformation::computegM0
                 (::dynamicgraph::sot::MatrixHomogeneous & homo, const int& inTime)
     {
-        ::dynamicgraph::sot::MatrixHomogeneous lM0 = lM0SIN(inTime);
-        ::dynamicgraph::sot::MatrixHomogeneous gMl = gMlSIN(inTime);
+        ::dynamicgraph::sot::MatrixHomogeneous lM0 (lM0SIN(inTime));
+        ::dynamicgraph::sot::MatrixHomogeneous gMl (gMlSIN(inTime));
 
         //gMl.setIdentity();
 
