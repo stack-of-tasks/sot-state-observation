@@ -10,7 +10,7 @@ from dynamic_graph.sot.core import Stack_of_vector
 from dynamic_graph.sot.application.stabilizer.compensater import *
 
 
-appli = TwoHandsCompensater(robot)
+appli = HandCompensater(robot)
 appli.withTraces()
 
 #### Flexibility Estimator ##
@@ -23,10 +23,8 @@ contactNbr = est.signal('contactNbr')
 contactNbr.value = 2
 
 contact1 = est.signal('contact1')
-contact1.value = (0,0,0)
 
 contact2 = est.signal('contact2')
-contact2.value = (0,0,0)
 
 rFootPos = MatrixHomoToPose('rFootFrame')
 lFootPos = MatrixHomoToPose('lFootFrame')
@@ -58,11 +56,11 @@ inputStack1 = Stack_of_vector ('imuReferencePoseThetaU')
 inputStack2 = Stack_of_vector ('estimatorInput')
 
 plug(imuPos.sout,inputStack1.sin1)
-plug(imuOri.sout,inputStack2.sin2)
+plug(imuOri.sout,inputStack1.sin2)
 inputStack1.selec1(0,3)
 inputStack1.selec2(0,3)
 
-plug(imuOri.sout,inputStack2.sin1)
+plug(inputStack1.sout,inputStack2.sin1)
 inputStack2.sin2.value =( 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 )
 inputStack2.selec1(0,6)
 inputStack2.selec2(0,9)
@@ -75,7 +73,7 @@ flexdot = est.signal('flexInverseVelocityVector')
 
 
 rhMcc = Inverse_of_matrixHomo('hMcc')
-plug(appli.robot.dynamic.rh,rhMcc.sin)
+plug(appli.robot.dynamic.signal('right-wrist'),rhMcc.sin)
 hMrhref = Multiply_of_matrixHomo('hMhref')
 plug(rhMcc.sout    ,hMrhref.sin1)
 plug(appli.ccMrhref,hMrhref.sin2)
@@ -102,9 +100,8 @@ appli.robot.addTrace( robot.device.name,  'gyrometer')
 
 appli.robot.addTrace( hMrhrefVector.name,'sout')
 
-appli.robot.addTrace( appli.taskCompensateR.task.name,'error')
-appli.robot.addTrace( appli.taskCompensateR.featureDes.name, 'position')
-appli.robot.addTrace( appli.taskCompensateR.featureDes.name, 'velocity')
+appli.robot.addTrace( appli.tasks['right-wrist'].name,'error')
+appli.robot.addTrace( appli.features['right-wrist'].name, 'position')
 
 appli.robot.addTrace( appli.transformerR.name, 'gM0')
 appli.robot.addTrace( appli.transformerR.name, 'gV0')
@@ -119,8 +116,10 @@ appli.robot.addTrace( appli.robot.device.name,'robotState')
 
 appli.startTracer()
 
-plug(flex,appli.ccMc_R)
-plug(flexdot,appli.ccVc_R)
+plug(flex,appli.ccMc)
+plug(flexdot,appli.ccVc)
+
+est.setMeasurementNoiseCovariance(matrixToTuple(diag((1e-2,)*6)))
 
 #appli.rm(appli.taskPosture)
 

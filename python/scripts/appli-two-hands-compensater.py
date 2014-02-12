@@ -9,7 +9,7 @@ from math import sin
 
 from dynamic_graph.sot.application.stabilizer.compensater import *
 
-appli = HandCompensater(robot, False)
+appli = HandCompensater(robot)
 appli.withTraces()
 
 if 'usingRobotViewer' in locals() and usingRobotViewer:    refreshList.append(lambda: appli.updateDisplay());    appli.initDisplay(); go()

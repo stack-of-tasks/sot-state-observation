@@ -7,10 +7,10 @@ import dynamic_graph.signal_base as dgsb
 from math import sin
 from dynamic_graph.sot.core import Stack_of_vector
 
-from dynamic_graph.sot.application.stabilizer.compensater import *
+from dynamic_graph.sot.application.stabilizer.compensater_solver_kine import *
 
 
-appli = OneHandCompensater(robot)
+appli = HandCompensater(robot)
 appli.withTraces()
 
 #### Flexibility Estimator ##
@@ -23,10 +23,8 @@ contactNbr = est.signal('contactNbr')
 contactNbr.value = 2
 
 contact1 = est.signal('contact1')
-contact1.value = (0,0,0)
 
 contact2 = est.signal('contact2')
-contact2.value = (0,0,0)
 
 rFootPos = MatrixHomoToPose('rFootFrame')
 lFootPos = MatrixHomoToPose('lFootFrame')
@@ -58,11 +56,11 @@ inputStack1 = Stack_of_vector ('imuReferencePoseThetaU')
 inputStack2 = Stack_of_vector ('estimatorInput')
 
 plug(imuPos.sout,inputStack1.sin1)
-plug(imuOri.sout,inputStack2.sin2)
+plug(imuOri.sout,inputStack1.sin2)
 inputStack1.selec1(0,3)
 inputStack1.selec2(0,3)
 
-plug(imuOri.sout,inputStack2.sin1)
+plug(inputStack1.sout,inputStack2.sin1)
 inputStack2.sin2.value =( 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 )
 inputStack2.selec1(0,6)
 inputStack2.selec2(0,9)
@@ -72,29 +70,57 @@ plug(inputStack2.sout,inputs)
 flex=est.signal('flexMatrixInverse')
 flexdot = est.signal('flexInverseVelocityVector')
 
-hMcc = Inverse_of_matrixHomo('hMcc')
-plug(appli.robot.dynamic.rh,hMcc.sin)
-hMhref = Multiply_of_matrixHomo('hMhref')
-plug(hMcc.sout    ,hMhref.sin1)
-plug(appli.ccMhref,hMhref.sin2)
-hMhrefVector = MatrixHomoToPoseUTheta('hMhrefVector')
-plug(hMhref.sout,hMhrefVector.sin)
+
+
+rhMcc = Inverse_of_matrixHomo('hMcc')
+plug(appli.robot.dynamic.signal('right-wrist'),rhMcc.sin)
+hMrhref = Multiply_of_matrixHomo('hMhref')
+plug(rhMcc.sout    ,hMrhref.sin1)
+plug(appli.ccMrhref,hMrhref.sin2)
+hMrhrefVector = MatrixHomoToPoseUTheta('hMhrefVector')
+plug(hMrhref.sout,hMrhrefVector.sin)
+
+
 
 
 appli.robot.addTrace( est.name,'flexInverseVelocityVector' )
+appli.robot.addTrace( est.name,'flexTransformationMatrix' )
+appli.robot.addTrace( est.name,'flexVelocityVector')
 appli.robot.addTrace( est.name,'flexibility'  )
+appli.robot.addTrace( est.name, 'input')
+appli.robot.addTrace( est.name, 'measurement')
+appli.robot.addTrace( est.name, 'inovation')
+appli.robot.addTrace( est.name, 'predictedSensors')
+appli.robot.addTrace( est.name , 'simulatedSensors' )
+
 appli.robot.addTrace( robot.device.name, 'forceLLEG')
 appli.robot.addTrace( robot.device.name, 'forceRLEG')
 appli.robot.addTrace( robot.device.name, 'accelerometer')
-appli.robot.addTrace( robot.device.name, 'gyrometer')
-appli.robot.addTrace( est.name , 'simulatedSensors' )
-appli.robot.addTrace( hMhrefVector.name,'sout')
-appli.robot.addTrace( appli.taskCompensate.task.name,'error')
+appli.robot.addTrace( robot.device.name,  'gyrometer')
+
+appli.robot.addTrace( hMrhrefVector.name,'sout')
+
+appli.robot.addTrace( appli.tasks['right-wrist'].name,'error')
+appli.robot.addTrace( appli.features['right-wrist'].name, 'position')
+
+appli.robot.addTrace( appli.transformerR.name, 'gM0')
+appli.robot.addTrace( appli.transformerR.name, 'gV0')
+appli.robot.addTrace( appli.transformerR.name, 'lM0')
+appli.robot.addTrace( appli.transformerR.name, 'lV0')
+appli.robot.addTrace( appli.transformerR.name, 'gMl')
+appli.robot.addTrace( appli.transformerR.name, 'gVl')
+
 appli.robot.addTrace( appli.robot.dynamic.name,'chest')
+appli.robot.addTrace( appli.robot.device.name,'state')
+appli.robot.addTrace( appli.robot.device.name,'robotState')
 
 appli.startTracer()
 
 plug(flex,appli.ccMc)
 plug(flexdot,appli.ccVc)
+
+est.setMeasurementNoiseCovariance(matrixToTuple(diag((1e-2,)*6)))
+
+#appli.rm(appli.taskPosture)
 
 appli.nextStep()

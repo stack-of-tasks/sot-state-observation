@@ -7,9 +7,9 @@ import dynamic_graph.signal_base as dgsb
 
 from math import sin
 
-from dynamic_graph.sot.application.stabilizer.compensater import *
+from dynamic_graph.sot.application.stabilizer.compensater_solver_kine import *
 
-appli = HandCompensater(robot, False)
+appli = HandCompensaterKine(robot)
 appli.withTraces()
 
 if 'usingRobotViewer' in locals() and usingRobotViewer:    refreshList.append(lambda: appli.updateDisplay());    appli.initDisplay(); go()
@@ -45,7 +45,7 @@ flex=est.signal('flexMatrixInverse')
 flexdot = est.signal('flexInverseVelocityVector')
 
 plug(flex,appli.ccMc)
-plug(flexdot,appli.ccVc)
+plug(flexdot,appli.ccVc_R)
 
 #appli.robot.addTrace( est.name,'flexInverseVelocityVector' )
 #appli.robot.addTrace( est.name,'flexibility'  )
