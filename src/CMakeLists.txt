@@ -70,12 +70,13 @@ SET(NEW_ENTITY_CLASS
 #  MovingFrameTransformation
   )
 
-DYNAMIC_GRAPH_PYTHON_MODULE("sot/core/${PYTHON_LIBRARY_NAME}" ${LIBRARY_NAME} wrap)
+DYNAMIC_GRAPH_PYTHON_MODULE("sot/application/${PYTHON_LIBRARY_NAME}" ${LIBRARY_NAME} wrap)
 
 
 ###
 # PYTHON PART
 ###
+
 #cmake_minimum_required(VERSION 2.4.6)
 #include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
@@ -112,6 +113,6 @@ FINDPYTHON ()
 
 INSTALL(FILES
   dynamic_graph/sot/application/stabilizer/compensater.py
-  dynamic_graph/sot/application/stabilizer/__init__.py
+  dynamic_graph/sot/application/stabilizer/compensater_solver_kine.py
   DESTINATION ${PYTHON_SITELIB}/dynamic_graph/sot/application/stabilizer
   )
