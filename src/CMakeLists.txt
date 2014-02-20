@@ -37,6 +37,7 @@ ADD_LIBRARY(${LIBRARY_NAME}
   dg-imu-attitude-estimation.cc
   dg-imu-flexibility-estimation.cc
   moving-frame-transformation.cc
+  position-state-reconstructor.cc
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
   )
 
@@ -46,7 +47,7 @@ SET_TARGET_PROPERTIES(${LIBRARY_NAME}
   INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 
 # provide path to dependency libraries
-LINK_DIRECTORIES( ${STATE_OBSERVATION_LIBRARY_DIRS})
+LINK_DIRECTORIES(${STATE_OBSERVATION_LIBRARY_DIRS})
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 
