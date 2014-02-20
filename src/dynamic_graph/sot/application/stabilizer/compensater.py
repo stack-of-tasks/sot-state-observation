@@ -26,6 +26,17 @@ def change6dPositionReference(task,feature,gain,position,selec=None,ingain=None,
     if gain!=None:  setGain(gain,ingain)
     if 'resetJacobianDerivative' in task.__class__.__dict__.keys() and resetJacobian:
         task.resetJacobianDerivative()
+        
+def createTrunkTask (robot, application, taskName, ingain = 1.):
+    task = Task (taskName)
+    task.add (application.features['chest'].name)
+    task.add (application.features['waist'].name)
+    task.add (application.features['gaze'].name)
+    gain = GainAdaptive('gain'+taskName)
+    gain.setConstant(ingain)
+    plug(gain.gain, task.controlGain)
+    plug(task.error, gain.error)      
+    return (task, gain)
 
 class HandCompensater(Application):
 
@@ -52,13 +63,15 @@ class HandCompensater(Application):
     # --- TASKS --------------------------------------------------------------------
     # --- TASKS --------------------------------------------------------------------
     def createTasks(self):
-
+	(self.tasks['trunk'],self.gains['trunk'])= createTrunkTask (self.robot, self, 'Tasktrunk')
         self.taskbalance = self.tasks['balance']
         self.taskRH      = self.tasks['right-wrist']
         self.taskLH      = self.tasks['left-wrist']
-        self.taskChest   = self.tasks['chest']
         self.taskPosture = self.tasks['posture']
+        self.taskTrunk   = self.tasks['trunk']
         self.taskHalfStitting = MetaTaskPosture(self.robot.dynamic,'halfsitting')
+	
+        
 
     #initialization is separated from the creation of the tasks because if we want to switch
     #to second order controlm the initialization will remain while the creation is 
@@ -76,8 +89,12 @@ class HandCompensater(Application):
     def initTaskBalance(self):
         # --- BALANCE ---
         self.features['chest'].frame('desired')
+        self.features['waist'].frame('desired')
+        self.features['gaze'].frame('desired')
         #self.taskChest.feature.selec.value = '111111'
-        self.features['chest'].selec.value = '111100'
+        self.features['chest'].selec.value = '111000'
+        self.features['waist'].selec.value = '111100'
+        self.features['gaze'].selec.value = '111000'
         self.featureCom.selec.value = '011'
 
     def initTaskPosture(self):
@@ -99,6 +116,7 @@ class HandCompensater(Application):
         self.featurePosture.jacobianIN.value = matrixToTuple(weight)
         self.featurePostureDes.errorIN.value = self.robot.halfSitting
         mask = '1'*36
+        # mask = 6*'0'+12*'0'+4*'1'+14*'0'
         # mask = '000000000000111100000000000000000000000000'
         # robot.dynamic.displaySignals ()
         # robot.dynamic.Jchest.value
@@ -107,7 +125,7 @@ class HandCompensater(Application):
     def initTaskGains(self, setup = "medium"):
         if setup == "medium":
             self.gains['balance'].setConstant(10)
-            self.gains['chest'].setConstant(10)
+            self.gains['trunk'].setConstant(10)
             self.gains['right-wrist'].setByPoint(4,0.2,0.01,0.8)
             self.gains['left-wrist'].setByPoint(4,0.2,0.01,0.8)
             self.taskHalfStitting.gain.setByPoint(2,0.2,0.01,0.8)
@@ -163,8 +181,8 @@ class HandCompensater(Application):
     def initialStack(self):
         self.sot.clear()
         self.push(self.tasks['balance'])
-        self.push(self.taskChest,self.features['chest'],True)
-        self.push(self.taskPosture)
+        self.push(self.taskTrunk)
+        #self.push(self.taskPosture)
 
     def moveToInit(self):
         '''Go to initial pose.'''
