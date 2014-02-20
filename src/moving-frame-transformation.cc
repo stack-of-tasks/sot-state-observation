@@ -21,9 +21,9 @@ namespace sotStateObservation
         lM0SIN(0x0 , "MovingFrameTransformation("+inName+")::input(MatrixHomogeneous)::lM0"),
         lV0SIN(0x0 , "MovingFrameTransformation("+inName+")::input(vector)::lV0"),
         gM0SOUT( gMlSIN<<lM0SIN,
-                        "DGIMUAttitudeEstimation("+inName+")::output(vector)::gM0"),
+                        "MovingFrameTransformation("+inName+")::output(vector)::gM0"),
         gV0SOUT( gMlSIN<<gVlSIN<<lM0SIN<<lV0SIN,
-                        "DGIMUAttitudeEstimation("+inName+")::output(vector)::gV0")
+                        "MovingFrameTransformation("+inName+")::output(vector)::gV0")
     {
         signalRegistration (gMlSIN);
         signalRegistration (gVlSIN);
