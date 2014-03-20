@@ -32,6 +32,8 @@ namespace sotStateObservation
         signalRegistration (outputFormatSIN);
         signalRegistration (outputSOUT);
 
+        lastVector_.setZero();;
+
         dynamicgraph::Vector input(size_t(0));
         dynamicgraph::Vector ouput(size_t(0));
 
@@ -85,6 +87,8 @@ namespace sotStateObservation
         dynamicgraph::sot::Flags outputFormat (outputFormatSIN(inTime));
 
         dynamicgraph::Vector input (18);
+        dynamicgraph::Vector zero (3);
+        zero.setZero();
 
         size_t inputIndex = 0;
         for (size_t i=0; i<6; ++i)
@@ -128,7 +132,7 @@ namespace sotStateObservation
                                 + 0.5*dt_*dt_*getSubvector(input,12,3);
                 else
                 {
-                    position = 0*position;
+                    position.setZero();
                     posSet=false;
                 }
             }
@@ -207,7 +211,7 @@ namespace sotStateObservation
                 }
                 else
                 {
-                    orientation=0*orientation;
+                    orientation.setZero();
                     oriSet=false;
                 }
             }
@@ -248,7 +252,7 @@ namespace sotStateObservation
                                         + dt_*getSubvector(input,12,3);
                 else
                 {
-                    linearVelocity=0*linearVelocity;
+                    linearVelocity.setZero();
                     linVelSet=false;
                 }
             }
@@ -294,7 +298,7 @@ namespace sotStateObservation
                                         + dt_*getSubvector(input,15,3);
                 else
                 {
-                    angularVelocity=0*angularVelocity;
+                    angularVelocity.setZero();
                     angVelSet=false;
                 }
             }
@@ -331,7 +335,7 @@ namespace sotStateObservation
             }
             else
             {
-                linearAcceleration=0*linearAcceleration;
+                linearAcceleration.setZero();
                 linAccSet=false;
             }
         }
@@ -367,7 +371,7 @@ namespace sotStateObservation
             }
             else
             {
-                angularAcceleration=0*angularAcceleration;
+                angularAcceleration.setZero();
                 angAccSet=false;
             }
         }
