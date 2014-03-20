@@ -143,7 +143,7 @@ namespace sotStateObservation
             if (posSet)
             {
                 outputSize +=3;
-                output.resize(outputSize);
+                output.resize(outputSize,false);
                 setSubvector(output, outputIndex, position);
                 outputIndex +=3;
             }
@@ -222,7 +222,7 @@ namespace sotStateObservation
             if (oriSet)
             {
                 outputSize +=3;
-                output.resize(outputSize);
+                output.resize(outputSize,false);
                 setSubvector(output, outputIndex, orientation);
                 outputIndex +=3;
             }
@@ -264,7 +264,7 @@ namespace sotStateObservation
             if (linVelSet)
             {
                 outputSize +=3;
-                output.resize(outputSize);
+                output.resize(outputSize,false);
                 setSubvector(output, outputIndex, linearVelocity);
                 outputIndex +=3;
             }
@@ -310,7 +310,7 @@ namespace sotStateObservation
             if (angVelSet)
             {
                 outputSize +=3;
-                output.resize(outputSize);
+                output.resize(outputSize,false);
                 setSubvector(output, outputIndex, angularVelocity);
                 outputIndex +=3;
             }
@@ -346,7 +346,7 @@ namespace sotStateObservation
             if (linAccSet)
             {
                 outputSize +=3;
-                output.resize(outputSize);
+                output.resize(outputSize,false);
                 setSubvector(output, outputIndex, linearAcceleration);
                 outputIndex +=3;
             }
@@ -382,7 +382,7 @@ namespace sotStateObservation
             if (angAccSet)
             {
                 outputSize +=3;
-                output.resize(outputSize);
+                output.resize(outputSize,false);
                 setSubvector(output, outputIndex, angularAcceleration);
                 outputIndex +=3;
             }
