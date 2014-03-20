@@ -7,6 +7,8 @@
 #include <dynamic-graph/linear-algebra.h>
 #include <sot/core/matrix-homogeneous.hh>
 
+#include <sot/core/flags.hh>
+
 #include <sot-state-observation/tools/definitions.hh>
 
 
@@ -80,8 +82,8 @@ namespace sotStateObservation
             \brief local to global frame position
             */
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> inputSIN;
-            dynamicgraph::SignalPtr < std::string, int> inputFormatSIN;
-            dynamicgraph::SignalPtr < std::string, int> outputFormatSIN;
+            dynamicgraph::SignalPtr < dynamicgraph::sot::Flags, int> inputFormatSIN;
+            dynamicgraph::SignalPtr < dynamicgraph::sot::Flags, int> outputFormatSIN;
 
             /**
             \brief Estimation of the attitude

@@ -114,6 +114,7 @@ FINDPYTHON ()
 
 INSTALL(FILES
   dynamic_graph/sot/application/stabilizer/compensater.py
+  dynamic_graph/sot/application/stabilizer/compensater_chicken.py
   dynamic_graph/sot/application/stabilizer/compensater_solver_kine.py
   DESTINATION ${PYTHON_SITELIB}/dynamic_graph/sot/application/stabilizer
   )
