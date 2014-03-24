@@ -5,7 +5,7 @@ import dynamic_graph as dg
 import dynamic_graph.signal_base as dgsb
 
 from math import sin
-from dynamic_graph.sot.core import Stack_of_vector
+from dynamic_graph.sot.core import Stack_of_vector, OpPointModifier
 
 from dynamic_graph.sot.application.stabilizer.compensater import *
 
@@ -35,7 +35,7 @@ plug(robot.frames['leftFootForceSensor'].position,lFootPos.sin)
 plug(rFootPos.sout,contact1)
 plug(lFootPos.sout,contact2)
 
-sensorStack = Stack_of_vector ('sv1')
+sensorStack = Stack_of_vector ('sensors')
 plug(robot.device.accelerometer,sensorStack.sin1)
 plug(robot.device.gyrometer,sensorStack.sin2)
 sensorStack.selec1 (0, 3)
@@ -44,28 +44,36 @@ sensorStack.selec2 (0, 3)
 plug(sensorStack.sout,meas);
 
 
-imuPos = MatrixHomoToPose('imuPos')
-imuOri = MatrixToUTheta('imuOriUTheta')
-imuRotM = HomoToRotation('imuOriM')
+inputPos = MatrixHomoToPoseUTheta('inputPosition')
 
-plug(robot.frames['accelerometer'].position,imuPos.sin)
-plug(robot.frames['accelerometer'].position,imuRotM.sin)
-plug(imuRotM.sout,imuOri.sin)
+plug(robot.frames['accelerometer'].position,inputPos.sin)
 
-inputStack1 = Stack_of_vector ('imuReferencePoseThetaU')
-inputStack2 = Stack_of_vector ('estimatorInput')
 
-plug(imuPos.sout,inputStack1.sin1)
-plug(imuOri.sout,inputStack1.sin2)
-inputStack1.selec1(0,3)
-inputStack1.selec2(0,3)
+robot.dynamic.createJacobian('chestJ','chest')
+imu = OpPointModifier('IMU_oppoint')
+imu.setEndEffector(False)
+imu.setTransformation(matrixToTuple(matrix(robot.frames['accelerometer'].position.value)*np.linalg.inv(matrix(robot.dynamic.chest.value))))
 
-plug(inputStack1.sout,inputStack2.sin1)
-inputStack2.sin2.value =( 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 )
-inputStack2.selec1(0,6)
-inputStack2.selec2(0,9)
+plug (robot.dynamic.chest,imu.positionIN)
+plug (robot.dynamic.chestJ,imu.jacobianIN)
 
-plug(inputStack2.sout,inputs)
+inputVel = Multiply_matrix_vector('inputVelocity')
+plug(imu.jacobian,inputVel.sin1)
+plug(robot.device.velocity,inputVel.sin2)#TODO replace appli.solver.sot.control by 
+
+inputPosVel = Stack_of_vector ('inputPosVel')
+plug(inputPos.sout,inputPosVel.sin1)
+plug(inputVel.sout,inputPosVel.sin2)
+inputPosVel.selec1 (0, 6)
+inputPosVel.selec2 (0, 6)
+
+inputVector = sotso.PositionStateReconstructor ('estimatorInput')
+plug(inputPosVel.sout,inputVector.sin)
+inputVector.inputFormat.value  = '001111'
+inputVector.outputFormat.value = '011111'
+
+plug(inputVector.sout,inputs)
+
 
 flex=est.signal('flexMatrixInverse')
 flexdot = est.signal('flexInverseVelocityVector')
@@ -80,18 +88,14 @@ plug(appli.ccMrhref,hMrhref.sin2)
 hMrhrefVector = MatrixHomoToPoseUTheta('hMhrefVector')
 plug(hMrhref.sout,hMrhrefVector.sin)
 
-
-
-
+appli.robot.addTrace( est.name,'flexibility' )
 appli.robot.addTrace( est.name,'flexInverseVelocityVector' )
-appli.robot.addTrace( est.name,'flexTransformationMatrix' )
-appli.robot.addTrace( est.name,'flexVelocityVector')
-appli.robot.addTrace( est.name,'flexibility'  )
-appli.robot.addTrace( est.name, 'input')
-appli.robot.addTrace( est.name, 'measurement')
-appli.robot.addTrace( est.name, 'inovation')
-appli.robot.addTrace( est.name, 'predictedSensors')
-appli.robot.addTrace( est.name , 'simulatedSensors' )
+appli.robot.addTrace( est.name,'flexMatrixInverse' )
+appli.robot.addTrace( est.name,'input')
+appli.robot.addTrace( est.name,'measurement')
+appli.robot.addTrace( est.name,'simulatedSensors' )
+
+appli.robot.addTrace( inputVel.name, 'sout')
 
 appli.robot.addTrace( robot.device.name, 'forceLLEG')
 appli.robot.addTrace( robot.device.name, 'forceRLEG')
@@ -101,18 +105,11 @@ appli.robot.addTrace( robot.device.name,  'gyrometer')
 appli.robot.addTrace( hMrhrefVector.name,'sout')
 
 appli.robot.addTrace( appli.tasks['right-wrist'].name,'error')
-appli.robot.addTrace( appli.features['right-wrist'].name, 'position')
-
-appli.robot.addTrace( appli.transformerR.name, 'gM0')
-appli.robot.addTrace( appli.transformerR.name, 'gV0')
-appli.robot.addTrace( appli.transformerR.name, 'lM0')
-appli.robot.addTrace( appli.transformerR.name, 'lV0')
-appli.robot.addTrace( appli.transformerR.name, 'gMl')
-appli.robot.addTrace( appli.transformerR.name, 'gVl')
 
 appli.robot.addTrace( appli.robot.dynamic.name,'chest')
-appli.robot.addTrace( appli.robot.device.name,'state')
-appli.robot.addTrace( appli.robot.device.name,'robotState')
+
+appli.robot.addTrace( appli.solver.sot.name,'control')
+appli.robot.addTrace( robot.device.name,'state')
 
 appli.startTracer()
 
@@ -121,6 +118,6 @@ plug(flexdot,appli.ccVc)
 
 est.setMeasurementNoiseCovariance(matrixToTuple(diag((1e-2,)*6)))
 
-#appli.rm(appli.taskPosture)
+inputVector.setFiniteDifferencesInterval(2)
 
 appli.nextStep()
