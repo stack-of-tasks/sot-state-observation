@@ -1,6 +1,8 @@
 #ifndef DG_POSITION_STATE_RECONSTRUCTOR_HH
 #define DG_POSITION_STATE_RECONSTRUCTOR_HH
 
+#include <deque>
+
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/signal-ptr.h>
 #include <dynamic-graph/signal-time-dependent.h>
@@ -57,9 +59,20 @@ namespace sotStateObservation
                 dt_ = dt;
             }
 
+            virtual double getSampligPeriod () const
+            {
+                return dt_;
+            }
 
+            virtual void setFiniteDifferencesInterval (const int & n)
+            {
+                derivationNumberOfSamples_=n;
+            }
 
-
+            virtual int getFiniteDifferencesInterval () const
+            {
+                return derivationNumberOfSamples_;
+            }
 
             /**
             \name Parameters
@@ -94,7 +107,14 @@ namespace sotStateObservation
 
             dynamicgraph::Vector lastVector_;
 
+            std::deque < ::dynamicgraph::Vector> linearVelocities_;
+            std::deque < ::dynamicgraph::Vector> angularVelocities_;
+            std::deque < ::dynamicgraph::Vector> linearAccelerations_;
+            std::deque < ::dynamicgraph::Vector> angularAccelerations_;
+
             double dt_;
+
+            unsigned derivationNumberOfSamples_;
         };
 
 } // namespace sotStateObservation
