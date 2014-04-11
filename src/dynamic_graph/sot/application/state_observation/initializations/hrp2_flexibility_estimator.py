@@ -29,13 +29,13 @@ class HRP2FlexibilityEstimator(DGIMUFlexibilityEstimation):
 
         plug(robot.frames['accelerometer'].position,self.inputPos.sin)
 
-        robot.dynamic.createJacobian(name+'ChestJ','chest')
+        robot.dynamic.createJacobian('ChestJ_OpPoint','chest')
         self.imuOpPoint = OpPointModifier('IMU_oppoint')
         self.imuOpPoint.setEndEffector(False)
         self.imuOpPoint.setTransformation(matrixToTuple(np.matrix(robot.frames['accelerometer'].position.value)*np.linalg.inv(np.matrix(robot.dynamic.chest.value))))
 
         plug (robot.dynamic.chest,self.imuOpPoint.positionIN)
-        plug (robot.dynamic.signal(name+'ChestJ'),self.imuOpPoint.jacobianIN)
+        plug (robot.dynamic.signal('ChestJ_OpPoint'),self.imuOpPoint.jacobianIN)
 
         self.inputVel = Multiply_matrix_vector(name+'InputVelocity')
         plug(self.imuOpPoint.jacobian,self.inputVel.sin1)
@@ -54,3 +54,5 @@ class HRP2FlexibilityEstimator(DGIMUFlexibilityEstimation):
         self.inputVector.setFiniteDifferencesInterval(2)
 
         plug(self.inputVector.sout,self.input)
+
+        robot.flextimator = self
