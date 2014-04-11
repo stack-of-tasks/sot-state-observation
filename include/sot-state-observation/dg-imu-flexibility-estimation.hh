@@ -264,7 +264,6 @@ namespace sotStateObservation
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::sot::MatrixHomogeneous, int>
                                                 flexTransformationMatrixSOUT;
-
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> flexVelocityVectorSOUT;
 
@@ -274,23 +273,17 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector, int> flexInverseSOUT;
-
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::sot::MatrixHomogeneous, int>
                                                         flexMatrixInverseSOUT;
-
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> flexInversePoseThetaUSOUT;
-
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> flexInverseVelocityVectorSOUT;
-
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> flexInverseVelocitySOUT;
-
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> flexInverseOmegaSOUT;
-
             /**
             \brief A simulation of the sensors' signals
             */
