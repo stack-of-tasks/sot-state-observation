@@ -71,7 +71,7 @@ SET(NEW_ENTITY_CLASS
 #  MovingFrameTransformation
   )
 
-DYNAMIC_GRAPH_PYTHON_MODULE("sot/application/${PYTHON_LIBRARY_NAME}" ${LIBRARY_NAME} wrap)
+DYNAMIC_GRAPH_PYTHON_MODULE("sot/application/state_observation" ${LIBRARY_NAME} wrap)
 
 
 ###
@@ -113,8 +113,7 @@ INCLUDE(../cmake/python.cmake)
 FINDPYTHON ()
 
 INSTALL(FILES
-  dynamic_graph/sot/application/stabilizer/compensater.py
-  dynamic_graph/sot/application/stabilizer/compensater_chicken.py
-  dynamic_graph/sot/application/stabilizer/compensater_solver_kine.py
-  DESTINATION ${PYTHON_SITELIB}/dynamic_graph/sot/application/stabilizer
+  dynamic_graph/sot/application/state_observation/initializations/__init__.py
+  dynamic_graph/sot/application/state_observation/initializations/hrp2_flexibility_estimator.py
+  DESTINATION ${PYTHON_SITELIB}/dynamic_graph/sot/application/state_observation/initializations
   )

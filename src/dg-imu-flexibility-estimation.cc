@@ -336,7 +336,7 @@ namespace sotStateObservation
                 "    gets a floating point mumbers as input \n"
                 "\n";
 
-        addCommand(std::string("getVirtualMeasurementNoiseCovariance"),
+        addCommand(std::string("getVirtualMeasurementCovariance"),
 	     new
 	     ::dynamicgraph::command::Getter <DGIMUFlexibilityEstimation,double>
                 (*this, &DGIMUFlexibilityEstimation::getVirtualMeasurementsCovariance, docstring));
@@ -601,7 +601,7 @@ namespace sotStateObservation
     ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeFlexInversePoseThetaU
                         (::dynamicgraph::Vector & flexInversePoseThetaU, const int& inTime)
     {
-        ::dynamicgraph::Vector fi=flexInverseSOUT(inTime);
+        const ::dynamicgraph::Vector& fi=flexInverseSOUT(inTime);
 
         flexInversePoseThetaU.resize(6);
 
@@ -616,7 +616,7 @@ namespace sotStateObservation
     ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeFlexInverseVelocityVector
                         (::dynamicgraph::Vector & flexInverseVelocityVector, const int& inTime)
     {
-        ::dynamicgraph::Vector fi=flexInverseSOUT(inTime);
+        const ::dynamicgraph::Vector& fi=flexInverseSOUT(inTime);
 
         flexInverseVelocityVector.resize(6);
 
@@ -631,7 +631,7 @@ namespace sotStateObservation
     ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeFlexInverseVelocity
                         (::dynamicgraph::Vector & flexInverseVelocity, const int& inTime)
     {
-        ::dynamicgraph::Vector fi=flexInverseSOUT(inTime);
+        const ::dynamicgraph::Vector& fi=flexInverseSOUT(inTime);
 
         flexInverseVelocity = getSubvector(fi,stateObservation::kine::linVel,3);
 
@@ -641,7 +641,7 @@ namespace sotStateObservation
     ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeFlexInverseOmega
                         (::dynamicgraph::Vector & flexInverseOmega, const int& inTime)
     {
-        ::dynamicgraph::Vector fi=flexInverseSOUT(inTime);
+        const ::dynamicgraph::Vector& fi=flexInverseSOUT(inTime);
 
         flexInverseOmega = getSubvector(fi,stateObservation::kine::angVel,3);
 
