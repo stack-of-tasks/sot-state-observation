@@ -15,7 +15,6 @@ namespace sotStateObservation
     MovingFrameTransformation::MovingFrameTransformation
                                         ( const std::string & inName):
         Entity(inName),
-        velocityFactor_(1),
         gMlSIN(0x0 , "MovingFrameTransformation("+inName+")::input(MatrixHomogeneous)::gMl"),
         gVlSIN(0x0 , "MovingFrameTransformation("+inName+")::input(vector)::gVl"),
         lM0SIN(0x0 , "MovingFrameTransformation("+inName+")::input(MatrixHomogeneous)::lM0"),
@@ -52,20 +51,6 @@ namespace sotStateObservation
 				    this, _1, _2));
 
         std::string docstring;
-
-        //setStateGuess
-        docstring =
-                "\n"
-                "    Set a multiplier to the velocity of \n"
-                "    the global to local frame (mainly for debugging)\n"
-                "    takes a floating point mumbers as input \n"
-                "\n";
-
-        addCommand(std::string("setgVlFactor"),
-	     new
-	     dynamicgraph::command::Setter <MovingFrameTransformation,double>
-	     (*this, &MovingFrameTransformation::setgVlFactor, docstring));
-
     }
 
     MovingFrameTransformation::~MovingFrameTransformation()
@@ -80,10 +65,6 @@ namespace sotStateObservation
 
         dynamicgraph::Vector gVl (gVlSIN(inTime));
         dynamicgraph::Vector lV0 (lV0SIN(inTime));
-
-        gVl = gVl * velocityFactor_;
-
-
 
         dynamicgraph::Matrix gRl(3,3);
 

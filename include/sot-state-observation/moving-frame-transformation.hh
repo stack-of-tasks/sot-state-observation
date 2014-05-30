@@ -50,11 +50,6 @@ namespace sotStateObservation
                               + "The local frame is at cordinate gMl and velocity gVl";
             }
 
-            virtual void setgVlFactor (const double & k)
-            {
-                velocityFactor_ = k;
-            }
-
             /**
             \name Parameters
             @{
@@ -105,8 +100,6 @@ namespace sotStateObservation
             \brief Estimation of the attitude
             */
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> gV0SOUT;
-
-            double velocityFactor_;
         };
 
 } // namespace sotStateObservation
