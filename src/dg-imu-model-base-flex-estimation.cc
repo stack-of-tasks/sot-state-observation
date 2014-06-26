@@ -21,10 +21,6 @@ namespace sotStateObservation
         measurementSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::measurement"),
         inputSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::input"),
         contactsNbrSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactNbr"),
-        contact1SIN(0x0, "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::contact1"),
-        contact2SIN(0x0, "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::contact2"),
-        contact3SIN(0x0, "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::contact3"),
-        contact4SIN(0x0, "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::contact4"),
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
 
         flexPositionSOUT(flexibilitySOUT,
@@ -103,10 +99,6 @@ namespace sotStateObservation
 
 
 
-        signalRegistration (contact1SIN);
-        signalRegistration (contact2SIN);
-        signalRegistration (contact3SIN);
-        signalRegistration (contact4SIN);
         signalRegistration (contactsNbrSIN);
 
 
@@ -170,11 +162,6 @@ namespace sotStateObservation
         inovationSOUT.setConstant(inovation);
 
         contactsNbrSIN.setConstant(0);
-
-        contact1SIN.setConstant(contactPosition);
-        contact2SIN.setConstant(contactPosition);
-        contact3SIN.setConstant(contactPosition);
-        contact4SIN.setConstant(contactPosition);
 
         flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
 				    this, _1, _2));
@@ -431,25 +418,25 @@ namespace sotStateObservation
         }
 
 
-        if (contactNb>0)
-        {
-            estimator_.setContactPosition(0,convertVector<stateObservation::Vector>(contact1SIN(inTime)));
-
-            if (contactNb>1)
-            {
-                estimator_.setContactPosition(1,convertVector<stateObservation::Vector>(contact2SIN(inTime)));
-
-                if (contactNb>2)
-                {
-                    estimator_.setContactPosition(2,convertVector<stateObservation::Vector>(contact3SIN(inTime)));
-
-                    if (contactNb==4)
-                    {
-                        estimator_.setContactPosition(3,convertVector<stateObservation::Vector>(contact4SIN(inTime)));
-                    }
-                }
-            }
-        }
+//        if (contactNb>0)
+//        {
+//            estimator_.setContactPosition(0,convertVector<stateObservation::Vector>(contact1SIN(inTime)));
+//
+//            if (contactNb>1)
+//            {
+//                estimator_.setContactPosition(1,convertVector<stateObservation::Vector>(contact2SIN(inTime)));
+//
+//                if (contactNb>2)
+//                {
+//                    estimator_.setContactPosition(2,convertVector<stateObservation::Vector>(contact3SIN(inTime)));
+//
+//                    if (contactNb==4)
+//                    {
+//                        estimator_.setContactPosition(3,convertVector<stateObservation::Vector>(contact4SIN(inTime)));
+//                    }
+//                }
+//            }
+//        }
 
 
         estimator_.setMeasurement(convertVector<stateObservation::Vector>(measurement));

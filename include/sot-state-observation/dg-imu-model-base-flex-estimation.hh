@@ -209,25 +209,6 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalPtr < unsigned , int> contactsNbrSIN;
 
-            /**
-            \brief Position of the first contact
-            */
-            dynamicgraph::SignalPtr < ::dynamicgraph::Vector , int> contact1SIN;
-
-            /**
-            \brief Position of the second contact
-            */
-            dynamicgraph::SignalPtr < ::dynamicgraph::Vector , int> contact2SIN;
-
-            /**
-            \brief Position of the third contact
-            */
-            dynamicgraph::SignalPtr < ::dynamicgraph::Vector , int> contact3SIN;
-
-            /**
-            \brief Position of the fourth contact
-            */
-            dynamicgraph::SignalPtr < ::dynamicgraph::Vector , int> contact4SIN;
 
             /**
             \brief Estimation of the flexibility
@@ -307,7 +288,7 @@ namespace sotStateObservation
             ///Sizes of the states for the state, the measurement, and the input vector
             static const unsigned stateSize=18;
             static const unsigned measurementSize=6;
-            static const unsigned inputSize=51;
+            static const unsigned inputSize=54;
 
             unsigned contactNumber_;
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME

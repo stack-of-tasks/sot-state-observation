@@ -49,6 +49,7 @@ ADD_REQUIRED_DEPENDENCY("dynamic-graph-python")
 SET(${PROJECT_NAME}_HEADERS
     include/sot-state-observation/dg-imu-attitude-estimation.hh
     include/sot-state-observation/dg-imu-flexibility-estimation.hh
+    include/sot-state-observation/dg-imu-model-base-flex-estimation.hh
     include/sot-state-observation/moving-frame-transformation.hh
     include/sot-state-observation/position-state-reconstructor.hh
     include/sot-state-observation/tools/definitions.hh
