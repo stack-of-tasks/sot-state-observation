@@ -37,6 +37,7 @@ ADD_LIBRARY(${LIBRARY_NAME}
   dg-imu-attitude-estimation.cc
   dg-imu-flexibility-estimation.cc
   dg-imu-model-base-flex-estimation.cc
+  input_reconstructor.cc
   moving-frame-transformation.cc
   position-state-reconstructor.cc
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}

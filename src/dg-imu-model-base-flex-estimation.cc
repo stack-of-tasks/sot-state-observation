@@ -12,59 +12,34 @@
 
 namespace sotStateObservation
 {
-    DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( DGIMUModelBaseFlexEstimation,
-                                          "DGIMUModelBaseFlexEstimation" );
+    DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( DGIMUModelBaseFlexEstimation, "DGIMUModelBaseFlexEstimation" );
 
-    DGIMUModelBaseFlexEstimation::DGIMUModelBaseFlexEstimation
-                ( const std::string & inName):
+    DGIMUModelBaseFlexEstimation::DGIMUModelBaseFlexEstimation(const std::string & inName):
         Entity(inName),
         measurementSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::measurement"),
         inputSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::input"),
         contactsNbrSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactNbr"),
+
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
+        flexPositionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPosition"),
+        flexVelocitySOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocity"),
+        flexAccelerationSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexAcceleration"),
+        flexPoseThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPoseThetaU"),
+        flexOmegaSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexOmega"),
+        flexOmegaDotSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexOmegaDot"),
+        flexTransformationMatrixSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(homogeneousMatrix)::flexTransformationMatrix"),
+        flexThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexThetaU"),
+        flexVelocityVectorSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocityVector"),
+        flexInverseSOUT (flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverse"),
+        flexMatrixInverseSOUT(flexInverseSOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(homogeneousMatrix)::flexMatrixInverse"),
+        flexInversePoseThetaUSOUT(flexInverseSOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInversePoseThetaU"),
+        flexInverseVelocityVectorSOUT(flexInverseSOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverseVelocityVector"),
+        flexInverseVelocitySOUT(flexInverseSOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverseVelocity"),
+        flexInverseOmegaSOUT(flexInverseSOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverseOmega"),
 
-        flexPositionSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPosition"),
-        flexVelocitySOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocity"),
-        flexAccelerationSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexAcceleration"),
-        flexPoseThetaUSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPoseThetaU"),
-        flexOmegaSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexOmega"),
-        flexOmegaDotSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexOmegaDot"),
-
-        flexTransformationMatrixSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(homogeneousMatrix)::flexTransformationMatrix"),
-        flexThetaUSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexThetaU"),
-        flexVelocityVectorSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocityVector"),
-
-
-        flexInverseSOUT (flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverse"),
-        flexMatrixInverseSOUT(flexInverseSOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(homogeneousMatrix)::flexMatrixInverse"),
-        flexInversePoseThetaUSOUT(flexInverseSOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInversePoseThetaU"),
-        flexInverseVelocityVectorSOUT(flexInverseSOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverseVelocityVector"),
-        flexInverseVelocitySOUT(flexInverseSOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverseVelocity"),
-        flexInverseOmegaSOUT(flexInverseSOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverseOmega"),
-
-        simulatedSensorsSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::simulatedSensors"),
-        predictedSensorsSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::predictedSensors"),
-
-        inovationSOUT(flexibilitySOUT,
-                        "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::inovation")
-
+        simulatedSensorsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::simulatedSensors"),
+        predictedSensorsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::predictedSensors"),
+        inovationSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::inovation")
     {
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
         currentTime_=0;
@@ -72,20 +47,18 @@ namespace sotStateObservation
 
         signalRegistration (measurementSIN);
         signalRegistration (inputSIN);
+        signalRegistration (contactsNbrSIN);
 
         signalRegistration (flexibilitySOUT);
-
         signalRegistration (flexPositionSOUT);
         signalRegistration (flexVelocitySOUT);
         signalRegistration (flexAccelerationSOUT);
         signalRegistration (flexThetaUSOUT);
         signalRegistration (flexOmegaSOUT);
         signalRegistration (flexOmegaDotSOUT);
-
         signalRegistration (flexTransformationMatrixSOUT);
         signalRegistration (flexPoseThetaUSOUT);
         signalRegistration (flexVelocityVectorSOUT);
-
         signalRegistration (flexInverseSOUT);
         signalRegistration (flexMatrixInverseSOUT);
         signalRegistration (flexInversePoseThetaUSOUT);
@@ -99,11 +72,7 @@ namespace sotStateObservation
 
 
 
-        signalRegistration (contactsNbrSIN);
-
-
         dynamicgraph::Vector measure(measurementSize);
-
         dynamicgraph::Vector input(inputSize);
 
         dynamicgraph::Vector flexibility(stateSize);
