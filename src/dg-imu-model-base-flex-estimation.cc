@@ -5,7 +5,7 @@
 #include <dynamic-graph/command-getter.h>
 #include <dynamic-graph/command-bind.h>
 
-#include <sot-state-observation/dg-imu-model-base-flex-estimation.hh>
+#include <sot-state-observation/dg-imu-model-base-flex-estimation.hh>d
 
 
 
@@ -73,7 +73,7 @@ namespace sotStateObservation
 
 
         dynamicgraph::Vector measure(measurementSize);
-        dynamicgraph::Vector input(inputSize);
+        dynamicgraph::Vector input(inputSizeBase);
 
         dynamicgraph::Vector flexibility(stateSize);
 
@@ -105,6 +105,8 @@ namespace sotStateObservation
 
         measurementSIN.setConstant(measure);
         inputSIN.setConstant(input);
+        contactsNbrSIN.setConstant(0);
+
 
         flexibilitySOUT.setConstant(flexibility);
 
@@ -130,9 +132,7 @@ namespace sotStateObservation
         predictedSensorsSOUT.setConstant(simulatedMeasurement);
         inovationSOUT.setConstant(inovation);
 
-        contactsNbrSIN.setConstant(0);
-
-        flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
+       flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
 				    this, _1, _2));
 
         flexPositionSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexPosition,
@@ -200,7 +200,7 @@ namespace sotStateObservation
         stateSizeString << measurementSize;
 
         std::ostringstream inputSizeString;
-        inputSizeString << inputSize;
+        inputSizeString << inputSizeBase;
 
         std::string docstring;
 
@@ -368,7 +368,7 @@ namespace sotStateObservation
     dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeFlexibility
                   (dynamicgraph::Vector & flexibility, const int& inTime)
     {
-        //std::cout << "computeFlexibility " << inTime << std::endl;
+
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
         if (inTime!=currentTime_)
         {
@@ -379,33 +379,20 @@ namespace sotStateObservation
         const dynamicgraph::Vector & input = inputSIN(inTime);
         const unsigned & contactNb = contactsNbrSIN(inTime);
 
+//         Update of inputSize_ considering contactsNb
+
+
         if (contactNumber_!= contactNb)
         {
             contactNumber_ = contactNb;
-
             estimator_.setContactsNumber(contactNb);
         }
 
-
-//        if (contactNb>0)
-//        {
-//            estimator_.setContactPosition(0,convertVector<stateObservation::Vector>(contact1SIN(inTime)));
-//
-//            if (contactNb>1)
-//            {
-//                estimator_.setContactPosition(1,convertVector<stateObservation::Vector>(contact2SIN(inTime)));
-//
-//                if (contactNb>2)
-//                {
-//                    estimator_.setContactPosition(2,convertVector<stateObservation::Vector>(contact3SIN(inTime)));
-//
-//                    if (contactNb==4)
-//                    {
-//                        estimator_.setContactPosition(3,convertVector<stateObservation::Vector>(contact4SIN(inTime)));
-//                    }
-//                }
-//            }
-//        }
+        if(inputSize_!=42+3*contactNumber_)
+        {
+            inputSize_=42+3*contactNumber_;
+            estimator_.setInputSize(inputSize_);
+        }
 
 
         estimator_.setMeasurement(convertVector<stateObservation::Vector>(measurement));

@@ -23,9 +23,9 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         plug(self.robot.device.gyrometer,self.sensorStack.sin2)
         self.sensorStack.selec1 (0, 3)
         self.sensorStack.selec2 (0, 3)
-        plug(self.sensorStack.sout,self.measurement);       
+        plug(self.sensorStack.sout,self.measurement);
         self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
-        plug(robot.frames['accelerometer'].position,self.inputPos.sin)    
+        plug(robot.frames['accelerometer'].position,self.inputPos.sin)
         self.robot.dynamic.createJacobian('ChestJ_OpPoint','chest')
         self.imuOpPoint = OpPointModifier('IMU_oppoint')
         self.imuOpPoint.setEndEffector(False)
@@ -69,43 +69,20 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         plug(self.comVectorIn.sout,self.comVector.sin)
         self.comVector.inputFormat.value  = '000011'
         self.comVector.outputFormat.value = '000111'
-        self.inputReconstruction=InputReconstructor(name+'InputReconstruction')
-        plug(self.comVector.sout,self.inputReconstruction.comVector)
-        plug(self.inertia,self.inputReconstruction.inertia)
-        self.inputReconstruction.dinertia.value=self.dotInertia
-        self.inputReconstruction.angMomentum.value=self.angMomentum
-        self.inputReconstruction.dangMomentum.value=self.dotAngMomentum
-        plug(self.IMUVector.sout,self.inputReconstruction.imuVector)
-
-
-        # Definition of contacts position
-#        self.rFootPos = MatrixHomoToPose('rFootFrame')
-#        self.lFootPos = MatrixHomoToPose('lFootFrame')
-#        plug(self.robot.frames['rightFootForceSensor'].position,self.rFootPos.sin)
-#        plug(self.robot.frames['leftFootForceSensor'].position,self.lFootPos.sin)
-#        self.a=float('NaN')
-#        self.contactn3=(0,0,0)
-#        self.contactn4=(0,0,0)
-#        self.contacts = Stack_of_vector (name+'contacts')
-#        plug(self.rFootPos.sout,self.contacts.sin1)
-#        plug(self.lFootPos.sout,self.contacts.sin2)
-#        self.contacts.selec1 (0, 3)
-#        self.contacts.selec2 (0, 3)
-#        self.otherContacts=self.contactn3+self.contactn4 
-#        self.allcontacts = Stack_of_vector (name+'allcontacts')
-#        plug(self.contacts.sout,self.allcontacts.sin1)
-#        self.allcontacts.sin2.value=self.otherContacts
-#        self.allcontacts.selec1 (0, 6)
-#        self.allcontacts.selec2 (0, 6)
         
-     
-        # Construction of the input vector       
-        self.inputVector = Stack_of_vector (name+'inputVector')
-        plug(self.inputReconstruction.input,self.inputVector.sin1)
-        #plug(self.allcontacts.sout,self.inputVector.sin2)
-        self.inputVector.selec1 (0, 42)
-        #self.inputVector.selec2 (0, 12)  
+             
         
+        # Concatenate with InputReconstructor entity
+        self.inputVector=InputReconstructor(name+'inputVector')
+        plug(self.comVector.sout,self.inputVector.comVector)
+        plug(self.inertia,self.inputVector.inertia)
+        self.inputVector.dinertia.value=self.dotInertia
+        self.inputVector.angMomentum.value=self.angMomentum
+        self.inputVector.dangMomentum.value=self.dotAngMomentum
+        plug(self.IMUVector.sout,self.inputVector.imuVector)
+        plug(self.contactNbr,self.inputVector.nbContacts)
+        #plug(self.contacts,self.inputVector.contactsPosition)
         
-        #plug(self.inputVector.sout,self.input)
+       
+        plug(self.inputVector.input,self.input)
         self.robot.flextimator = self

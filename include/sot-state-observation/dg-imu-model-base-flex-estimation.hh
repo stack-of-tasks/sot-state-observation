@@ -1,7 +1,7 @@
 /*
- *  Copyright 2013 CNRS
+ *  Copyright 2014 CNRS
  *
- *  Mehdi Benallegue
+ *  Alexis MIFSUD
  */
 
 #ifndef SOT_DYNAMIC_GRAPH_IMU_MODEL_BASE_FLEX_ESTIMATION_HH
@@ -210,6 +210,8 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr < unsigned , int> contactsNbrSIN;
 
 
+
+
             /**
             \brief Estimation of the flexibility
             */
@@ -288,9 +290,10 @@ namespace sotStateObservation
             ///Sizes of the states for the state, the measurement, and the input vector
             static const unsigned stateSize=18;
             static const unsigned measurementSize=6;
-            static const unsigned inputSize=54;
-
+            static const unsigned inputSizeBase=42;
+            unsigned inputSize_;
             unsigned contactNumber_;
+
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
             int currentTime_;
 #endif
