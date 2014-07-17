@@ -1,7 +1,7 @@
 # Launch it with py ../robotViewerLauncher.py +compensater.py +appli.py 
 import sys
 import numpy as np
-#from numpy import *
+from numpy import *
 from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
@@ -14,6 +14,9 @@ from dynamic_graph.sot.core.matrix_util import matrixToTuple
 class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
     def __init__(self, robot, name='flextimator1'):   
         DGIMUModelBaseFlexEstimation.__init__(self,name)
+
+        print "tata"      
+        
         self.setSamplingPeriod(0.005)  
         self.robot = robot
 
@@ -49,7 +52,7 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
 
         # Definition of inertia, angular momentum and derivatives
         self.robot.dynamic.inertia.recompute(1)
-        self.inertia=self.robot.dynamic.inertia
+        self.inertia=self.robot.dynamic.inertia #(48.2378,48.2378,2.87339,0,0,0) #
         self.dotInertia=(0,0,0,0,0,0)
         self.angMomentum=(0,0,0)
         self.dotAngMomentum=(0,0,0) 
@@ -69,7 +72,7 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         plug(self.comVectorIn.sout,self.comVector.sin)
         self.comVector.inputFormat.value  = '000011'
         self.comVector.outputFormat.value = '000111'
-        
+      
              
         
         # Concatenate with InputReconstructor entity
@@ -81,7 +84,7 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         self.inputVector.dangMomentum.value=self.dotAngMomentum
         plug(self.IMUVector.sout,self.inputVector.imuVector)
         plug(self.contactNbr,self.inputVector.nbContacts)
-        #plug(self.contacts,self.inputVector.contactsPosition)
+        # plug(self.contacts,self.inputVector.contactsPosition)
         
        
         plug(self.inputVector.input,self.input)

@@ -188,6 +188,10 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeInovation
                         (::dynamicgraph::Vector & inovation, const int &inTime);
 
+            ::dynamicgraph::Vector& computePrediction
+                        (::dynamicgraph::Vector & prediction, const int &inTime);
+
+
             ::dynamicgraph::Vector& computePredictedSensors
                         (::dynamicgraph::Vector & sensorSignal, const int &inTime);
 
@@ -282,6 +286,10 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> inovationSOUT;
+
+
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> predictionSOUT;
 
 
             stateObservation::flexibilityEstimation::ModelBaseEKFFlexEstimatorIMU estimator_;
