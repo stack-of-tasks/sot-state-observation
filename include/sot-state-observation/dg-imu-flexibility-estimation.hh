@@ -173,6 +173,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexInversePoseThetaU
                         (::dynamicgraph::Vector & flexInversePoseThetaU, const int& inTime);
 
+            ::dynamicgraph::Vector& computeFlexInverseThetaU
+                        (::dynamicgraph::Vector & flexInverseThetaU, const int& inTime);
+
             ::dynamicgraph::Vector& computeFlexInverseVelocityVector
                         (::dynamicgraph::Vector & flexInverseVelocityVector, const int& inTime);
 
@@ -276,6 +279,8 @@ namespace sotStateObservation
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::sot::MatrixHomogeneous, int>
                                                         flexMatrixInverseSOUT;
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector, int> flexInverseThetaUSOUT;
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> flexInversePoseThetaUSOUT;
             dynamicgraph::SignalTimeDependent
