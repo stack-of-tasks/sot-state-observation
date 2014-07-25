@@ -260,6 +260,19 @@ namespace sotStateObservation
 
         contactNumber_=0;
 
+
+        //on
+        docstring =
+                "\n"
+                "    Enable (true) or disable (false) the estimation. \n"
+                "    Default is false"
+                "\n";
+
+        addCommand(std::string("setOn"),
+	     new
+	     ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool>
+                (*this, &DGIMUModelBaseFlexEstimation::setOn, docstring));
+
         //setStateGuess
         docstring =
                 "\n"
@@ -415,7 +428,6 @@ namespace sotStateObservation
 
 
         //estimator_.setInput(u);
-std::cout << "toto1" << std::endl;
 
     }
 
@@ -437,12 +449,7 @@ std::cout << "toto1" << std::endl;
         const dynamicgraph::Vector & input = inputSIN(inTime);
         const unsigned & contactNb = contactsNbrSIN(inTime);
 
-
-        //cout << "input: " << input << endl;
-
-//         Update of inputSize_ considering contactsNb
-
-
+        // Update of inputSize_ considering contactsNb
         if (contactNumber_!= contactNb)
         {
             contactNumber_ = contactNb;
@@ -456,14 +463,23 @@ std::cout << "toto1" << std::endl;
         }
 
         estimator_.setMeasurement(convertVector<stateObservation::Vector>(measurement));
-
         estimator_.setMeasurementInput(convertVector<stateObservation::Vector>(input));
 
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
         }
 #endif
 
-        flexibility = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
+//        if(on_==true)
+//        {
+              flexibility = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
+//            flexibility.setZero();
+//        }
+//        else
+//        {
+//            flexibility.setZero();
+//        }
+
+        //std::cout << "\n " << std::endl;
 
         return flexibility;
     }
@@ -594,6 +610,7 @@ std::cout << "toto1" << std::endl;
     ::dynamicgraph::sot::MatrixHomogeneous& DGIMUModelBaseFlexEstimation::computeFlexMatrixInverse
                         (::dynamicgraph::sot::MatrixHomogeneous & flexMatrixInverse, const int& inTime)
     {
+
         flexibilitySOUT(inTime);
 
         flexMatrixInverse = convertMatrix<dynamicgraph::Matrix>

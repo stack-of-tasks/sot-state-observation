@@ -38,6 +38,15 @@ namespace sotStateObservation
 
             ~DGIMUModelBaseFlexEstimation();
 
+            /// Enable or disable the estimation
+            void setOn(const bool & b)
+            {
+                bool a;
+                a=b;
+                estimator_.setOn(a);
+                std::cout << "\n\n\n\n Estimator is set to " << b << "\n\n\n" << std::endl;
+            }
+
             /// Each entity should provide the name of the class it belongs to
             virtual const std::string& getClassName (void) const
             {
@@ -202,6 +211,7 @@ namespace sotStateObservation
             \brief Measurement of the IMU
             */
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> measurementSIN;
+
 
             /**
             \brief Input of the dynamical system
