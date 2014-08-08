@@ -3,35 +3,60 @@ from numpy import linalg as LA
 import matplotlib.pyplot as plt
 from scipy import stats
 
-#path = 'logs/hrp-2/static-calibration/ds-frontal/robot/2015-05-28/'
-path = 'logs/hrp-2/static-calibration/ds-frontal/simu/2014-05-30/'
-
+path = 'logs/hrp-2/static-calibration/ds-frontal/robot/2015-05-28/'
+#path = 'logs/hrp-2/static-calibration/ss-frontal/simu/2014-05-30/'
+#path = 'logs/hrp-2/static-calibration/ds-lateral/simu/2014-06-05/'
 
 robotMass = 58.0
 gravity = 9.8
+dslateral =False
+axis = 'x'
+spaceBetweenFeet = 0.19
+
+
+
+size = 33 
+period = 3200
+firstTime = 35690
+dslateral = False
+axis = 'x'
+
 
 fl = np.genfromtxt (path+"HRP2LAAS-forceLLEG.dat")
 fr = np.genfromtxt (path+"HRP2LAAS-forceRLEG.dat")
 fr = fr.copy()
 fr.resize(fl.shape[0],fr.shape[1])
-f= (fl + fr)
+f = (fl + fr)
+m = (fl - fr)
 
 realCom = np.genfromtxt (path+"real-com-sout.dat")
 
 flexThetaU = np.genfromtxt (path+"/com-stabilizedEstimator-flexThetaU.dat")
 
-size = 81
+#size = 81 #ds-frontal/simu/2014-05-30/
+
 
 samplef =   np.array((0.0,)*size)
 sampleCom = np.array((0.0,)*size)
 sampleTh =  np.array((0.0,)*size)
 
-firstIndice = 6601-flexThetaU[0,0]
+i0 = 5
+i1 = 1
+i2 = 2
+if axis =='y':
+    i0=4
+    i1=2
+    i2=1
+    
+
+firstIndice = firstTime-flexThetaU[0,0]
 for i in range(0,size):
-    indice       = firstIndice + 3200*i
-    samplef[i]   = f[indice,5]
-    sampleCom[i] = realCom[indice,1]*robotMass*gravity
-    sampleTh[i]  = flexThetaU[indice,2]
+    index       = firstIndice + period*i
+    samplef[i]   = f[index,i0]
+    if dslateral:
+        samplef[i] = m[index,3] * spaceBetweenFeet/2
+    sampleCom[i] = realCom[index,i1] * robotMass * gravity
+    sampleTh[i]  = flexThetaU[index,i2]
 
 slope, intercept, r_value, p_value, std_err = stats.linregress(samplef,sampleTh)
 line = slope*samplef+intercept
@@ -59,7 +84,6 @@ ax2.plot(samplef , sampleTh , label='tau Vs Th')
 ax2.plot(samplef , line , label='linearRegression')
 
 ax3.plot(sampleCom , sampleTh, label='CoM Vs Th')
-
 
 
 
