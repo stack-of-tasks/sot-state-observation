@@ -341,7 +341,7 @@ namespace sotStateObservation
             angularVelocity= getSubvector(input,9,3);
         else
         {
-            if (inputFormat(0))
+            if (inputFormat(1))
             {
                 curfddAngVel=convertVector<dynamicgraph::Vector>(
                             stateObservation::kine::derivateRotationFD
@@ -360,7 +360,7 @@ namespace sotStateObservation
             }
             else
             {
-                if (inputFormat(4))
+                if (inputFormat(5))
                     angularVelocity= getSubvector(lastVector_,9,3)
                                         + dt_*getSubvector(input,15,3);
                 else
