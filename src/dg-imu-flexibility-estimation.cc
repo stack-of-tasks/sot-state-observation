@@ -62,6 +62,8 @@ namespace sotStateObservation
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexInverseVelocity"),
         flexInverseOmegaSOUT(flexInverseSOUT,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexInverseOmega"),
+        flexInverseOmegaDotSOUT(flexInverseSOUT,
+                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexInverseOmegaDot"),
 
         simulatedSensorsSOUT(flexibilitySOUT,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::simulatedSensors"),
@@ -99,6 +101,7 @@ namespace sotStateObservation
         signalRegistration (flexInverseVelocityVectorSOUT);
         signalRegistration (flexInverseVelocitySOUT);
         signalRegistration (flexInverseOmegaSOUT);
+        signalRegistration (flexInverseOmegaDotSOUT);
 
         signalRegistration (simulatedSensorsSOUT);
         signalRegistration (predictedSensorsSOUT);
@@ -168,6 +171,7 @@ namespace sotStateObservation
         flexInverseVelocityVectorSOUT.setConstant(flexInverseVelocityVector);
         flexInverseVelocitySOUT.setConstant(flexInverseVelocity);
         flexInverseOmegaSOUT.setConstant(flexInverseOmega);
+        flexInverseOmegaDotSOUT.setConstant(flexInverseOmega);
 
         simulatedSensorsSOUT.setConstant(simulatedMeasurement);
         predictedSensorsSOUT.setConstant(simulatedMeasurement);
@@ -231,6 +235,9 @@ namespace sotStateObservation
                     this, _1, _2));
 
         flexInverseOmegaSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexInverseOmega,
+                    this, _1, _2));
+
+        flexInverseOmegaDotSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexInverseOmegaDot,
                     this, _1, _2));
 
         simulatedSensorsSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeSimulatedSensors,
@@ -666,6 +673,16 @@ namespace sotStateObservation
         flexInverseOmega = getSubvector(fi,stateObservation::kine::angVel,3);
 
         return flexInverseOmega;
+    }
+
+    ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeFlexInverseOmegaDot
+                        (::dynamicgraph::Vector & flexInverseOmegaDot, const int& inTime)
+    {
+        const ::dynamicgraph::Vector& fi=flexInverseSOUT(inTime);
+
+        flexInverseOmegaDot = getSubvector(fi,stateObservation::kine::angAcc,3);
+
+        return flexInverseOmegaDot;
     }
 
     ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeSimulatedSensors

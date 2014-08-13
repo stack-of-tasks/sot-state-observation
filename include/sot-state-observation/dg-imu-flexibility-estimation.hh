@@ -185,6 +185,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexInverseOmega
                         (::dynamicgraph::Vector & flexInverseOmega, const int &inTime);
 
+            ::dynamicgraph::Vector& computeFlexInverseOmegaDot
+                        (::dynamicgraph::Vector & flexInverseOmegaDot, const int &inTime);
+
             ::dynamicgraph::Vector& computeSimulatedSensors
                         (::dynamicgraph::Vector & sensorSignal, const int &inTime);
 
@@ -289,6 +292,8 @@ namespace sotStateObservation
                                 < ::dynamicgraph::Vector,int> flexInverseVelocitySOUT;
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> flexInverseOmegaSOUT;
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> flexInverseOmegaDotSOUT;
             /**
             \brief A simulation of the sensors' signals
             */
