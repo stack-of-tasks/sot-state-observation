@@ -5,11 +5,6 @@
 #include <dynamic-graph/linear-algebra.h>
 #include <boost/type_traits/is_same.hpp>
 
-// basic file operations
-#include <iostream>
-#include <fstream>
-using namespace std;
-
 
 namespace sotStateObservation
 {
