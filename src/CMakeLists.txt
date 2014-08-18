@@ -36,6 +36,8 @@ ADD_LIBRARY(${LIBRARY_NAME}
   SHARED
   dg-imu-attitude-estimation.cc
   dg-imu-flexibility-estimation.cc
+  dg-imu-model-base-flex-estimation.cc
+  input_reconstructor.cc
   moving-frame-transformation.cc
   position-state-reconstructor.cc
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
@@ -115,5 +117,6 @@ FINDPYTHON ()
 INSTALL(FILES
   dynamic_graph/sot/application/state_observation/initializations/__init__.py
   dynamic_graph/sot/application/state_observation/initializations/hrp2_flexibility_estimator.py
+  dynamic_graph/sot/application/state_observation/initializations/hrp2_model_base_flex_estimator.py
   DESTINATION ${PYTHON_SITELIB}/dynamic_graph/sot/application/state_observation/initializations
   )
