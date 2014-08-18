@@ -456,9 +456,9 @@ namespace sotStateObservation
             estimator_.setContactsNumber(contactNb);
         }
 
-        if(inputSize_!=42+3*contactNumber_)
+        if(inputSize_!=42+6*contactNumber_)
         {
-            inputSize_=42+3*contactNumber_;
+            inputSize_=42+6*contactNumber_;
             estimator_.setInputSize(inputSize_);
         }
 

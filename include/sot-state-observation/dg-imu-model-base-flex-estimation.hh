@@ -44,7 +44,7 @@ namespace sotStateObservation
                 bool a;
                 a=b;
                 estimator_.setOn(a);
-                std::cout << "\n\n\n\n Estimator is set to " << b << "\n\n\n" << std::endl;
+                //std::cout << "\n\n\n\n Estimator is set to " << b << "\n\n\n" << std::endl;
             }
 
             /// Each entity should provide the name of the class it belongs to

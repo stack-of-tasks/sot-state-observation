@@ -12,10 +12,8 @@ from dynamic_graph.sot.core.matrix_util import matrixToTuple
 
 
 class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
-    def __init__(self, robot, name='flextimator1'):   
+    def __init__(self, robot, name='flextimator2'):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
-
-        print "tata"      
         
         self.setSamplingPeriod(0.005)  
         self.robot = robot
@@ -57,6 +55,12 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         self.angMomentum=(0,0,0)
         self.dotAngMomentum=(0,0,0) 
 
+	# Waist position
+	self.robot.dynamic.waist.recompute(1)
+	#self.robot.dynamic.chest.recompute(1)
+	#self.robot.dynamic.com.recompute(1)
+	self.positionWaist=self.robot.dynamic.waist
+
 
         # Definition of com and derivatives
         self.com=self.robot.dynamic.com#(0,0,0.75) # /!\ In the local frame!
@@ -80,6 +84,7 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         plug(self.comVector.sout,self.inputVector.comVector)
         plug(self.inertia,self.inputVector.inertia)
         self.inputVector.dinertia.value=self.dotInertia
+	plug(self.positionWaist,self.inputVector.positionWaist)
         self.inputVector.angMomentum.value=self.angMomentum
         self.inputVector.dangMomentum.value=self.dotAngMomentum
         plug(self.IMUVector.sout,self.inputVector.imuVector)
