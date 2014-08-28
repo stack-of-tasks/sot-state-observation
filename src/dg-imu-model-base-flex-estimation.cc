@@ -77,48 +77,49 @@ namespace sotStateObservation
 
         stateObservation::ObserverBase::InputVector input; // for init
         input.resize(42);
-        input <<    0.0145673,
-                    0.00153601,
-                    0.807688,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    9.59691,
-                    8.39051,
-                    1.73881,
-                    -0.00189139,
-                    0.146455,
-                    -0.0378545,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,//1.1174,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,//0.227298,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,//22.7298,
-                    0.0,
-                    0.0,
-                    0.0;
+        input <<    0.0135672,
+                    0.001536,
+                    0.80771,
+                    -2.50425e-06,
+                    -1.03787e-08,
+                    5.4317e-08,
+                    -2.50434e-06,
+                    -1.03944e-08,
+                    5.45321e-08,
+                    48.1348,
+                    46.9498,
+                    1.76068,
+                    -0.0863332,
+                    -0.59487,
+                    -0.0402246,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    -0.098,
+                    -1.21619e-10,
+                    1.1174,
+                    3.06752e-22,
+                    -1.06094e-20,
+                    7.75345e-22,
+                    -2.84609e-06,
+                    -1.18496e-08,
+                    -4.52691e-18,
+                    2.95535e-20,
+                    -1.0346e-18,
+                    7.58731e-20,
+                    -0.000284609,
+                    -1.18496e-06,
+                    -4.52691e-16;
+
 
         dynamicgraph::Vector flexibility(stateSize);
 
@@ -149,11 +150,6 @@ namespace sotStateObservation
 
 
         measurementSIN.setConstant(measure);
-        inputSIN.setConstant(convertVector<dynamicgraph::Vector>(input));
-
-        //estimator_.setInput(convertVector<stateObservation::Vector>(input));
-        estimator_.setInput(input);
-        //estimator_.setMeasurementInput(measure);
 
         contactsNbrSIN.setConstant(0);
 
@@ -425,9 +421,9 @@ namespace sotStateObservation
                     new ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,int>
                     (*this, & DGIMUModelBaseFlexEstimation::getFlexTime ,docstring));
 
-
-
-        //estimator_.setInput(u);
+        estimator_.setInput(input);
+        estimator_.setMeasurementInput(input);
+        inputSIN.setConstant(convertVector<dynamicgraph::Vector>(input));
 
     }
 
@@ -461,8 +457,7 @@ namespace sotStateObservation
             inputSize_=42+6*contactNumber_;
             estimator_.setInputSize(inputSize_);
         }
-
-        estimator_.setMeasurement(convertVector<stateObservation::Vector>(measurement));
+        estimator_.setMeasurement(convertVector<stateObservation::Vector>(measurement));    
         estimator_.setMeasurementInput(convertVector<stateObservation::Vector>(input));
 
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
