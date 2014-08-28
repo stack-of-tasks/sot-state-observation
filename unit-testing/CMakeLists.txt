@@ -34,7 +34,6 @@ include_directories(${Boost_INCLUDE_DIR} ${PROJECT_INCLUDE_DIR})
 
 SET(tests
     instanciation-test
-    test_dg-imu-model-base-flex-estimation
   )
 
 FOREACH(test ${tests})
