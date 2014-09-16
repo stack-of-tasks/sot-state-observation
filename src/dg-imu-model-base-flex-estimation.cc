@@ -232,7 +232,7 @@ namespace sotStateObservation
         simulatedSensorsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeSimulatedSensors,
                     this, _1, _2));
 
-        predictedSensorsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeSimulatedSensors,
+        predictedSensorsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computePredictedSensors,
                     this, _1, _2));
 
         inovationSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeInovation,
@@ -421,6 +421,44 @@ namespace sotStateObservation
                     new ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,int>
                     (*this, & DGIMUModelBaseFlexEstimation::getFlexTime ,docstring));
 
+        //set the linear and angular stifness et damping of the flexibility
+        docstring  =
+                "\n"
+                "    Sets the linear stifness of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKfe"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKfe ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the linear damping of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKfv"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKfv ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the angular stifness of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKte"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKte ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the angular damping of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKtv"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKtv ,docstring));
+
+
         estimator_.setInput(input);
         estimator_.setMeasurementInput(input);
         inputSIN.setConstant(convertVector<dynamicgraph::Vector>(input));
@@ -582,7 +620,7 @@ namespace sotStateObservation
 
         stateObservation::Vector v = stateObservation::Vector::Zero(6,1);
         v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::linVel,3);
-        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::angAcc,3);
+        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::angVel,3);
 
         flexibilityVelocityVector = convertVector<dynamicgraph::Vector>(v);
 

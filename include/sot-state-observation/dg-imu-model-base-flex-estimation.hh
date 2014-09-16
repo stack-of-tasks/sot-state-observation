@@ -120,7 +120,25 @@ namespace sotStateObservation
                 return flexibilitySOUT.getTime();
             }
 
+            void setKfe(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKfe(convertMatrix<stateObservation::Matrix3>(m));
+            }
 
+            void setKfv(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKfv(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKte(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKte(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKtv(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKtv(convertMatrix<stateObservation::Matrix3>(m));
+            }
 
 
             /**

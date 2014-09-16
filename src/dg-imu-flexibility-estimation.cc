@@ -243,7 +243,7 @@ namespace sotStateObservation
         simulatedSensorsSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeSimulatedSensors,
                     this, _1, _2));
 
-        predictedSensorsSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeSimulatedSensors,
+        predictedSensorsSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computePredictedSensors,
                     this, _1, _2));
 
         inovationSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeInovation,

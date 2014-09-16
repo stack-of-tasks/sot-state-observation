@@ -138,8 +138,6 @@ namespace sotStateObservation
     setSubvector(velocity, 0, tdot );
     setSubvector(velocity, 3, omega);
 
-    //std::cout << "computegV0" << std::endl;
-
     return velocity;
 
   }
