@@ -46,6 +46,8 @@ namespace sotStateObservation
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexThetaU"),
         flexVelocityVectorSOUT(flexibilitySOUT,
                         "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexVelocityVector"),
+        flexAccelerationVectorSOUT(flexibilitySOUT,
+                        "DGIMUFlexibilityEstimation("+inName+")::output(vector)::flexAccelerationVector"),
 
 
         flexInverseSOUT (flexibilitySOUT,
@@ -93,6 +95,7 @@ namespace sotStateObservation
         signalRegistration (flexTransformationMatrixSOUT);
         signalRegistration (flexPoseThetaUSOUT);
         signalRegistration (flexVelocityVectorSOUT);
+        signalRegistration (flexAccelerationVectorSOUT);
 
         signalRegistration (flexInverseSOUT);
         signalRegistration (flexMatrixInverseSOUT);
@@ -213,6 +216,9 @@ namespace sotStateObservation
 				    this, _1, _2));
 
         flexVelocityVectorSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexVelocityVector,
+				    this, _1, _2));
+
+        flexAccelerationVectorSOUT.setFunction(boost::bind(&DGIMUFlexibilityEstimation::computeFlexAccelerationVector,
 				    this, _1, _2));
 
 
@@ -581,11 +587,27 @@ namespace sotStateObservation
 
         stateObservation::Vector v = stateObservation::Vector::Zero(6,1);
         v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::linVel,3);
-        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::angAcc,3);
+        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::angVel,3);
 
         flexibilityVelocityVector = convertVector<dynamicgraph::Vector>(v);
 
         return flexibilityVelocityVector;
+    }
+
+    ::dynamicgraph::Vector& DGIMUFlexibilityEstimation::computeFlexAccelerationVector
+                        (::dynamicgraph::Vector & flexibilityAccelerationVector, const int& inTime)
+    {
+        //std::cout << "computeFlexPoseThetaU " << inTime << std::endl;
+
+        flexibilitySOUT(inTime);
+
+        stateObservation::Vector v = stateObservation::Vector::Zero(6,1);
+        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::linAcc,3);
+        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::angAcc,3);
+
+        flexibilityAccelerationVector = convertVector<dynamicgraph::Vector>(v);
+
+        return flexibilityAccelerationVector;
     }
 
 
