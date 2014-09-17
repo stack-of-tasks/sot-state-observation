@@ -73,6 +73,12 @@ private:
     ::dynamicgraph::Vector& computegV0
     (::dynamicgraph::Vector & velocity, const int& intTime);
 
+    ::dynamicgraph::Vector& computegA0
+    (::dynamicgraph::Vector & scceleration, const int& intTime);
+
+    ::dynamicgraph::Vector& computegP0
+    (::dynamicgraph::Vector & position, const int& intTime);
+
     /**
     \brief local to global frame position
     */
@@ -84,6 +90,11 @@ private:
     dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> gVlSIN;
 
     /**
+    \brief local to global acceleration vector
+    */
+    dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> gAlSIN;
+
+    /**
     \brief Homogeneous matrix in the local frame
     */
     dynamicgraph::SignalPtr < ::dynamicgraph::sot::MatrixHomogeneous, int> lM0SIN;
@@ -93,6 +104,15 @@ private:
     */
     dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> lV0SIN;
 
+    /**
+    \brief velocity vector in the local frame
+    */
+    dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> lA0SIN;
+
+    /**
+    \brief velocity vector in the local frame
+    */
+    dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> lP0SIN;
 
     /**
     \brief Estimation of the attitude
@@ -104,7 +124,18 @@ private:
     */
     dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> gV0SOUT;
 
+    /**
+    \brief Estimation of the attitude
+    */
+    dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> gA0SOUT;
+
+    /**
+    \brief Estimation of the attitude
+    */
+    dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> gP0SOUT;
+
     bool yawRemoved_;
+    bool pointMode_;
 };
 
 } // namespace sotStateObservation
