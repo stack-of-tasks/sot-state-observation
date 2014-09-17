@@ -222,6 +222,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computePredictedSensors
                         (::dynamicgraph::Vector & sensorSignal, const int &inTime);
 
+            double& computeFlexibilityComputationTime
+                        (double& flexibilityComputationTime, const int &inTime);
+
 
 
 
@@ -308,6 +311,12 @@ namespace sotStateObservation
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> predictedSensorsSOUT;
 
+            /**
+            \brief Evaluation of the time of flexibility computation
+            */
+            dynamicgraph::SignalTimeDependent
+                                < double,int> flexibilityComputationTimeSOUT;
+
 
             /**
             \brief A simulation of the sensors' signals
@@ -329,6 +338,7 @@ namespace sotStateObservation
             static const unsigned inputSizeBase=42;
             unsigned inputSize_;
             unsigned contactNumber_;
+
 
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
             int currentTime_;

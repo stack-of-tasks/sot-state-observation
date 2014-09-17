@@ -7,7 +7,6 @@
 
 #include <sot-state-observation/dg-imu-model-base-flex-estimation.hh>
 
-
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( DGIMUModelBaseFlexEstimation, "DGIMUModelBaseFlexEstimation" );
@@ -37,6 +36,7 @@ namespace sotStateObservation
 
         simulatedSensorsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::simulatedSensors"),
         predictedSensorsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::predictedSensors"),
+        flexibilityComputationTimeSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(double)::flexibilityComputationTime"),
         inovationSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::inovation"),
         predictionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::prediction")
     {
@@ -67,6 +67,7 @@ namespace sotStateObservation
 
         signalRegistration (simulatedSensorsSOUT);
         signalRegistration (predictedSensorsSOUT);
+        signalRegistration (flexibilityComputationTimeSOUT);
         signalRegistration (inovationSOUT);
         signalRegistration (predictionSOUT);
 
@@ -233,6 +234,9 @@ namespace sotStateObservation
                     this, _1, _2));
 
         predictedSensorsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computePredictedSensors,
+                    this, _1, _2));
+
+        flexibilityComputationTimeSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibilityComputationTime,
                     this, _1, _2));
 
         inovationSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeInovation,
@@ -469,9 +473,12 @@ namespace sotStateObservation
     {
     }
 
+
+
     dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeFlexibility
                   (dynamicgraph::Vector & flexibility, const int& inTime)
     {
+
 
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
         if (inTime!=currentTime_)
@@ -502,17 +509,7 @@ namespace sotStateObservation
         }
 #endif
 
-//        if(on_==true)
-//        {
-              flexibility = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
-//            flexibility.setZero();
-//        }
-//        else
-//        {
-//            flexibility.setZero();
-//        }
-
-        //std::cout << "\n " << std::endl;
+        flexibility = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
 
         return flexibility;
     }
@@ -718,6 +715,12 @@ namespace sotStateObservation
 
         return sensorSignal = convertVector <dynamicgraph::Vector>
                                         (estimator_.getPredictedMeaurement());
+    }
+
+        double& DGIMUModelBaseFlexEstimation::computeFlexibilityComputationTime
+                    (double& flexibilityComputationTime, const int &inTime)
+    {
+        return flexibilityComputationTime=estimator_.getComputeFlexibilityTime();
     }
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeInovation
