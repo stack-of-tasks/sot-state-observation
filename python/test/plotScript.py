@@ -41,38 +41,82 @@ def center(v,m):
 
 path = 'logs/hrp-2/static-calibration/ds-frontal/robot/2015-05-28/'
 path = '/home/mbenalle/devel/ros/src/sot-stabilizer/logs/hrp-2/hand-compensator-oscillator/robot/2015-07-07/'
+
+path = '/home/mbenalle/devel/ros/src/sot-stabilizer/logs//hrp-2/stabilizer/simu/mixed-stabilizers/stand-on-left-foot/2014-08-20/'
+path = '/home/mbenalle/devel/ros/src/sot-stabilizer/logs//hrp-2/stabilizer/simu/stock-stabilizer/stand-on-left-foot/2014-08-20/'
+path = '/home/mbenalle/devel/ros/src/sot-stabilizer/logs//hrp-2/stabilizer/simu/custom-stabilizer/stand-on-left-foot/2014-08-20'
+path = '/home/mbenalle/devel/ros/src/sot-stabilizer/logs//hrp-2/stabilizer/simu/no-stabilizer/stand-on-left-foot/2014-08-20'
+
+
+path = '/home/mbenalle/devel/ros/src/sot-stabilizer/logs//hrp-2/stabilizer/simu/mixed-stabilizers/walkfwd-shifted/2014-08-20'
+#path = '/home/mbenalle/devel/ros/src/sot-stabilizer/logs//hrp-2/stabilizer/simu/stock-stabilizer/walkfwd-shifted/2014-08-20'
+#path = '/home/mbenalle/devel/ros/src/sot-stabilizer/logs//hrp-2/stabilizer/simu/no-stabilizer/walkfwd-shifted/2014-08-20'
+#path = '/home/mbenalle/devel/ros/src/sot-stabilizer/logs//hrp-2/stabilizer/simu/custom-stabilizer/walkfwd-shifted/2014-08-20'
+
+
+
 #path = 'logs/hrp-2/static-calibration/ss-frontal/simu/2014-05-30/'
 path = '/tmp/'
 
-seqplay = False
-zmpPlot =True
-comVelPlot= False
-comPlot = False
-flexPlot=False
-forcesPlot=False
-imuPlot=False
-stabilizerDebug=False
+path=path+'/'
 
+comheight = 0.804691781499
+gravity = 9.81
+dt = 0.005
+
+seqplay = False
+seqplayForce = False
+seqplayZMP = False
+zmpPlot =True
+zmpfromcom =True
+zmpfromflex =True
+comVelPlot= False
+comAccPlot= True
+comPlot = True
+flexPlot=True
+forcesPlot=True
+imuPlot=False
+stabilizerDebug=True
 
 
 if zmpPlot:
-    zmpRef = np.genfromtxt (path+"zmpRef-zmp.dat")
     zmpReal  = np.genfromtxt (path+"zmp-zmp.dat")
     fzmp = plt.figure(); axzmp = fzmp.add_subplot(111)
     axzmp.plot(zmpReal[:,0], zmpReal[:,1], label='zmp X')
     axzmp.plot(zmpReal[:,0], zmpReal[:,2], label='zmp Y')
-    axzmp.plot(zmpRef [:,0], zmpRef [:,1], label='zmpRef X')
-    axzmp.plot(zmpRef [:,0], zmpRef [:,2], label='zmpRef Y')
+
+    if seqplayForce:
+        zmpRef = np.genfromtxt (path+"zmpRef-zmp.dat")
+        axzmp.plot(zmpRef [:,0], zmpRef [:,1], label='zmpRef X')
+        axzmp.plot(zmpRef [:,0], zmpRef [:,2], label='zmpRef Y')
+    if seqplayZMP:
+        zmpSeq = np.genfromtxt (path+"seqplay-zmp.dat")
+        axzmp.plot(zmpSeq [:,0], zmpSeq [:,1], label='zmpSeq X')
+        axzmp.plot(zmpSeq [:,0], zmpSeq [:,2], label='zmpSeq Y')
     if seqplay:
         lankleVelref = np.genfromtxt (path+"seqplay-leftAnkleVel.dat")
         rankleVelref = np.genfromtxt (path+"seqplay-rightAnkleVel.dat")
-        axzmp.plot(lankleVelref[:,0], lankleVelref[:,1], label='LeftAnkleVel')
-        axzmp.plot(rankleVelref[:,0], rankleVelref[:,2], label='RightAnkleVel')
+        #axzmp.plot(lankleVelref[:,0], lankleVelref[:,1], label='LeftAnkleVel')
+        #axzmp.plot(rankleVelref[:,0], rankleVelref[:,2], label='RightAnkleVel')
     else:
         lanklePos = np.genfromtxt (path+"robot_feature_left-ankle-position.dat")
         ranklePos = np.genfromtxt (path+"robot_feature_right-ankle-position.dat")
-        axzmp.plot(lanklePos[:,0], lanklePos[:,4], label='LeftAnkle')
-        axzmp.plot(ranklePos[:,0], ranklePos[:,4], label='RightAnkle')
+        #axzmp.plot(lanklePos[:,0], lanklePos[:,4], label='LeftAnkle')
+        #axzmp.plot(ranklePos[:,0], ranklePos[:,4], label='RightAnkle')
+    
+    if zmpfromcom:
+        comSeq = np.genfromtxt (path+"seqplay-com.dat")
+        comddotSeq = np.genfromtxt (path+"seqplay-comddot.dat")
+        #axzmp.plot(comRec[:,0], comRec[:,1], label='comX')
+        #axzmp.plot(comRec[:,0], comRec[:,2], label='comy')
+        axzmp.plot(comSeq[:,0], comSeq[:,1]-comddotSeq[:,1]*comheight/gravity, label='zmpfromcomx')
+        axzmp.plot(comSeq[:,0], comSeq[:,2]-comddotSeq[:,2]*comheight/gravity, label='zmpfromcomy')
+
+    if zmpfromflex:
+        comReal = np.genfromtxt (path+"comreal-gP0.dat")
+        comddotReal = np.genfromtxt (path+"comreal-gA0.dat")
+        axzmp.plot(comReal[:,0], comReal[:,1]-comddotReal[:,1]*comheight/gravity, label='zmpfromflexx')
+        axzmp.plot(comReal[:,0], comReal[:,2]-comddotReal[:,2]*comheight/gravity, label='zmpfromflexy')
     
     handles, labels = axzmp.get_legend_handles_labels()
     axzmp.legend(handles, labels)
@@ -89,21 +133,47 @@ if comVelPlot:
     handles, labels = axcomvel.get_legend_handles_labels()
     axcomvel.legend(handles, labels)
 
+if comAccPlot:
+    comAcc = np.genfromtxt (path+"seqplay-comddot.dat")
+    comAccRef = np.genfromtxt (path+"com-stabilized-comddotRefOUT.dat")
+    comAccError = np.genfromtxt (path+"com-stabilized-debug.dat")
+
+    fcomAccx = plt.figure(); axcomAccx = fcomAccx.add_subplot(111)
+    fcomAccy = plt.figure(); axcomAccy = fcomAccy.add_subplot(111)
+
+    axcomAccx.plot(comAcc[:,0], comAcc[:,1], label='comRecacc-x')
+    axcomAccy.plot(comAcc[:,0], comAcc[:,2], label='comRecacc-y')
+
+    axcomAccx.plot(comAccRef[:,0], comAccRef[:,1], label='comrefacc-x')
+    axcomAccy.plot(comAccRef[:,0], comAccRef[:,2], label='comrefacc-y')
+
+    axcomAccx.plot(comAccError[:,0], comAccError[:,5]-comAccError[:,6]+comAccRef[:,1], label='comerroracc-x')
+    axcomAccy.plot(comAccError[:,0], comAccError[:,12]-comAccError[:,13]+comAccRef[:,2], label='comerroracc-y')
+    
+    handles, labels = axcomAccx.get_legend_handles_labels()
+    axcomAccx.legend(handles, labels)
+    handles, labels = axcomAccy.get_legend_handles_labels()
+    axcomAccy.legend(handles, labels)
+
 if comPlot:
     com = np.genfromtxt (path+"com-stabilized-com.dat")
     comRef = np.genfromtxt (path+"seqplay-com.dat")
+    comReal = np.genfromtxt (path+"comreal-gP0.dat")
     fcom = plt.figure(); axcom = fcom.add_subplot(111)
-    axcom.plot(com[:,0], com[:,1], label='comvel-x')
-    axcom.plot(com[:,0], com[:,2], label='comvel-y')
-    axcom.plot(comRef[:,0], comRef[:,1], label='comvelref-x')
-    axcom.plot(comRef[:,0], comRef[:,2], label='comvelref-y')
+    axcom.plot(com[:,0], com[:,1], label='com-x')
+    axcom.plot(com[:,0], com[:,2], label='com-y')
+    axcom.plot(comRef[:,0], comRef[:,1], label='comref-x')
+    axcom.plot(comRef[:,0], comRef[:,2], label='comref-y')
+
+    axcom.plot(comReal[:,0], comReal[:,1], label='comreal-x')
+    axcom.plot(comReal[:,0], comReal[:,2], label='comreal-y')
     
-    handles, labels = axcomvel.get_legend_handles_labels()
-    axcomvel.legend(handles, labels)
+    handles, labels = axcom.get_legend_handles_labels()
+    axcom.legend(handles, labels)
 
 if flexPlot:
-    flex = np.genfromtxt (path+"flextimator-flexibility.dat")
-    #flex = np.genfromtxt (path+"com-stabilizedEstimator-flexibility.dat")
+    #flex = np.genfromtxt (path+"flextimator-flexibility.dat")
+    flex = np.genfromtxt (path+"com-stabilizedEstimator-flexibility.dat")
     
     fflex = plt.figure(); axflex = fflex.add_subplot(111)
     axflex.plot(flex[:,0], flex[:,4], label='flexibility-x')
@@ -116,13 +186,13 @@ if forcesPlot:
     forcesl = np.genfromtxt (path+"HRP2LAAS-forceLLEG.dat")
     
     fforces = plt.figure(); axforces = fforces.add_subplot(111)
-   # axforces.plot(forcesl[21000:29000,0]*0.005, forcesl[:,4], label='force-l-x')
-   # axforces.plot(forcesl[21000:29000,0]*0.005, forcesl[:,5], label='force-l-y')
+    axforces.plot(forcesl[:,0], forcesl[:,1], label='force-l-x')
+    axforces.plot(forcesl[:,0], forcesl[:,2], label='force-l-y')
 
     forcesr = np.genfromtxt (path+"HRP2LAAS-forceRLEG.dat")
     
-    #axforces.plot(forcesr[21000:29000,0]*0.005, forcesr[21000:29000,4], label='force-r-x')
-    axforces.plot(forcesr[28500:32000,0]*0.005, forcesr[28500:32000,5]+forcesl[28500:32000,5], label='force-r-y')
+    axforces.plot(forcesr[:,0], forcesr[:,1], label='force-r-x')
+    axforces.plot(forcesr[:,0], forcesr[:,2], label='force-r-y')
     
     handles, labels = axforces.get_legend_handles_labels()
     axforces.legend(handles, labels)
@@ -146,6 +216,8 @@ if stabilizerDebug:
     fstabx = plt.figure(); axstabx = fstabx.add_subplot(111)
 
     axstabx.plot(stab[:,0], stab[:,5], label='xddot')    
+    axstabx.plot(stab[:,0], stab[:,7], label='xddot cmd')
+    axstabx.plot(stab[:,0], stab[:,3], label='xdot')
     axstabx.plot(stab[:,0], stab[:,1], label='x')    
     axstabx.plot(stab[:,0], stab[:,2], label='flex-x')    
 
@@ -155,9 +227,11 @@ if stabilizerDebug:
 
     fstaby = plt.figure(); axstaby = fstaby.add_subplot(111)
 
-    axstaby.plot(stab[:,0], stab[:,10], label='yddot')    
-    axstaby.plot(stab[:,0], stab[:,6], label='y')    
-    axstaby.plot(stab[:,0], stab[:,7], label='flex-y')    
+    axstaby.plot(stab[:,0], stab[:,12], label='yddot')    
+    axstaby.plot(stab[:,0], stab[:,14], label='yddot cmd')
+    axstaby.plot(stab[:,0], stab[:,10], label='ydot')
+    axstaby.plot(stab[:,0], stab[:,8], label='y')    
+    axstaby.plot(stab[:,0], stab[:,9], label='flex-y')    
 
 
     handles, labels = axstaby.get_legend_handles_labels()
