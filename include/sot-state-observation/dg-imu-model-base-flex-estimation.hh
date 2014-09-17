@@ -120,7 +120,25 @@ namespace sotStateObservation
                 return flexibilitySOUT.getTime();
             }
 
+            void setKfe(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKfe(convertMatrix<stateObservation::Matrix3>(m));
+            }
 
+            void setKfv(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKfv(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKte(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKte(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKtv(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKtv(convertMatrix<stateObservation::Matrix3>(m));
+            }
 
 
             /**
@@ -203,6 +221,9 @@ namespace sotStateObservation
 
             ::dynamicgraph::Vector& computePredictedSensors
                         (::dynamicgraph::Vector & sensorSignal, const int &inTime);
+
+            double& computeFlexibilityComputationTime
+                        (double& flexibilityComputationTime, const int &inTime);
 
 
 
@@ -290,6 +311,12 @@ namespace sotStateObservation
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> predictedSensorsSOUT;
 
+            /**
+            \brief Evaluation of the time of flexibility computation
+            */
+            dynamicgraph::SignalTimeDependent
+                                < double,int> flexibilityComputationTimeSOUT;
+
 
             /**
             \brief A simulation of the sensors' signals
@@ -311,6 +338,7 @@ namespace sotStateObservation
             static const unsigned inputSizeBase=42;
             unsigned inputSize_;
             unsigned contactNumber_;
+
 
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
             int currentTime_;

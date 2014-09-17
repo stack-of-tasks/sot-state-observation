@@ -176,6 +176,7 @@ namespace sotStateObservation
             {
                 position = getSubvector(lastVector_,0,3)
                             + dt_*getSubvector(input,6,3);
+             //   std::cout << "bon endroit" << std::endl;
             }
             else
             {
@@ -198,6 +199,7 @@ namespace sotStateObservation
                 output.resize(outputSize,false);
                 setSubvector(output, outputIndex, position);
                 outputIndex +=3;
+          //      std::cout << "bon endroit2" << std::endl;
             }
             else
                 throw std::runtime_error
