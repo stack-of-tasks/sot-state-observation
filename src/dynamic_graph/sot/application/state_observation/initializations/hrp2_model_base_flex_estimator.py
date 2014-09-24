@@ -25,6 +25,7 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         self.sensorStack.selec1 (0, 3)
         self.sensorStack.selec2 (0, 3)
         plug(self.sensorStack.sout,self.measurement);
+
         self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
         plug(robot.frames['accelerometer'].position,self.inputPos.sin)
         self.robot.dynamic.createJacobian('ChestJ_OpPoint','chest')
@@ -55,11 +56,11 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         self.angMomentum=(0,0,0)
         self.dotAngMomentum=(0,0,0) 
 
-	# Waist position
-	self.robot.dynamic.waist.recompute(1)
-	#self.robot.dynamic.chest.recompute(1)
-	#self.robot.dynamic.com.recompute(1)
-	self.positionWaist=self.robot.dynamic.waist
+        # Waist position
+        self.robot.dynamic.waist.recompute(1)
+        #self.robot.dynamic.chest.recompute(1)
+        #self.robot.dynamic.com.recompute(1)
+        self.positionWaist=self.robot.dynamic.waist
 
 
         # Definition of com and derivatives
@@ -74,8 +75,8 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         self.comVectorIn.selec2 (0, 3)
         self.comVector = PositionStateReconstructor (name+'ComVector')
         plug(self.comVectorIn.sout,self.comVector.sin)
-        self.comVector.inputFormat.value  = '000011'
-        self.comVector.outputFormat.value = '000111'
+        self.comVector.inputFormat.value  = '000101'
+        self.comVector.outputFormat.value = '010101'
       
              
         
@@ -84,7 +85,7 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         plug(self.comVector.sout,self.inputVector.comVector)
         plug(self.inertia,self.inputVector.inertia)
         self.inputVector.dinertia.value=self.dotInertia
-	plug(self.positionWaist,self.inputVector.positionWaist)
+        plug(self.positionWaist,self.inputVector.positionWaist)
         self.inputVector.angMomentum.value=self.angMomentum
         self.inputVector.dangMomentum.value=self.dotAngMomentum
         plug(self.IMUVector.sout,self.inputVector.imuVector)
