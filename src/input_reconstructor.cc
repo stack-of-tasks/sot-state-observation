@@ -87,10 +87,9 @@ namespace sotStateObservation
         double m=inertia(0,0); //<=== donne 56.8;
         //std::cout << "Masse=" << m << std::endl;
 
-        dynamicgraph::Vector waist, com, localframe;
+        dynamicgraph::Vector waist, com;
         waist.resize(3);
         com.resize(3);
-        localframe.resize(3);
 
         waist.elementAt(0)=homoWaist(0,3);
         waist.elementAt(1)=homoWaist(1,3);
@@ -100,10 +99,6 @@ namespace sotStateObservation
         com.elementAt(1)=comVector(1);
         com.elementAt(2)=comVector(2);
 
-        localframe.elementAt(0)=0;
-        localframe.elementAt(1)=0;
-        localframe.elementAt(2)=0;
-
         // Inertia expressed at waist
         inert.elementAt(0)=inertia(3,3);
         inert.elementAt(1)=inertia(4,4);
@@ -112,27 +107,27 @@ namespace sotStateObservation
         inert.elementAt(4)=inertia(3,5);
         inert.elementAt(5)=inertia(4,5);
 
-               // std::cout << "\n\n\n\n\n INERTIA="<< inert << "\n\n\n\n\n" << std::endl;
+        //        std::cout << " INERTIA0= "<< inert << std::endl;
 
         // From waist to com
-        inert.elementAt(0) -= -m*((com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
-        inert.elementAt(1) -= -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
-        inert.elementAt(2) -= -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1)));
-        inert.elementAt(3) -= m*(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(2)-waist.elementAt(2));
-        inert.elementAt(4) -= m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(2)-waist.elementAt(2));
-        inert.elementAt(5) -= m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(1)-waist.elementAt(1));
+        inert.elementAt(0) += -m*((com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
+        inert.elementAt(1) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
+        inert.elementAt(2) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1)));
+        inert.elementAt(3) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(1)-waist.elementAt(1));
+        inert.elementAt(4) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(2)-waist.elementAt(2));
+        inert.elementAt(5) += m*(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(2)-waist.elementAt(2));
 
-             //   std::cout << "\n\n\n\n\n INERTIA="<< inert << "\n\n\n\n\n" << std::endl;
+        //        std::cout << " INERTIA1= "<< inert << std::endl;
 
         // From com to local frame
-        inert.elementAt(0) -= -m*((localframe.elementAt(1)-com.elementAt(1))*(localframe.elementAt(1)-com.elementAt(1))+(localframe.elementAt(2)-com.elementAt(2))*(localframe.elementAt(2)-com.elementAt(2)));
-        inert.elementAt(1) -= -m*((localframe.elementAt(0)-com.elementAt(0))*(localframe.elementAt(0)-com.elementAt(0))+(localframe.elementAt(2)-com.elementAt(2))*(localframe.elementAt(2)-com.elementAt(2)));
-        inert.elementAt(2) -= -m*((localframe.elementAt(0)-com.elementAt(0))*(localframe.elementAt(0)-com.elementAt(0))+(localframe.elementAt(1)-com.elementAt(1))*(localframe.elementAt(1)-com.elementAt(1)));
-        inert.elementAt(3) -= m*(localframe.elementAt(1)-com.elementAt(1))*(localframe.elementAt(2)-com.elementAt(2));
-        inert.elementAt(4) -= m*(localframe.elementAt(0)-com.elementAt(0))*(localframe.elementAt(2)-com.elementAt(2));
-        inert.elementAt(5) -= m*(localframe.elementAt(0)-com.elementAt(0))*(localframe.elementAt(1)-com.elementAt(1));
+        inert.elementAt(0) -= -m*((com.elementAt(1))*(com.elementAt(1))+(com.elementAt(2))*(com.elementAt(2)));
+        inert.elementAt(1) -= -m*((com.elementAt(0))*(com.elementAt(0))+(com.elementAt(2))*(com.elementAt(2)));
+        inert.elementAt(2) -= -m*((com.elementAt(0))*(com.elementAt(0))+(com.elementAt(1))*(com.elementAt(1)));
+        inert.elementAt(3) -= m*(com.elementAt(0))*(com.elementAt(1));
+        inert.elementAt(4) -= m*(com.elementAt(0))*(com.elementAt(2));
+        inert.elementAt(5) -= m*(com.elementAt(1))*(com.elementAt(2));
 
-          //      std::cout << "\n\n\n\n\n INERTIA="<< inert << "\n\n\n\n\n" << std::endl;
+         //       std::cout << " INERTIA2= "<< inert  << std::endl;
 
 
 //        inert.elementAt(0)=48.2378;
