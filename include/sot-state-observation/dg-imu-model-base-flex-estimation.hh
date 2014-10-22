@@ -188,6 +188,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexVelocityVector
                         (::dynamicgraph::Vector & flexVelocityVector, const int& inTime);
 
+            ::dynamicgraph::Vector& computeFlexAccelerationVector
+                        (::dynamicgraph::Vector & flexAccelerationVector, const int& inTime);
+
 
 
             ::dynamicgraph::Vector& computeFlexInverse
@@ -284,6 +287,9 @@ namespace sotStateObservation
                                                 flexTransformationMatrixSOUT;
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> flexVelocityVectorSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> flexAccelerationVectorSOUT;
 
 
             /**
