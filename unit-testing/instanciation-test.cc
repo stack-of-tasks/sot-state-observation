@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <sot-state-observation/dg-imu-attitude-estimation.hh>
-#include <sot-state-observation/dg-imu-flexibility-estimation.hh>
+#include <sot-state-observation/dg-imu-model-free-flex-estimation.hh>
 #include <sot-state-observation/moving-frame-transformation.hh>
 
 
@@ -21,7 +21,7 @@ struct instanciator
 
     }
 
-    DGIMUFlexibilityEstimation f;
+    DGIMUModelFreeFlexEstimation f;
     DGIMUAttitudeEstimation a;
     MovingFrameTransformation t;
 };
