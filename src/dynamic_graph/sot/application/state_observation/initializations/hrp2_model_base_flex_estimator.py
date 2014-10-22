@@ -95,3 +95,12 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
        
         plug(self.inputVector.input,self.input)
         self.robot.flextimator = self
+
+        kfe=40000
+        kfv=600
+        kte=600
+        ktv=60
+        self.setKfe(matrixToTuple(np.diag((kfe,kfe,kfe))))
+        self.setKfv(matrixToTuple(np.diag((kfv,kfv,kfv))))
+        self.setKte(matrixToTuple(np.diag((kte,kte,kte))))
+        self.setKtv(matrixToTuple(np.diag((ktv,ktv,ktv))))
