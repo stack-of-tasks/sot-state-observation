@@ -136,6 +136,47 @@ namespace sotStateObservation
 //        inert.elementAt(3)=0.0;
 //        inert.elementAt(4)=0.0;
 //        inert.elementAt(5)=0.0;
+    }
+
+    void InputReconstructor::computeInertDot
+            (const dynamicgraph::Matrix & inertia, const dynamicgraph::Vector & dinertia,
+            const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector& dinert,
+            const dynamicgraph::Vector& comVector)
+    {
+
+        double m=inertia(0,0); //<=== donne 56.8;
+        //std::cout << "Masse=" << m << std::endl;
+
+        dynamicgraph::Vector waist, com, dcom;
+        waist.resize(3);
+        com.resize(3);
+        dcom.resize(3);
+
+        waist.elementAt(0)=homoWaist(0,3);
+        waist.elementAt(1)=homoWaist(1,3);
+        waist.elementAt(2)=homoWaist(2,3);
+
+        com.elementAt(0)=comVector(0);
+        com.elementAt(1)=comVector(1);
+        com.elementAt(2)=comVector(2);
+
+        dcom.elementAt(0)=comVector(3);
+        dcom.elementAt(1)=comVector(4);
+        dcom.elementAt(2)=comVector(5);
+
+        // Inertia expressed at waist
+        dinert = dinertia;
+
+        //        std::cout << " INERTIA0= "<< inert << std::endl;
+
+        // From com to local frame
+        dinert.elementAt(0) += 2*m*((com.elementAt(1))*(dcom.elementAt(1))+(com.elementAt(2))*(dcom.elementAt(2)));
+        dinert.elementAt(1) += 2*m*((com.elementAt(0))*(dcom.elementAt(0))+(com.elementAt(2))*(dcom.elementAt(2)));
+        dinert.elementAt(2) += 2*m*((com.elementAt(0))*(dcom.elementAt(0))+(com.elementAt(1))*(dcom.elementAt(1)));
+        dinert.elementAt(3) -= m*((com.elementAt(0))*(dcom.elementAt(1)) + (dcom.elementAt(0))*(com.elementAt(1)));
+        dinert.elementAt(4) -= m*((com.elementAt(0))*(dcom.elementAt(2)) + (dcom.elementAt(0))*(com.elementAt(2))) ;
+        dinert.elementAt(5) -= m*((com.elementAt(1))*(dcom.elementAt(2)) + (dcom.elementAt(1))*(com.elementAt(2)));
+
    }
 
     dynamicgraph::Vector& InputReconstructor::computeInput(dynamicgraph::Vector & input, const int& inTime)
@@ -153,10 +194,13 @@ namespace sotStateObservation
 
         int i, u=0,k;
 
-        dynamicgraph::Vector inert;
+        dynamicgraph::Vector inert,dinert;
         inert.resize(6);
 
+
         computeInert(inertia,homoWaist,inert,comVector);
+
+        computeInertDot(inertia,dinertia,homoWaist,dinert,comVector);
 //        std::cout << "Com: "<< comVector << std::endl;
 //        std::cout << "Inertia: ="<< inert << std::endl;
 
@@ -172,17 +216,46 @@ namespace sotStateObservation
         }
 
         for(i=0;i<6;++i){
-            input.elementAt(u)=dinertia(i);
+            input.elementAt(u)=dinert(i);
             u++;
         }
 
+        double m=inertia(0,0);
+
+        dynamicgraph::Vector angMomentumOut, dangMomentumOut;
+        dynamicgraph::Vector com, comdot, comddot;
+
+        com.resize(3);
+        comdot.resize(3);
+        comddot.resize(3);
+
+
+        for (i=0;i<3;++i)
+        {
+          com(i) = comVector(i);
+          comdot(i) = comVector(i+3);
+          comddot(i) = comVector(i+6);
+        }
+
+
+
+        angMomentumOut=angMomentum;
+        angMomentumOut+= m*crossProduct(com,comdot);
+
+
+        dangMomentumOut=dangMomentum;
+        dangMomentumOut+= m*crossProduct(com,comddot);
+
+
+
         for(i=0;i<3;++i){
-            input.elementAt(u)=angMomentum(i);
+            input.elementAt(u)=angMomentumOut(i);
             u++;
         }
 
+
         for(i=0;i<3;++i){
-            input.elementAt(u)=dangMomentum(i);
+            input.elementAt(u)=dangMomentumOut(i);
             u++;
         }
 
@@ -203,7 +276,6 @@ namespace sotStateObservation
 
         //cout << "contacts Position: " << contactsPosition << endl;
         //std::cout << "input" << input << std::endl;
-
 
         return input;
 

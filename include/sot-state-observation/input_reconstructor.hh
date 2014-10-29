@@ -67,7 +67,12 @@ namespace sotStateObservation
         */
 
              void computeInert
-                  (const dynamicgraph::Matrix & inertia, const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector&, const dynamicgraph::Vector&);
+                  (const dynamicgraph::Matrix & inertia, const dynamicgraph::Matrix & homoWaist,
+                  dynamicgraph::Vector&, const dynamicgraph::Vector&);
+
+            void computeInertDot
+                  (const dynamicgraph::Matrix & inertia, const dynamicgraph::Vector & dinertia,
+                  const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector&, const dynamicgraph::Vector&);
 
             dynamicgraph::Vector& computeInput
                   (dynamicgraph::Vector & input, const int& inTime);
