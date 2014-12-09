@@ -85,6 +85,11 @@ namespace sotStateObservation
                 estimator_.setVirtualMeasurementsCovariance(dt);
             }
 
+            void setContactModelNumber(const unsigned & nb)
+            {
+                estimator_.setContactModelNumber(nb);
+            }
+
             double getVirtualMeasurementsCovariance() const
             {
                 return estimator_.getVirtualMeasurementsCovariance();

@@ -8,8 +8,6 @@
 #include <sot-state-observation/dg-imu-model-free-flex-estimation.hh>
 
 
-
-
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( DGIMUModelFreeFlexEstimation,

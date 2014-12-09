@@ -7,6 +7,7 @@
 
 #include <sot-state-observation/dg-imu-model-base-flex-estimation.hh>
 
+
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( DGIMUModelBaseFlexEstimation, "DGIMUModelBaseFlexEstimation" );
@@ -471,6 +472,15 @@ namespace sotStateObservation
         addCommand(std::string("setKtv"),
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
                     (*this, & DGIMUModelBaseFlexEstimation::setKtv ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the contact model number \n"
+                "\n";
+
+        addCommand(std::string("setContactModelNumber"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,unsigned>
+                    (*this, & DGIMUModelBaseFlexEstimation::setContactModelNumber ,docstring));
 
 
         estimator_.setInput(input);
