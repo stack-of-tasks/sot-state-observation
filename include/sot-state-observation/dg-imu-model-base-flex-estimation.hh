@@ -80,21 +80,6 @@ namespace sotStateObservation
                 estimator_.setSamplingPeriod(dt);
             }
 
-            void setVirtualMeasurementsCovariance(const double & dt)
-            {
-                estimator_.setVirtualMeasurementsCovariance(dt);
-            }
-
-            void setContactModelNumber(const unsigned & nb)
-            {
-                estimator_.setContactModelNumber(nb);
-            }
-
-            double getVirtualMeasurementsCovariance() const
-            {
-                return estimator_.getVirtualMeasurementsCovariance();
-            }
-
             void setProcessNoiseCovariance(const ::dynamicgraph::Matrix & q)
             {
                 estimator_.setProcessNoiseCovariance(convertMatrix<stateObservation::Matrix>(q));

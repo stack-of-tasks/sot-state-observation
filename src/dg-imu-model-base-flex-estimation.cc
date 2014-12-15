@@ -356,31 +356,6 @@ namespace sotStateObservation
                 (*this, &DGIMUModelBaseFlexEstimation::getProcessNoiseCovariance, docstring));
 
 
-        //setVirtualMeasurementNoiseCovariance
-        docstring =
-                "\n"
-                "    Set the covariance matrix of the measuement noise \n"
-                "    takes a floating point mumber as input \n"
-                "\n";
-
-        addCommand(std::string("setVirtualMeasurementsCovariance"),
-	     new
-	     ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double>
-                (*this, &DGIMUModelBaseFlexEstimation::setVirtualMeasurementsCovariance, docstring));
-
-        //getVirtualMeasurementNoiseCovariance
-        docstring =
-                "\n"
-                "    Get the covariance matrix of the measuement noise \n"
-                "    gets a floating point mumbers as input \n"
-                "\n";
-
-        addCommand(std::string("getVirtualMeasurementCovariance"),
-	     new
-	     ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,double>
-                (*this, &DGIMUModelBaseFlexEstimation::getVirtualMeasurementsCovariance, docstring));
-
-
                  //setMeasurementNoiseCovariance
         docstring =
                 "\n"
