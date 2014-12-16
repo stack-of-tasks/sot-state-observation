@@ -25,7 +25,6 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         self.sensorStack.selec1 (0, 3)
         self.sensorStack.selec2 (0, 3)
         plug(self.sensorStack.sout,self.measurement);
-
         self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
         plug(robot.frames['accelerometer'].position,self.inputPos.sin)
         self.robot.dynamic.createJacobian('ChestJ_OpPoint','chest')

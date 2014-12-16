@@ -85,6 +85,11 @@ namespace sotStateObservation
                 estimator_.setVirtualMeasurementsCovariance(dt);
             }
 
+            void setContactModelNumber(const unsigned & nb)
+            {
+                estimator_.setContactModelNumber(nb);
+            }
+
             double getVirtualMeasurementsCovariance() const
             {
                 return estimator_.getVirtualMeasurementsCovariance();
@@ -215,6 +220,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeSimulatedSensors
                         (::dynamicgraph::Vector & sensorSignal, const int &inTime);
 
+            ::dynamicgraph::Vector& getForcesAndMoments
+                        (::dynamicgraph::Vector & forcesAndMoments, const int &inTime);
+
             ::dynamicgraph::Vector& computeInovation
                         (::dynamicgraph::Vector & inovation, const int &inTime);
 
@@ -248,7 +256,8 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr < unsigned , int> contactsNbrSIN;
 
 
-
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> forcesAndMomentsSOUT;
 
             /**
             \brief Estimation of the flexibility

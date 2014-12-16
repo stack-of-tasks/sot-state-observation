@@ -7,6 +7,7 @@
 
 #include <sot-state-observation/dg-imu-model-base-flex-estimation.hh>
 
+
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( DGIMUModelBaseFlexEstimation, "DGIMUModelBaseFlexEstimation" );
@@ -38,6 +39,7 @@ namespace sotStateObservation
 
         simulatedSensorsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::simulatedSensors"),
         predictedSensorsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::predictedSensors"),
+        forcesAndMomentsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::forcesAndMoments"),
         flexibilityComputationTimeSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(double)::flexibilityComputationTime"),
         inovationSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::inovation"),
         predictionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::prediction")
@@ -72,6 +74,7 @@ namespace sotStateObservation
         signalRegistration (simulatedSensorsSOUT);
         signalRegistration (predictedSensorsSOUT);
         signalRegistration (flexibilityComputationTimeSOUT);
+        signalRegistration (forcesAndMomentsSOUT);
         signalRegistration (inovationSOUT);
         signalRegistration (predictionSOUT);
 
@@ -247,6 +250,9 @@ namespace sotStateObservation
                     this, _1, _2));
 
         flexibilityComputationTimeSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibilityComputationTime,
+                    this, _1, _2));
+
+        forcesAndMomentsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getForcesAndMoments,
                     this, _1, _2));
 
         inovationSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeInovation,
@@ -472,6 +478,15 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
                     (*this, & DGIMUModelBaseFlexEstimation::setKtv ,docstring));
 
+        docstring  =
+                "\n"
+                "    Sets the contact model number \n"
+                "\n";
+
+        addCommand(std::string("setContactModelNumber"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,unsigned>
+                    (*this, & DGIMUModelBaseFlexEstimation::setContactModelNumber ,docstring));
+
 
         estimator_.setInput(input);
         estimator_.setMeasurementInput(input);
@@ -650,6 +665,15 @@ namespace sotStateObservation
         flexibilityAccelerationVector = convertVector<dynamicgraph::Vector>(v);
 
         return flexibilityAccelerationVector;
+    }
+
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::getForcesAndMoments(::dynamicgraph::Vector & forcesAndMoments, const int& inTime)
+    {
+        flexibilitySOUT(inTime);
+
+        forcesAndMoments=convertVector<dynamicgraph::Vector>(estimator_.getForcesAndMoments());
+
+        return forcesAndMoments;
     }
 
 
