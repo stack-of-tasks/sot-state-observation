@@ -80,6 +80,11 @@ namespace sotStateObservation
                 estimator_.setSamplingPeriod(dt);
             }
 
+            void setContactModel(const unsigned & nb)
+            {
+                estimator_.setContactModel(nb);
+            }
+
             void setProcessNoiseCovariance(const ::dynamicgraph::Matrix & q)
             {
                 estimator_.setProcessNoiseCovariance(convertMatrix<stateObservation::Matrix>(q));

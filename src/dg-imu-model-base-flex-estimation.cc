@@ -458,9 +458,9 @@ namespace sotStateObservation
                 "    Sets the contact model number \n"
                 "\n";
 
-        addCommand(std::string("setContactModelNumber"),
+        addCommand(std::string("setContactModel"),
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,unsigned>
-                    (*this, & DGIMUModelBaseFlexEstimation::setContactModelNumber ,docstring));
+                    (*this, & DGIMUModelBaseFlexEstimation::setContactModel ,docstring));
 
 
         estimator_.setInput(input);
