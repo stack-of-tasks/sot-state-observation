@@ -721,7 +721,7 @@ namespace sotStateObservation
         flexibilitySOUT(inTime);
 
         return sensorSignal = convertVector <dynamicgraph::Vector>
-                                        (estimator_.getPredictedMeaurement());
+                                        (estimator_.getPredictedMeasurement());
     }
 
     ::dynamicgraph::Vector& DGIMUModelFreeFlexEstimation::computeInovation
