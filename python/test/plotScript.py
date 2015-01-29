@@ -64,19 +64,25 @@ comheight = 0.804691781499
 gravity = 9.81
 dt = 0.005
 
-seqplay = False
-seqplayForce = False
-seqplayZMP = False
-zmpPlot =True
-zmpfromcom =True
-zmpfromflex =True
-comVelPlot= False
-comAccPlot= True
-comPlot = True
-flexPlot=True
-forcesPlot=True
-imuPlot=False
-stabilizerDebug=True
+on=True;
+off=False;
+only=True
+
+seqplay = off
+seqplayForce = off
+seqplayZMP = off
+zmpPlot =on
+zmpfromcom =off
+zmpfromflex =off
+zmpfromEstimatedflex =on
+comVelPlot= off
+comAccPlot= on
+comPlot = on
+flexPlot=on
+forcesPlot=on
+compareforcesPlot=on
+imuPlot=off
+stabilizerDebug=on
 
 
 if zmpPlot:
@@ -117,6 +123,11 @@ if zmpPlot:
         comddotReal = np.genfromtxt (path+"comreal-gA0.dat")
         axzmp.plot(comReal[:,0], comReal[:,1]-comddotReal[:,1]*comheight/gravity, label='zmpfromflexx')
         axzmp.plot(comReal[:,0], comReal[:,2]-comddotReal[:,2]*comheight/gravity, label='zmpfromflexy')
+
+    if zmpfromEstimatedflex:
+        zmpSeq = np.genfromtxt (path+"zmpestimated-zmp.dat")
+        axzmp.plot(zmpSeq [:,0], zmpSeq [:,1], label='zmpEst X')
+        axzmp.plot(zmpSeq [:,0], zmpSeq [:,2], label='zmpEst Y')
     
     handles, labels = axzmp.get_legend_handles_labels()
     axzmp.legend(handles, labels)
@@ -196,6 +207,35 @@ if forcesPlot:
     
     handles, labels = axforces.get_legend_handles_labels()
     axforces.legend(handles, labels)
+
+if compareforcesPlot:
+    forcesmeasured = np.genfromtxt (path+"com-stabilized-measuredForceTorque.dat")
+    forcessimulated = np.genfromtxt (path+"com-stabilizedEstimator-forcesAndMoments.dat")
+    
+    fforcescompare1 = plt.figure(); axforcescompare1 = fforcescompare1.add_subplot(111)
+    axforcescompare1.plot(forcesmeasured[:,0], forcesmeasured[:,1:4], label='forces1-meas')
+    axforcescompare1.plot(forcessimulated[:,0], forcessimulated[:,1:4], label='force1-est')
+
+    fforcescompare2 = plt.figure(); axforcescompare2 = fforcescompare2.add_subplot(111)
+    axforcescompare2.plot(forcesmeasured[:,0], forcesmeasured[:,7:10], label='forces2-meas')
+    axforcescompare2.plot(forcessimulated[:,0], forcessimulated[:,7:10], label='force2-est')
+    
+    ftorquescompare1 = plt.figure(); axtorquescompare1 = ftorquescompare1.add_subplot(111)
+    axtorquescompare1.plot(forcesmeasured[:,0], forcesmeasured[:,4:7], label='torques1-meas')
+    axtorquescompare1.plot(forcessimulated[:,0], forcessimulated[:,4:7], label='torques1-est')
+
+    ftorquescompare2 = plt.figure(); axtorquescompare2 = ftorquescompare2.add_subplot(111)
+    axtorquescompare2.plot(forcesmeasured[:,0], forcesmeasured[:,10:13], label='torques2-meas')
+    axtorquescompare2.plot(forcessimulated[:,0], forcessimulated[:,10:13], label='torques2-est')
+    
+    handles, labels = axforcescompare1.get_legend_handles_labels()
+    axforcescompare1.legend(handles, labels)
+    handles, labels = axforcescompare2.get_legend_handles_labels()
+    axforcescompare2.legend(handles, labels)
+    handles, labels = axtorquescompare1.get_legend_handles_labels()
+    axtorquescompare1.legend(handles, labels)
+    handles, labels = axtorquescompare2.get_legend_handles_labels()
+    axtorquescompare2.legend(handles, labels)
 
 if imuPlot:
 
