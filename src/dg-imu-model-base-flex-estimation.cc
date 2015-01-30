@@ -498,11 +498,6 @@ namespace sotStateObservation
             estimator_.setContactsNumber(contactNb);
         }
 
-        if(inputSize_!=42+6*contactNumber_)
-        {
-            inputSize_=42+6*contactNumber_;
-            estimator_.setInputSize(inputSize_);
-        }
         estimator_.setMeasurement(convertVector<stateObservation::Vector>(measurement));
         estimator_.setMeasurementInput(convertVector<stateObservation::Vector>(input));
 
