@@ -51,13 +51,13 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
 
 
         # Definition of inertia, angular momentum and derivatives
-        self.robot.dynamic.inertia.recompute(1)
+        self.robot.dynamic.inertia.recompute(0)
         self.inertia=self.robot.dynamic.inertia #(48.2378,48.2378,2.87339,0,0,0) #
         self.dotInertia=(0,0,0,0,0,0)
         self.zeroMomentum=(0,0,0,0,0,0)
         
         # Waist position
-        self.robot.dynamic.waist.recompute(1)
+        self.robot.dynamic.waist.recompute(0)
         #self.robot.dynamic.chest.recompute(1)
         #self.robot.dynamic.com.recompute(1)
         self.positionWaist=self.robot.dynamic.waist
@@ -66,6 +66,7 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         # Definition of com and derivatives
         self.com=self.robot.dynamic.com#(0,0,0.75) # /!\ In the local frame!
         self.DCom = Multiply_matrix_vector(name+'DCom')
+	self.robot.dynamic.Jcom.recompute(0)
         plug(self.robot.dynamic.Jcom,self.DCom.sin1)
         plug(self.robot.device.velocity,self.DCom.sin2)
         self.comVectorIn = Stack_of_vector (name+'ComVectorIn')
