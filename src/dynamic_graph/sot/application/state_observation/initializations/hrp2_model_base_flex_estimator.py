@@ -8,6 +8,8 @@ import dynamic_graph.signal_base as dgsb
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose
 from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor
 
+from dynamic_graph.sot.core.derivator import Derivator_of_Vector
+
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
 
 
@@ -52,9 +54,8 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         self.robot.dynamic.inertia.recompute(1)
         self.inertia=self.robot.dynamic.inertia #(48.2378,48.2378,2.87339,0,0,0) #
         self.dotInertia=(0,0,0,0,0,0)
-        self.angMomentum=(0,0,0)
-        self.dotAngMomentum=(0,0,0) 
-
+        self.zeroMomentum=(0,0,0,0,0,0)
+        
         # Waist position
         self.robot.dynamic.waist.recompute(1)
         #self.robot.dynamic.chest.recompute(1)
@@ -85,8 +86,16 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         plug(self.inertia,self.inputVector.inertia)
         self.inputVector.dinertia.value=self.dotInertia
         plug(self.positionWaist,self.inputVector.positionWaist)
-        self.inputVector.angMomentum.value=self.angMomentum
-        self.inputVector.dangMomentum.value=self.dotAngMomentum
+        self.inputVector.setSamplingPeriod(robot.timeStep)
+        self.inputVector.setFDInertiaDot(True)
+
+        plug(self.robot.dynamic.angularmomentum,self.inputVector.angMomentum)
+        self.angMomDerivator = Derivator_of_Vector('angMomDerivator')
+        plug(self.robot.dynamic.angularmomentum,self.angMomDerivator.sin)
+        self.angMomDerivator.dt.value = self.robot.timeStep
+        plug(self.angMomDerivator.sout,self.inputVector.dangMomentum)
+        #self.inputVector.dangMomentum.value = self.zeroMomentum
+
         plug(self.IMUVector.sout,self.inputVector.imuVector)
         plug(self.contactNbr,self.inputVector.nbContacts)
         # plug(self.contacts,self.inputVector.contactsPosition)
