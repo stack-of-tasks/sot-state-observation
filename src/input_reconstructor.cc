@@ -32,8 +32,35 @@ namespace sotStateObservation
         imuVectorSIN(0x0 , "InputReconstructor("+inName+")::input(vector)::imuVector"),
         nbContactsSIN(0x0 , "InputReconstructor("+inName+")::input(unsigned)::nbContacts"),
         contactsPositionSIN(0x0 , "InputReconstructor("+inName+")::input(vector)::contactsPosition"),
-        inputSOUT("InputReconstructor("+inName+")::output(vector)::input")
+        inputSOUT("InputReconstructor("+inName+")::output(vector)::input"),
+        lastInertia_(6)
     {
+        bias_[0].resize(6);
+        bias_[1].resize(6);
+
+        bias_[0].setZero();
+        bias_[1].setZero();
+        lastInertia_.setZero();
+
+        currentTime = 0;
+
+        dt_=5e-3;
+
+
+        inputSOUT.addDependency(  comVectorSIN );
+        inputSOUT.addDependency(  inertiaSIN );
+        inputSOUT.addDependency(  dinertiaSIN );
+        inputSOUT.addDependency( positionWaistSIN );
+        inputSOUT.addDependency(  angMomentumSIN );
+        inputSOUT.addDependency(  dangMomentumSIN );
+        inputSOUT.addDependency(  imuVectorSIN );
+        inputSOUT.addDependency(  nbContactsSIN );
+        inputSOUT.addDependency(  contactsPositionSIN );
+        inputSOUT.addDependency(  inputSOUT);
+
+
+
+
         // Input signal
         signalRegistration (comVectorSIN);
         dynamicgraph::Vector comVector(3);
@@ -66,6 +93,56 @@ namespace sotStateObservation
         signalRegistration (nbContactsSIN);
 
         signalRegistration (contactsPositionSIN);
+
+        std::string docstring;
+
+
+        //setMeasurementNoiseCovariance
+        docstring =
+                "\n"
+                "    Set if the derivative of inertia matrix is computed using finite differences"
+                "\n";
+
+        addCommand(std::string("setFDInertiaDot"),
+	     new
+	     ::dynamicgraph::command::Setter <InputReconstructor,bool>
+                (*this, &InputReconstructor::setFDInertiaDot, docstring));
+
+        //setMeasurementNoiseCovariance
+        docstring =
+                "\n"
+                "    Set bias1"
+                "\n";
+
+        addCommand(std::string("setFootBias1"),
+	     new
+	     ::dynamicgraph::command::Setter <InputReconstructor,dynamicgraph::Vector>
+                (*this, &InputReconstructor::setFootBias1, docstring));
+
+        //setMeasurementNoiseCovariance
+        docstring =
+                "\n"
+                "    Set bias2"
+                "\n";
+
+        addCommand(std::string("setFootBias2"),
+	     new
+	     ::dynamicgraph::command::Setter <InputReconstructor,dynamicgraph::Vector>
+                (*this, &InputReconstructor::setFootBias2, docstring));
+
+                //setMeasurementNoiseCovariance
+        docstring =
+                "\n"
+                "    Set sampling period"
+                "\n";
+
+        addCommand(std::string("setSamplingPeriod"),
+	     new
+	     ::dynamicgraph::command::Setter <InputReconstructor,double>
+                (*this, &InputReconstructor::setSamplingPeriod, docstring));
+
+
+
 
         // Output that is input
         signalRegistration (inputSOUT);
@@ -143,7 +220,7 @@ namespace sotStateObservation
             const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector& dinert,
             const dynamicgraph::Vector& comVector)
     {
-
+      //FIXE : THIS FUNCTION IS WRONG
         double m=inertia(0,0); //<=== donne 56.8;
         //std::cout << "Masse=" << m << std::endl;
 
@@ -182,6 +259,15 @@ namespace sotStateObservation
     dynamicgraph::Vector& InputReconstructor::computeInput(dynamicgraph::Vector & input, const int& inTime)
     {
 
+        if (currentTime==inTime)
+        {
+          input =  inputSOUT.accessCopy();
+
+          return input;
+        }
+
+        currentTime = inTime;
+
         const dynamicgraph::Matrix& inertia=inertiaSIN.access(inTime);
         const dynamicgraph::Matrix& homoWaist=positionWaistSIN.access(inTime);
         const dynamicgraph::Vector& comVector=comVectorSIN.access(inTime);
@@ -200,7 +286,20 @@ namespace sotStateObservation
 
         computeInert(inertia,homoWaist,inert,comVector);
 
-        computeInertDot(inertia,dinertia,homoWaist,dinert,comVector);
+        if (derivateInertiaFD_)
+        {
+          if (lastInertia_.size()>0 && lastInertia_.norm()!=0)
+            dinert = (1/dt_)*(inert - lastInertia_);
+          else
+          {
+            dinert.resize(6);
+            dinert.setZero();
+          }
+        }
+        else
+          computeInertDot(inertia,dinertia,homoWaist,dinert,comVector);
+
+        lastInertia_ = inert;
 //        std::cout << "Com: "<< comVector << std::endl;
 //        std::cout << "Inertia: ="<< inert << std::endl;
 
@@ -238,14 +337,11 @@ namespace sotStateObservation
         }
 
 
-
         angMomentumOut=angMomentum;
-        angMomentumOut+= m*crossProduct(com,comdot);
 
+        //dangMomentumOut=dangMomentum;
 
-        dangMomentumOut=dangMomentum;
-        dangMomentumOut+= m*crossProduct(com,comddot);
-
+        dangMomentumOut= m*crossProduct(com,comddot);
 
 
         for(i=0;i<3;++i){
@@ -266,7 +362,7 @@ namespace sotStateObservation
 
 
         for(i=0;i<6*nbContacts;++i){
-            input.elementAt(u)=contactsPosition(i);
+            input.elementAt(u)=contactsPosition(i)+bias_[i/6](i%6);
 //            if(i==2)
 //            {
 //                input.elementAt(u) += -0.0015;

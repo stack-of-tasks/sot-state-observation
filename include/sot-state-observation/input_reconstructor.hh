@@ -50,6 +50,27 @@ namespace sotStateObservation
                     "Entity that take signals input and concatenate them";
             }
 
+            void setFootBias1 (const ::dynamicgraph::Vector & b)
+            {
+              bias_[0]=b;
+            }
+
+            void setFootBias2 (const ::dynamicgraph::Vector & b)
+            {
+              bias_[1]=b;
+            }
+
+            void setFDInertiaDot(const bool& b)
+            {
+              derivateInertiaFD_=b;
+            }
+
+            void setSamplingPeriod(const double& dt)
+            {
+              dt_=dt;
+            }
+
+
 
                     /**
             \name Parameters
@@ -110,7 +131,17 @@ namespace sotStateObservation
             /**
             \brief input
             */
-            dynamicgraph::Signal < dynamicgraph::Vector, int> inputSOUT;
+            dynamicgraph::Signal< dynamicgraph::Vector, int> inputSOUT;
+
+            ::dynamicgraph::Vector bias_[2];
+
+            bool derivateInertiaFD_;
+
+            ::dynamicgraph::Vector lastInertia_;
+
+
+            int currentTime;
+            double dt_;
 
         };
 
