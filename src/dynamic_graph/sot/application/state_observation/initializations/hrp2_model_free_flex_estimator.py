@@ -5,14 +5,14 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector
-from dynamic_graph.sot.application.state_observation import DGIMUFlexibilityEstimation, PositionStateReconstructor
+from dynamic_graph.sot.application.state_observation import DGIMUModelFreeFlexEstimation, PositionStateReconstructor
 
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
 
 
-class HRP2FlexibilityEstimator(DGIMUFlexibilityEstimation):
+class HRP2ModelFreeFlexEstimator(DGIMUModelFreeFlexEstimation):
     def __init__(self, robot, name='flextimator'):
-        DGIMUFlexibilityEstimation.__init__(self,name)
+        DGIMUModelFreeFlexEstimation.__init__(self,name)
         self.setSamplingPeriod(0.005)
         self.robot = robot
         
