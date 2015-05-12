@@ -70,6 +70,15 @@ namespace sotStateObservation
                 R_.block(3,3,3,3)=convertMatrix<stateObservation::Matrix>(m);
             }
 
+            void startCalibration(const int & nbStep)
+            {
+                calibrate_=true;
+                nbStep_=nbStep;
+                currentStep_=0;
+                sumImuIn_.setZero();
+            }
+
+            void calibrate();
 
             /**
             \name Parameters
@@ -100,6 +109,11 @@ namespace sotStateObservation
 
             // Rotational matrix between the measured orientation of the IMU and the one we use
             stateObservation::Matrix R_;
+
+            stateObservation::Vector sumImuIn_;
+            bool calibrate_;
+            int nbStep_;
+            int currentStep_;
 
         };
 
