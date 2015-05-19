@@ -4,9 +4,8 @@
  *  Alexis MIFSUD
  */
 
-#ifndef SOT_DYNAMIC_GRAPH_CALIBRATE_IMU
-#define SOT_DYNAMIC_GRAPH_CALIBRATE_IMU
-
+#ifndef SOT_DYNAMIC_GRAPH_CALIBRATE
+#define SOT_DYNAMIC_GRAPH_CALIBRATE
 #define SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
 
 #include <dynamic-graph/entity.h>
@@ -25,7 +24,7 @@ namespace sotStateObservation
         /**
            \brief
         */
-        class CalibrateImu :
+        class Calibrate :
             public dynamicgraph::Entity,
             private boost::noncopyable //
         {
@@ -33,9 +32,9 @@ namespace sotStateObservation
             /**
             \brief Constructor by name
             */
-            CalibrateImu(const std::string& inName);
+            Calibrate(const std::string& inName);
 
-            ~CalibrateImu();
+            ~Calibrate();
 
             /// Each entity should provide the name of the class it belongs to
             virtual const std::string& getClassName (void) const
@@ -78,7 +77,7 @@ namespace sotStateObservation
                 sumImuIn_.setZero();
             }
 
-            void calibrate();
+            void calibrate(const int& inTime);
 
             /**
             \name Parameters

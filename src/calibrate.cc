@@ -10,17 +10,17 @@
 
 #include <math.h>
 
-#include <sot-state-observation/calibrate_imu.hh>
+#include <sot-state-observation/calibrate.hh>
 
 
 namespace sotStateObservation
 {
-    DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( CalibrateImu, "CalibrateImu" );
+    DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( Calibrate, "Calibrate" );
 
-    CalibrateImu::CalibrateImu( const std::string & inName):
+    Calibrate::Calibrate( const std::string & inName):
         Entity(inName),
-        imuSIN(0x0 , "CalibrateImu("+inName+")::input(vector)::imuIn"),
-        imuSOUT(0x0 , "CalibrateImu("+inName+")::output(vector)::imuOut"),
+        imuSIN(0x0 , "Calibrate("+inName+")::input(vector)::imuIn"),
+        imuSOUT(0x0 , "Calibrate("+inName+")::output(vector)::imuOut"),
         R_(6,6), calibrate_(false), sumImuIn_(6), nbStep_(0), currentStep_(0)
     {
         dynamicgraph::Vector imuVector(6);
@@ -45,8 +45,8 @@ namespace sotStateObservation
 
        addCommand(std::string("setRa"),
             new
-            ::dynamicgraph::command::Setter <CalibrateImu,dynamicgraph::Matrix>
-               (*this, &CalibrateImu::setRa, docstring));
+            ::dynamicgraph::command::Setter <Calibrate,dynamicgraph::Matrix>
+               (*this, &Calibrate::setRa, docstring));
 
        //getRa
        docstring =
@@ -56,8 +56,8 @@ namespace sotStateObservation
 
        addCommand(std::string("getRa"),
             new
-            ::dynamicgraph::command::Getter <CalibrateImu,dynamicgraph::Matrix>
-               (*this, &CalibrateImu::getRa, docstring));
+            ::dynamicgraph::command::Getter <Calibrate,dynamicgraph::Matrix>
+               (*this, &Calibrate::getRa, docstring));
 
        //settRg
        docstring =
@@ -67,8 +67,8 @@ namespace sotStateObservation
 
        addCommand(std::string("setRg"),
             new
-            ::dynamicgraph::command::Setter <CalibrateImu,dynamicgraph::Matrix>
-               (*this, &CalibrateImu::setRg, docstring));
+            ::dynamicgraph::command::Setter <Calibrate,dynamicgraph::Matrix>
+               (*this, &Calibrate::setRg, docstring));
 
        //getRg
        docstring =
@@ -78,8 +78,8 @@ namespace sotStateObservation
 
        addCommand(std::string("getRg"),
             new
-            ::dynamicgraph::command::Getter <CalibrateImu,dynamicgraph::Matrix>
-               (*this, &CalibrateImu::getRg, docstring));
+            ::dynamicgraph::command::Getter <Calibrate,dynamicgraph::Matrix>
+               (*this, &Calibrate::getRg, docstring));
 
 
        docstring  =
@@ -89,15 +89,15 @@ namespace sotStateObservation
 
        addCommand(std::string("startCalibration"),
             new
-            ::dynamicgraph::command::Setter <CalibrateImu,int>
-               (*this, &CalibrateImu::startCalibration, docstring));
+            ::dynamicgraph::command::Setter <Calibrate,int>
+               (*this, &Calibrate::startCalibration, docstring));
 
 
-        imuSOUT.setFunction(boost::bind(&CalibrateImu::computeImu, this, _1, _2));
+        imuSOUT.setFunction(boost::bind(&Calibrate::computeImu, this, _1, _2));
 
     }
 
-    CalibrateImu::~CalibrateImu()
+    Calibrate::~Calibrate()
     {
     }
 
@@ -124,35 +124,37 @@ namespace sotStateObservation
         return utheta.toRotationMatrix();
     }
 
-    void CalibrateImu::calibrate()
-    {
-        stateObservation::Vector meanImuIn;
-        meanImuIn=sumImuIn_/nbStep_;
-
-        std::cout << "sumImu" << sumImuIn_ << std::endl;
-        std::cout << "meanImu" << meanImuIn << std::endl;
-
-        // determination of Ra
-        R_.block(0,0,3,3)=Rdetermination(meanImuIn.block(0,0,3,1));
-        // determination of Rg
-        R_.block(3,3,3,3)=Rdetermination(meanImuIn.block(3,0,3,1));
-
-        calibrate_=false;
-    }
-
-    dynamicgraph::Vector& CalibrateImu::computeImu(dynamicgraph::Vector & imuOut, const int& inTime)
+    void Calibrate::calibrate(const int& inTime)
     {
         const stateObservation::Vector& imuIn=convertVector<stateObservation::Vector>(imuSIN.access(inTime));
 
-        if(calibrate_==true && currentStep_ < nbStep_)
+        if(currentStep_ < nbStep_)
         {
             sumImuIn_+=imuIn;
             currentStep_++;
             std::cout << "calibration time= " << currentStep_ << std::endl;
         }
-        else if(calibrate_==true && currentStep_ == nbStep_)
+        else if(currentStep_ == nbStep_)
         {
-            calibrate();
+            // IMU calibration
+            stateObservation::Vector meanImuIn;
+            meanImuIn=sumImuIn_/nbStep_;
+            R_.block(0,0,3,3)=Rdetermination(meanImuIn.block(0,0,3,1)); // determination of Ra
+            R_.block(3,3,3,3)=Rdetermination(meanImuIn.block(3,0,3,1)); // determination of Rg
+
+            // Feet position calibration
+
+
+            calibrate_=false;
+        }
+    }
+
+    dynamicgraph::Vector& Calibrate::computeImu(dynamicgraph::Vector & imuOut, const int& inTime)
+    {
+        const stateObservation::Vector& imuIn=convertVector<stateObservation::Vector>(imuSIN.access(inTime));
+
+        if(calibrate_==true){
+            calibrate(inTime);
         }
 
         stateObservation::Vector prod=R_*imuIn;

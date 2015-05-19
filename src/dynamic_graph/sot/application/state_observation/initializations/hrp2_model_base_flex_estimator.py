@@ -11,7 +11,7 @@ from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEs
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
-from dynamic_graph.sot.application.state_observation import CalibrateImu
+from dynamic_graph.sot.application.state_observation import Calibrate
 
 
 class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
@@ -28,7 +28,7 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         self.sensorStack.selec1 (0, 3)
         self.sensorStack.selec2 (0, 3)
 
-	self.calibration= CalibrateImu('calibration')
+	self.calibration= Calibrate('calibration')
 	plug(self.sensorStack.sout,self.calibration.imuIn)
         plug(self.calibration.imuOut,self.measurement);
 

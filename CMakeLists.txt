@@ -51,7 +51,7 @@ SET(${PROJECT_NAME}_HEADERS
     include/sot-state-observation/dg-imu-model-free-flex-estimation.hh
     include/sot-state-observation/dg-imu-model-base-flex-estimation.hh
     include/sot-state-observation/input_reconstructor.hh  
-    include/sot-state-observation/calibrate_imu.hh
+    include/sot-state-observation/calibrate.hh
     include/sot-state-observation/moving-frame-transformation.hh
     include/sot-state-observation/position-state-reconstructor.hh
     include/sot-state-observation/tools/definitions.hh
