@@ -8,7 +8,7 @@
 #include <dynamic-graph/command-getter.h>
 #include <dynamic-graph/command-bind.h>
 
-#include <math.h>       /* acos */
+#include <math.h>
 
 #include <sot-state-observation/calibrate_imu.hh>
 
@@ -24,6 +24,7 @@ namespace sotStateObservation
         R_(6,6), calibrate_(false), sumImuIn_(6), nbStep_(0), currentStep_(0)
     {
         dynamicgraph::Vector imuVector(6);
+        imuVector.setZero();
 
         signalRegistration (imuSIN);
         imuSIN.setConstant(imuVector);
@@ -32,6 +33,7 @@ namespace sotStateObservation
         imuSOUT.setConstant(imuVector);
 
         sumImuIn_.setZero();
+        R_.setIdentity();
 
        std::string docstring;
 
@@ -93,8 +95,6 @@ namespace sotStateObservation
 
         imuSOUT.setFunction(boost::bind(&CalibrateImu::computeImu, this, _1, _2));
 
-        R_.setIdentity();
-
     }
 
     CalibrateImu::~CalibrateImu()
@@ -113,9 +113,13 @@ namespace sotStateObservation
         crossProduct=v.cross(ez);
         scalarProduct=v.dot(ez);
 
-        double angle=acos(scalarProduct);
+        std::cout << "crossProduct: " << crossProduct.transpose() << " scalarProduct: " << scalarProduct/v.norm() << std::endl;
+
+        double angle=acos(scalarProduct/v.norm());
         stateObservation::Vector3 axis=crossProduct/crossProduct.norm();
         stateObservation::AngleAxis utheta=stateObservation::AngleAxis(angle,axis);
+
+        std::cout << "angle: " << angle << " axis: " << axis << std::endl;
 
         return utheta.toRotationMatrix();
     }
@@ -123,7 +127,10 @@ namespace sotStateObservation
     void CalibrateImu::calibrate()
     {
         stateObservation::Vector meanImuIn;
-        meanImuIn=(1/nbStep_)*sumImuIn_;
+        meanImuIn=sumImuIn_/nbStep_;
+
+        std::cout << "sumImu" << sumImuIn_ << std::endl;
+        std::cout << "meanImu" << meanImuIn << std::endl;
 
         // determination of Ra
         R_.block(0,0,3,3)=Rdetermination(meanImuIn.block(0,0,3,1));
@@ -135,19 +142,21 @@ namespace sotStateObservation
 
     dynamicgraph::Vector& CalibrateImu::computeImu(dynamicgraph::Vector & imuOut, const int& inTime)
     {
-
         const stateObservation::Vector& imuIn=convertVector<stateObservation::Vector>(imuSIN.access(inTime));
 
         if(calibrate_==true && currentStep_ < nbStep_)
         {
             sumImuIn_+=imuIn;
+            currentStep_++;
+            std::cout << "calibration time= " << currentStep_ << std::endl;
         }
         else if(calibrate_==true && currentStep_ == nbStep_)
         {
             calibrate();
         }
 
-        imuOut=convertVector<dynamicgraph::Vector>(R_*imuIn);
+        stateObservation::Vector prod=R_*imuIn;
+        imuOut=convertVector<dynamicgraph::Vector>(prod);
         return imuOut;
     }
 }

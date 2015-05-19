@@ -11,6 +11,7 @@ from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEs
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
+from dynamic_graph.sot.application.state_observation import CalibrateImu
 
 
 class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
@@ -26,7 +27,11 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         plug(self.robot.device.gyrometer,self.sensorStack.sin2)
         self.sensorStack.selec1 (0, 3)
         self.sensorStack.selec2 (0, 3)
-        plug(self.sensorStack.sout,self.measurement);
+
+	self.calibration= CalibrateImu('calibration')
+	plug(self.sensorStack.sout,self.calibration.imuIn)
+        plug(self.calibration.imuOut,self.measurement);
+
         self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
         plug(robot.frames['accelerometer'].position,self.inputPos.sin)
         self.robot.dynamic.createJacobian('ChestJ_OpPoint','chest')

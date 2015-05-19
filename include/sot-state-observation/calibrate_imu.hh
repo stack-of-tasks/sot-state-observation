@@ -119,4 +119,4 @@ namespace sotStateObservation
 
 } // namespace sotStateObservation
 
-#endif //SOT_DYNAMIC_GRAPH_INPUT_RECONSTRUCTOR
+#endif //SOT_DYNAMIC_GRAPH_CALIBRATE_IMU
