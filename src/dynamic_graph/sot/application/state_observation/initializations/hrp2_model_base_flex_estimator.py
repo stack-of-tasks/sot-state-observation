@@ -30,7 +30,8 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
 
 	self.calibration= Calibrate('calibration')
 	plug(self.sensorStack.sout,self.calibration.imuIn)
-        plug(self.calibration.imuOut,self.measurement);
+	plug(self.robot.dynamic.com,self.calibration.com)
+        plug(self.calibration.imuOut,self.measurement)
 
         self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
         plug(robot.frames['accelerometer'].position,self.inputPos.sin)

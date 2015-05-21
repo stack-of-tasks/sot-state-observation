@@ -96,20 +96,41 @@ namespace sotStateObservation
             dynamicgraph::Vector& computeImu
                   (dynamicgraph::Vector & input, const int& inTime);
 
+            dynamicgraph::Vector& computeContactsPosition
+                    (dynamicgraph::Vector & contactsPositionOut, const int& inTime);
+
             /**
-            \brief IMU vector
+            \brief input IMU vector
             */
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> imuSIN;
 
             /**
-            \brief input
+            \brief input contacts position
+            */
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> contactsPositionSIN;
+
+            /**
+            \brief com
+            */
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> comSIN;
+
+            /**
+            \brief output IMU vector
             */
             dynamicgraph::SignalPtr < dynamicgraph::Vector, int> imuSOUT;
 
+            /**
+            \brief output contacts position
+            */
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> contactsPositionSOUT;
+
             // Rotational matrix between the measured orientation of the IMU and the one we use
             stateObservation::Matrix R_;
-
             stateObservation::Vector sumImuIn_;
+
+            stateObservation::Vector t_;
+            stateObservation::Vector sumContactsPositionIn_;
+
             bool calibrate_;
             int nbStep_;
             int currentStep_;

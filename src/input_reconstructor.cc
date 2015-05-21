@@ -360,11 +360,13 @@ namespace sotStateObservation
 
 
         for(i=0;i<6*nbContacts;++i){
+
             input.elementAt(u)=contactsPosition(i)+bias_[i/6](i%6);
 //            if(i==2)
 //            {
 //                input.elementAt(u) += -0.0015;
 //            }
+
             u++;
         }
 
