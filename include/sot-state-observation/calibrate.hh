@@ -59,6 +59,11 @@ namespace sotStateObservation
                 return convertMatrix<dynamicgraph::Matrix>(R_.block(3,3,3,3));
             }
 
+            dynamicgraph::Vector gett() const
+            {
+                return convertVector<dynamicgraph::Vector>(t_);
+            }
+
             void setRa(const dynamicgraph::Matrix & m)
             {
                 R_.block(0,0,3,3)=convertMatrix<stateObservation::Matrix>(m);
@@ -69,7 +74,12 @@ namespace sotStateObservation
                 R_.block(3,3,3,3)=convertMatrix<stateObservation::Matrix>(m);
             }
 
-            void startCalibration(const int & nbStep)
+            void sett(const dynamicgraph::Vector & v)
+            {
+                t_=convertVector<stateObservation::Vector>(v);
+            }
+
+            void start(const int & nbStep)
             {
                 calibrate_=true;
                 nbStep_=nbStep;
@@ -77,7 +87,14 @@ namespace sotStateObservation
                 sumImuIn_.setZero();
             }
 
+            void reset()
+            {
+                R_.setIdentity();
+                t_.setZero();
+            }
+
             void calibrate(const int& inTime);
+
 
             /**
             \name Parameters
@@ -124,6 +141,12 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> contactsPositionSOUT;
 
+
+            /**
+            \brief number of contacts
+            */
+            dynamicgraph::SignalPtr < unsigned, int> contactsNbrSIN;
+
             // Rotational matrix between the measured orientation of the IMU and the one we use
             stateObservation::Matrix R_;
             stateObservation::Vector sumImuIn_;
@@ -134,6 +157,7 @@ namespace sotStateObservation
             bool calibrate_;
             int nbStep_;
             int currentStep_;
+            int inTime_;
 
         };
 

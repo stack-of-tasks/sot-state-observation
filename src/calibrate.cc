@@ -24,9 +24,10 @@ namespace sotStateObservation
         contactsPositionSIN(0x0 , "Calibrate("+inName+")::input(vector)::contactsPositionIn"),
         contactsPositionSOUT(0x0 , "Calibrate("+inName+")::output(vector)::contactsPositionOut"),
         comSIN(0x0 , "Calibrate("+inName+")::input(vector)::com"),
+        contactsNbrSIN(0x0 , "Calibrate("+inName+")::input(unsigned)::contactsNbr"),
         R_(6,6), sumImuIn_(6),
         t_(6), sumContactsPositionIn_(12),
-        calibrate_(false), nbStep_(0), currentStep_(0)
+        calibrate_(false), nbStep_(0), currentStep_(0), inTime_(0)
     {
         dynamicgraph::Vector imuVector(6);
         imuVector.setZero();
@@ -50,6 +51,11 @@ namespace sotStateObservation
         com.setZero();
         signalRegistration (comSIN);
         comSIN.setConstant(com);
+
+        unsigned zero;
+        zero=0;
+        signalRegistration (contactsNbrSIN);
+        contactsNbrSIN.setConstant(zero);
 
        std::string docstring;
 
@@ -97,16 +103,47 @@ namespace sotStateObservation
             ::dynamicgraph::command::Getter <Calibrate,dynamicgraph::Matrix>
                (*this, &Calibrate::getRg, docstring));
 
+       //sett
+       docstring =
+               "\n"
+               "    Set the translational transformtation for the contacts position \n"
+               "\n";
+
+       addCommand(std::string("sett"),
+            new
+            ::dynamicgraph::command::Setter <Calibrate,dynamicgraph::Vector>
+               (*this, &Calibrate::sett, docstring));
+
+       //gett
+       docstring =
+               "\n"
+               "    Get the translational transformtation for the contacts position \n"
+               "\n";
+
+       addCommand(std::string("gett"),
+            new
+            ::dynamicgraph::command::Getter <Calibrate,dynamicgraph::Vector>
+               (*this, &Calibrate::gett, docstring));
+
 
        docstring  =
                "\n"
                "    Start the calibration \n"
                "\n";
 
-       addCommand(std::string("startCalibration"),
+       addCommand(std::string("start"),
             new
             ::dynamicgraph::command::Setter <Calibrate,int>
-               (*this, &Calibrate::startCalibration, docstring));
+               (*this, &Calibrate::start, docstring));
+
+       docstring  =
+               "\n"
+               "    Reset the calibration \n"
+               "\n";
+
+       addCommand(std::string("reset"),
+                   ::dynamicgraph::command::makeCommandVoid0(*this, & Calibrate::reset ,
+                                       docstring));
 
 
         imuSOUT.setFunction(boost::bind(&Calibrate::computeImu, this, _1, _2));
@@ -130,13 +167,9 @@ namespace sotStateObservation
         crossProduct=v.cross(ez);
         scalarProduct=v.dot(ez);
 
-        std::cout << "crossProduct: " << crossProduct.transpose() << " scalarProduct: " << scalarProduct/v.norm() << std::endl;
-
         double angle=acos(scalarProduct/v.norm());
         stateObservation::Vector3 axis=crossProduct/crossProduct.norm();
         stateObservation::AngleAxis utheta=stateObservation::AngleAxis(angle,axis);
-
-        std::cout << "angle: " << angle << " axis: " << axis << std::endl;
 
         return utheta.toRotationMatrix();
     }
@@ -146,7 +179,7 @@ namespace sotStateObservation
         const stateObservation::Vector& imuIn=convertVector<stateObservation::Vector>(imuSIN.access(inTime));
         const stateObservation::Vector& contactsPositionRotIn=convertVector<stateObservation::Vector>(contactsPositionSIN.access(inTime));
         const stateObservation::Vector& com=convertVector<stateObservation::Vector>(comSIN.access(inTime));
-
+        const int& contactsNbr=contactsNbrSIN.access(inTime);
 
         if(currentStep_ < nbStep_)
         {
@@ -160,7 +193,7 @@ namespace sotStateObservation
             stateObservation::Vector meanImuIn;
             meanImuIn=sumImuIn_/nbStep_;
             R_.block(0,0,3,3)=Rdetermination(meanImuIn.block(0,0,3,1)); // determination of Ra
-            R_.block(3,3,3,3)=Rdetermination(meanImuIn.block(3,0,3,1)); // determination of Rg
+            R_.block(3,3,3,3)=R_.block(0,0,3,3); //Rdetermination(meanImuIn.block(3,0,3,1)); // determination of Rg
 
             // Feet position calibration
             stateObservation::Vector meanContactsPositionIn(12);
@@ -171,23 +204,40 @@ namespace sotStateObservation
                                     meanContactsPositionIn.block(6,0,3,1);
 
             stateObservation::Vector calibrateContactsPosition(6);
-            calibrateContactsPosition   <<  com(0),
-                                            contactsPositionIn(1),
-                                            0,
-                                            com(0),
-                                            contactsPositionIn(4),
-                                            0;
+            if(contactsNbr==2)
+            {
+                calibrateContactsPosition   <<  com(0),
+                                                contactsPositionIn(1),
+                                                contactsPositionIn(2),
+                                                com(0),
+                                                contactsPositionIn(4),
+                                                contactsPositionIn(5);
+            }
+            else if (contactsNbr==1)
+            {
+                calibrateContactsPosition   <<  com(0),
+                                                com(1),
+                                                contactsPositionIn(2),
+                                                contactsPositionIn(3),
+                                                contactsPositionIn(4),
+                                                contactsPositionIn(5);
+            }
+
             t_=calibrateContactsPosition-contactsPositionIn;
+
+            //std::cout << "Calibration done" << std::endl;
 
             calibrate_=false;
         }
+
+        inTime_=inTime;
     }
 
     dynamicgraph::Vector& Calibrate::computeImu(dynamicgraph::Vector & imuOut, const int& inTime)
     {
         const stateObservation::Vector& imuIn=convertVector<stateObservation::Vector>(imuSIN.access(inTime));
 
-        if(calibrate_==true){
+        if(calibrate_==true && inTime!=inTime_){
             calibrate(inTime);
         }
 
@@ -200,7 +250,7 @@ namespace sotStateObservation
     {
         const stateObservation::Vector& contactsPositionIn=convertVector<stateObservation::Vector>(contactsPositionSIN.access(inTime));
 
-        if(calibrate_==true){
+        if(calibrate_==true && inTime!=inTime_){
             calibrate(inTime);
         }
 
