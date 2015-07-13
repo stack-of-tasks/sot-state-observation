@@ -28,9 +28,10 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         self.sensorStack.selec1 (0, 3)
         self.sensorStack.selec2 (0, 3)
 
+	# Calibration
 	self.calibration= Calibrate('calibration')
 	plug(self.sensorStack.sout,self.calibration.imuIn)
-	plug(self.robot.dynamic.com,self.calibration.com)
+	plug(self.robot.dynamic.com,self.calibration.comIn)
         plug(self.calibration.imuOut,self.measurement)
 
         self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
@@ -70,13 +71,13 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
 
 
         # Definition of com and derivatives
-        self.com=self.robot.dynamic.com#(0,0,0.75) # /!\ In the local frame!
+        self.com=self.calibration.comOut #self.robot.dynamic.com
         self.DCom = Multiply_matrix_vector(name+'DCom')
 	self.robot.dynamic.Jcom.recompute(0)
         plug(self.robot.dynamic.Jcom,self.DCom.sin1)
         plug(self.robot.device.velocity,self.DCom.sin2)
         self.comVectorIn = Stack_of_vector (name+'ComVectorIn')
-        plug(self.com,self.comVectorIn.sin1)
+        plug(self.calibration.comOut,self.comVectorIn.sin1)
         plug(self.DCom.sout,self.comVectorIn.sin2)
         self.comVectorIn.selec1 (0, 3)
         self.comVectorIn.selec2 (0, 3)

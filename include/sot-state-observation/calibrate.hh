@@ -59,10 +59,16 @@ namespace sotStateObservation
                 return convertMatrix<dynamicgraph::Matrix>(R_.block(3,3,3,3));
             }
 
-            dynamicgraph::Vector gett() const
+            dynamicgraph::Vector gettc() const
             {
-                return convertVector<dynamicgraph::Vector>(t_);
+                return convertVector<dynamicgraph::Vector>(tc_);
             }
+
+            dynamicgraph::Vector gettcom() const
+            {
+                return convertVector<dynamicgraph::Vector>(tcom_);
+            }
+
 
             void setRa(const dynamicgraph::Matrix & m)
             {
@@ -74,9 +80,14 @@ namespace sotStateObservation
                 R_.block(3,3,3,3)=convertMatrix<stateObservation::Matrix>(m);
             }
 
-            void sett(const dynamicgraph::Vector & v)
+            void settc(const dynamicgraph::Vector & v)
             {
-                t_=convertVector<stateObservation::Vector>(v);
+                tc_=convertVector<stateObservation::Vector>(v);
+            }
+
+            void settcom(const dynamicgraph::Vector & v)
+            {
+                tcom_=convertVector<stateObservation::Vector>(v);
             }
 
             void start(const int & nbStep)
@@ -85,12 +96,18 @@ namespace sotStateObservation
                 nbStep_=nbStep;
                 currentStep_=0;
                 sumImuIn_.setZero();
+                sumContactsPositionIn_.setZero();
+                sumComIn_.setZero();
             }
 
             void reset()
             {
                 R_.setIdentity();
-                t_.setZero();
+                tc_.setZero();
+                tcom_.setZero();
+                sumImuIn_.setZero();
+                sumContactsPositionIn_.setZero();
+                sumComIn_.setZero();
             }
 
             void calibrate(const int& inTime);
@@ -116,6 +133,9 @@ namespace sotStateObservation
             dynamicgraph::Vector& computeContactsPosition
                     (dynamicgraph::Vector & contactsPositionOut, const int& inTime);
 
+            dynamicgraph::Vector& computeCom
+                    (dynamicgraph::Vector & comOut, const int& inTime);
+
             /**
             \brief input IMU vector
             */
@@ -130,6 +150,7 @@ namespace sotStateObservation
             \brief com
             */
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> comSIN;
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> comSOUT;
 
             /**
             \brief output IMU vector
@@ -151,8 +172,11 @@ namespace sotStateObservation
             stateObservation::Matrix R_;
             stateObservation::Vector sumImuIn_;
 
-            stateObservation::Vector t_;
+            stateObservation::Vector tc_;
             stateObservation::Vector sumContactsPositionIn_;
+
+            stateObservation::Vector tcom_;
+            stateObservation::Vector sumComIn_;
 
             bool calibrate_;
             int nbStep_;
