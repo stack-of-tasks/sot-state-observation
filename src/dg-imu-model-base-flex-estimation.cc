@@ -37,6 +37,8 @@ namespace sotStateObservation
         simulatedSensorsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::simulatedSensors"),
         predictedSensorsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::predictedSensors"),
         forcesAndMomentsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::forcesAndMoments"),
+        forcesSupport1SOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::forcesSupport1"),
+        forcesSupport2SOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::forcesSupport2"),
         flexibilityComputationTimeSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(double)::flexibilityComputationTime"),
         inovationSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::inovation"),
         predictionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::prediction")
@@ -72,10 +74,10 @@ namespace sotStateObservation
         signalRegistration (predictedSensorsSOUT);
         signalRegistration (flexibilityComputationTimeSOUT);
         signalRegistration (forcesAndMomentsSOUT);
+        signalRegistration (forcesSupport1SOUT);
+        signalRegistration (forcesSupport2SOUT);
         signalRegistration (inovationSOUT);
         signalRegistration (predictionSOUT);
-
-
 
         dynamicgraph::Vector measure(measurementSize);
         //dynamicgraph::Vector input(inputSizeBase);
@@ -250,6 +252,10 @@ namespace sotStateObservation
                     this, _1, _2));
 
         forcesAndMomentsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getForcesAndMoments,
+                    this, _1, _2));
+        forcesSupport1SOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getForcesAndMoments,
+                    this, _1, _2));
+        forcesSupport2SOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getForcesAndMoments,
                     this, _1, _2));
 
         inovationSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeInovation,

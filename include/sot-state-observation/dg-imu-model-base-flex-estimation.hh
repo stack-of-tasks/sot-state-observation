@@ -258,6 +258,11 @@ namespace sotStateObservation
 
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> forcesAndMomentsSOUT;
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> forcesSupport1SOUT;
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> forcesSupport2SOUT;
+
 
             /**
             \brief Estimation of the flexibility
