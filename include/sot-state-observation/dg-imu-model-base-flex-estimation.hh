@@ -135,6 +135,16 @@ namespace sotStateObservation
                 estimator_.setKtv(convertMatrix<stateObservation::Matrix3>(m));
             }
 
+            void setWithForce(const bool & b)
+            {
+                estimator_.setWithForcesMeasurements(b);
+            }
+
+            void setForceVariance(const double & d)
+            {
+                estimator_.setForceVariance(d);
+            }
+
 
             /**
             \name Parameters

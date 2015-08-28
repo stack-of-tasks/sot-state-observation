@@ -462,6 +462,26 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,unsigned>
                     (*this, & DGIMUModelBaseFlexEstimation::setContactModel ,docstring));
 
+        docstring  =
+                "\n"
+                "    Sets if the force sensors are used or not. "
+                " make sure the measurement vectors already contain the force signals. \n"
+                "\n";
+
+        addCommand(std::string("setWithForceSensors"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool >
+                    (*this, & DGIMUModelBaseFlexEstimation::setWithForce,docstring));
+
+
+      docstring  =
+                "\n"
+                "    Sets the variance of the noise of force/toraue sensors. "
+                "\n";
+
+        addCommand(std::string("setForceVariance"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double >
+                    (*this, & DGIMUModelBaseFlexEstimation::setForceVariance,docstring));
+
 
         estimator_.setInput(input);
         estimator_.setMeasurementInput(input);
@@ -492,13 +512,15 @@ namespace sotStateObservation
         const unsigned & contactNb = contactsNbrSIN(inTime);
 
         // Update of inputSize_ considering contactsNb
+
         if (contactNumber_!= contactNb)
         {
             contactNumber_ = contactNb;
             estimator_.setContactsNumber(contactNb);
+
         }
 
-        estimator_.setMeasurement(convertVector<stateObservation::Vector>(measurement));
+        estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
         estimator_.setMeasurementInput(convertVector<stateObservation::Vector>(input));
 
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
@@ -645,8 +667,6 @@ namespace sotStateObservation
 
         return forcesAndMoments;
     }
-
-
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeFlexInverse
                         (::dynamicgraph::Vector & flexInverse, const int& inTime)
