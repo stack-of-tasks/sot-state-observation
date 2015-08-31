@@ -339,9 +339,7 @@ namespace sotStateObservation
 
         angMomentumOut=angMomentum;
 
-        //dangMomentumOut=dangMomentum;
-
-        dangMomentumOut= m*crossProduct(com,comddot);
+        dangMomentumOut = m*crossProduct(com,comddot);
 
 
         for(i=0;i<3;++i){

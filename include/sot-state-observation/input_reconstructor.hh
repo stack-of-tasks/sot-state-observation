@@ -139,7 +139,6 @@ namespace sotStateObservation
 
             ::dynamicgraph::Vector lastInertia_;
 
-
             int currentTime;
             double dt_;
 
