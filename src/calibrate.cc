@@ -24,11 +24,9 @@ namespace sotStateObservation
         contactsPositionSIN(0x0 , "Calibrate("+inName+")::input(vector)::contactsPositionIn"),
         contactsPositionSOUT(0x0 , "Calibrate("+inName+")::output(vector)::contactsPositionOut"),
         comSIN(0x0 , "Calibrate("+inName+")::input(vector)::comIn"),
-        comSOUT(0x0 , "Calibrate("+inName+")::input(vector)::comOut"),
         contactsNbrSIN(0x0 , "Calibrate("+inName+")::input(unsigned)::contactsNbr"),
         R_(6,6), sumImuIn_(6),
         tc_(6), sumContactsPositionIn_(12),
-        tcom_(3), sumComIn_(3),
         calibrate_(false), nbStep_(0), currentStep_(0), inTime_(0)
     {
         dynamicgraph::Vector imuVector(6);
@@ -49,14 +47,10 @@ namespace sotStateObservation
         sumContactsPositionIn_.setZero();
         tc_.setZero();
 
-        dynamicgraph::Vector com(3);
-        com.setZero();
+        dynamicgraph::Vector comVector(3);
+        comVector.setZero();
         signalRegistration (comSIN);
-        comSIN.setConstant(com);
-        signalRegistration (comSOUT);
-        comSOUT.setConstant(com);
-        sumComIn_.setZero();
-        tcom_.setZero();
+        comSIN.setConstant(comVector);
 
         unsigned zero;
         zero=0;
@@ -137,23 +131,6 @@ namespace sotStateObservation
                "    Set the translational transformtation for the com \n"
                "\n";
 
-       addCommand(std::string("settcom"),
-            new
-            ::dynamicgraph::command::Setter <Calibrate,dynamicgraph::Vector>
-               (*this, &Calibrate::settcom, docstring));
-
-       //gett
-       docstring =
-               "\n"
-               "    Get the translational transformtation for the com \n"
-               "\n";
-
-       addCommand(std::string("gettcom"),
-            new
-            ::dynamicgraph::command::Getter <Calibrate,dynamicgraph::Vector>
-               (*this, &Calibrate::gettcom, docstring));
-
-
        docstring  =
                "\n"
                "    Start the calibration \n"
@@ -176,8 +153,6 @@ namespace sotStateObservation
 
         imuSOUT.setFunction(boost::bind(&Calibrate::computeImu, this, _1, _2));
         contactsPositionSOUT.setFunction(boost::bind(&Calibrate::computeContactsPosition, this, _1, _2));
-        comSOUT.setFunction(boost::bind(&Calibrate::computeCom, this, _1, _2));
-
     }
 
     Calibrate::~Calibrate()
@@ -214,7 +189,6 @@ namespace sotStateObservation
         {
             sumImuIn_+=imuIn;
             sumContactsPositionIn_+=contactsPositionRotIn;
-            sumComIn_+=comIn;
             currentStep_++;
         }
         else if(currentStep_ == nbStep_)
@@ -225,15 +199,6 @@ namespace sotStateObservation
             R_.block(0,0,3,3)=Rdetermination(meanImuIn.block(0,0,3,1)); // determination of Ra
             R_.block(3,3,3,3)=R_.block(0,0,3,3); //Rdetermination(meanImuIn.block(3,0,3,1)); // determination of Rg
 
-            // Com calibration
-            stateObservation::Vector meanComIn;
-            meanComIn=sumComIn_/nbStep_;
-            stateObservation::Vector3 com;
-            com <<  0,
-                    0,
-                    meanComIn(2);
-            tcom_= com - meanComIn;
-
             // Feet position calibration
             stateObservation::Vector meanContactsPositionIn(12);
             meanContactsPositionIn=sumContactsPositionIn_/nbStep_;
@@ -242,14 +207,14 @@ namespace sotStateObservation
                                     meanContactsPositionIn.block(6,0,3,1);
             stateObservation::Vector calibrateContactsPosition(6);
             if(contactsNbr==2){
-                calibrateContactsPosition   <<  0,
+                calibrateContactsPosition   <<  comIn(0),
                                                 contactsPositionIn(1),
                                                 contactsPositionIn(2),
-                                                0,
+                                                comIn(0),
                                                 contactsPositionIn(4),
                                                 contactsPositionIn(5);
             }else if (contactsNbr==1){
-                calibrateContactsPosition   <<  0,
+                calibrateContactsPosition   <<  comIn(0),
                                                 comIn(1),
                                                 contactsPositionIn(2),
                                                 contactsPositionIn(3),
@@ -291,19 +256,5 @@ namespace sotStateObservation
         return contactsPositionOut;
     }
 
-    dynamicgraph::Vector& Calibrate::computeCom(dynamicgraph::Vector & comOut, const int& inTime)
-    {
-        const stateObservation::Vector& comIn=convertVector<stateObservation::Vector>(comSIN.access(inTime));
-
-        if(calibrate_==true && inTime!=inTime_){
-            calibrate(inTime);
-        }
-
-        stateObservation::Vector sum; sum.resize(3);
-        sum=comIn;
-        sum+=tcom_;
-        comOut=convertVector<dynamicgraph::Vector>(sum);
-        return comOut;
-    }
 }
 

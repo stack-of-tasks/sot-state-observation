@@ -11,6 +11,7 @@ from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEs
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
+from dynamic_graph.sot.application.state_observation import Calibrate
 
 
 class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
@@ -26,6 +27,9 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug(self.robot.device.gyrometer,self.sensorStackimu.sin2)
         self.sensorStackimu.selec1 (0, 3)
         self.sensorStackimu.selec2 (0, 3)
+	self.calibration= Calibrate('calibration')
+	plug(self.sensorStackimu.sout,self.calibration.imuIn)
+	plug(self.robot.dynamic.com,self.calibration.comIn)
 
         self.sensorStackforce = Stack_of_vector (name+'SensorsFORCE')
         plug(self.robot.device.forceLLEG,self.sensorStackforce.sin1)
@@ -34,14 +38,13 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.sensorStackforce.selec2 (0, 6)
 
         self.sensorStack = Stack_of_vector (name+'Sensors')
-        plug(self.sensorStackimu.sout,self.sensorStack.sin1)
+        plug(self.calibration.imuOut,self.sensorStack.sin1)
         plug(self.sensorStackforce.sout,self.sensorStack.sin2)
         self.sensorStack.selec1 (0, 6)
         self.sensorStack.selec2 (0, 12)
 
         self.contactForces = self.sensorStack.sin2
-
-        
+      
         plug(self.sensorStack.sout,self.measurement);
         self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
         plug(robot.frames['accelerometer'].position,self.inputPos.sin)
@@ -65,7 +68,6 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.IMUVector.outputFormat.value = '011111'
         self.IMUVector.setFiniteDifferencesInterval(2)
 
-
         # Definition of inertia, angular momentum and derivatives
         self.robot.dynamic.inertia.recompute(1)
         self.inertia=self.robot.dynamic.inertia #(48.2378,48.2378,2.87339,0,0,0) #
@@ -77,7 +79,6 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         #self.robot.dynamic.chest.recompute(1)
         #self.robot.dynamic.com.recompute(1)
         self.positionWaist=self.robot.dynamic.waist
-
 
         # Definition of com and derivatives
         self.com=self.robot.dynamic.com#(0,0,0.75) # /!\ In the local frame!
@@ -92,9 +93,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.comVector = PositionStateReconstructor (name+'ComVector')
         plug(self.comVectorIn.sout,self.comVector.sin)
         self.comVector.inputFormat.value  = '000101'
-        self.comVector.outputFormat.value = '010101'
-      
-             
+        self.comVector.outputFormat.value = '010101'            
         
         # Concatenate with InputReconstructor entity
         self.inputVector=InputReconstructor(name+'inputVector')
@@ -114,8 +113,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
         plug(self.IMUVector.sout,self.inputVector.imuVector)
         plug(self.contactNbr,self.inputVector.nbContacts)
-        # plug(self.contacts,self.inputVector.contactsPosition)
-        
+        # plug(self.contacts,self.inputVector.contactsPosition)        
        
         plug(self.inputVector.input,self.input)
         self.robot.flextimator = self

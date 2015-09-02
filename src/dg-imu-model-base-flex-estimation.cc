@@ -508,7 +508,6 @@ namespace sotStateObservation
         {
             currentTime_=inTime;
 #endif
-
         const dynamicgraph::Vector & measurement = measurementSIN(inTime);
         const dynamicgraph::Vector & input = inputSIN(inTime);
         const unsigned & contactNb = contactsNbrSIN(inTime);

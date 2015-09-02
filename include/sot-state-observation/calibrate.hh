@@ -64,12 +64,6 @@ namespace sotStateObservation
                 return convertVector<dynamicgraph::Vector>(tc_);
             }
 
-            dynamicgraph::Vector gettcom() const
-            {
-                return convertVector<dynamicgraph::Vector>(tcom_);
-            }
-
-
             void setRa(const dynamicgraph::Matrix & m)
             {
                 R_.block(0,0,3,3)=convertMatrix<stateObservation::Matrix>(m);
@@ -85,11 +79,6 @@ namespace sotStateObservation
                 tc_=convertVector<stateObservation::Vector>(v);
             }
 
-            void settcom(const dynamicgraph::Vector & v)
-            {
-                tcom_=convertVector<stateObservation::Vector>(v);
-            }
-
             void start(const int & nbStep)
             {
                 calibrate_=true;
@@ -97,17 +86,14 @@ namespace sotStateObservation
                 currentStep_=0;
                 sumImuIn_.setZero();
                 sumContactsPositionIn_.setZero();
-                sumComIn_.setZero();
             }
 
             void reset()
             {
                 R_.setIdentity();
                 tc_.setZero();
-                tcom_.setZero();
                 sumImuIn_.setZero();
                 sumContactsPositionIn_.setZero();
-                sumComIn_.setZero();
             }
 
             void calibrate(const int& inTime);
@@ -142,15 +128,14 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> imuSIN;
 
             /**
+            \brief input com vector
+            */
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> comSIN;
+
+            /**
             \brief input contacts position
             */
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> contactsPositionSIN;
-
-            /**
-            \brief com
-            */
-            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> comSIN;
-            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> comSOUT;
 
             /**
             \brief output IMU vector
@@ -174,9 +159,6 @@ namespace sotStateObservation
 
             stateObservation::Vector tc_;
             stateObservation::Vector sumContactsPositionIn_;
-
-            stateObservation::Vector tcom_;
-            stateObservation::Vector sumComIn_;
 
             bool calibrate_;
             int nbStep_;
