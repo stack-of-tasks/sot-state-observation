@@ -253,9 +253,9 @@ namespace sotStateObservation
 
         forcesAndMomentsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getForcesAndMoments,
                     this, _1, _2));
-        forcesSupport1SOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getForcesAndMoments,
+        forcesSupport1SOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getForcesSupport1,
                     this, _1, _2));
-        forcesSupport2SOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getForcesAndMoments,
+        forcesSupport2SOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getForcesSupport2,
                     this, _1, _2));
 
         inovationSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeInovation,
@@ -667,6 +667,34 @@ namespace sotStateObservation
         forcesAndMoments=convertVector<dynamicgraph::Vector>(estimator_.getForcesAndMoments());
 
         return forcesAndMoments;
+    }
+
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::getForcesSupport1(::dynamicgraph::Vector & forcesSupport1, const int& inTime)
+    {
+        flexibilitySOUT(inTime);
+
+        stateObservation::Vector forcesAndMoments=estimator_.getForcesAndMoments();
+        if(forcesAndMoments.size() >= 6){
+            forcesSupport1=convertVector<dynamicgraph::Vector>((forcesAndMoments).block(0,0,6,1));
+        }else{
+            forcesSupport1.setZero();
+        }
+
+        return forcesSupport1;
+    }
+
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::getForcesSupport2(::dynamicgraph::Vector & forcesSupport2, const int& inTime)
+    {
+        flexibilitySOUT(inTime);
+
+        stateObservation::Vector forcesAndMoments=estimator_.getForcesAndMoments();
+        if(forcesAndMoments.size()==12){
+            forcesSupport2=convertVector<dynamicgraph::Vector>((forcesAndMoments).block(6,0,6,1));
+        }else{
+            forcesSupport2.setZero();
+        }
+
+        return forcesSupport2;
     }
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeFlexInverse

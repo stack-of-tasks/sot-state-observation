@@ -223,6 +223,12 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& getForcesAndMoments
                         (::dynamicgraph::Vector & forcesAndMoments, const int &inTime);
 
+            ::dynamicgraph::Vector& getForcesSupport1
+                    (::dynamicgraph::Vector & forcesSupport1, const int& inTime);
+
+            ::dynamicgraph::Vector& getForcesSupport2
+                    (::dynamicgraph::Vector & forcesSupport2, const int& inTime);
+
             ::dynamicgraph::Vector& computeInovation
                         (::dynamicgraph::Vector & inovation, const int &inTime);
 
