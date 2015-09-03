@@ -25,7 +25,7 @@ namespace sotStateObservation
         contactsPositionSOUT(0x0 , "Calibrate("+inName+")::output(vector)::contactsPositionOut"),
         comSIN(0x0 , "Calibrate("+inName+")::input(vector)::comIn"),
         contactsNbrSIN(0x0 , "Calibrate("+inName+")::input(unsigned)::contactsNbr"),
-        R_(6,6), sumImuIn_(6),
+        R_(6,6), sumImuIn_(6), sumComIn_(3),
         tc_(6), sumContactsPositionIn_(12),
         calibrate_(false), nbStep_(0), currentStep_(0), inTime_(0)
     {
@@ -51,6 +51,7 @@ namespace sotStateObservation
         comVector.setZero();
         signalRegistration (comSIN);
         comSIN.setConstant(comVector);
+        sumComIn_.setZero();
 
         unsigned zero;
         zero=0;
@@ -188,6 +189,7 @@ namespace sotStateObservation
         if(currentStep_ < nbStep_)
         {
             sumImuIn_+=imuIn;
+            sumComIn_+=comIn;
             sumContactsPositionIn_+=contactsPositionRotIn;
             currentStep_++;
         }
@@ -199,6 +201,11 @@ namespace sotStateObservation
             R_.block(0,0,3,3)=Rdetermination(meanImuIn.block(0,0,3,1)); // determination of Ra
             R_.block(3,3,3,3)=R_.block(0,0,3,3); //Rdetermination(meanImuIn.block(3,0,3,1)); // determination of Rg
 
+            // Mean Com
+            stateObservation::Vector meanComIn;
+            meanComIn=sumComIn_/nbStep_;
+            std::cout << "meanCom=" << meanComIn << std::endl;
+
             // Feet position calibration
             stateObservation::Vector meanContactsPositionIn(12);
             meanContactsPositionIn=sumContactsPositionIn_/nbStep_;
@@ -207,15 +214,15 @@ namespace sotStateObservation
                                     meanContactsPositionIn.block(6,0,3,1);
             stateObservation::Vector calibrateContactsPosition(6);
             if(contactsNbr==2){
-                calibrateContactsPosition   <<  comIn(0),
+                calibrateContactsPosition   <<  meanComIn(0),
                                                 contactsPositionIn(1),
                                                 contactsPositionIn(2),
-                                                comIn(0),
+                                                meanComIn(0),
                                                 contactsPositionIn(4),
                                                 contactsPositionIn(5);
             }else if (contactsNbr==1){
-                calibrateContactsPosition   <<  comIn(0),
-                                                comIn(1),
+                calibrateContactsPosition   <<  meanComIn(0),
+                                                meanComIn(1),
                                                 contactsPositionIn(2),
                                                 contactsPositionIn(3),
                                                 contactsPositionIn(4),

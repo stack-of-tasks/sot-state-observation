@@ -85,6 +85,7 @@ namespace sotStateObservation
                 nbStep_=nbStep;
                 currentStep_=0;
                 sumImuIn_.setZero();
+                sumComIn_.setZero();
                 sumContactsPositionIn_.setZero();
             }
 
@@ -93,6 +94,7 @@ namespace sotStateObservation
                 R_.setIdentity();
                 tc_.setZero();
                 sumImuIn_.setZero();
+                sumComIn_.setZero();
                 sumContactsPositionIn_.setZero();
             }
 
@@ -158,7 +160,9 @@ namespace sotStateObservation
             stateObservation::Vector sumImuIn_;
 
             stateObservation::Vector tc_;
-            stateObservation::Vector sumContactsPositionIn_;
+            stateObservation::Vector sumContactsPositionIn_;           
+
+            stateObservation::Vector sumComIn_;
 
             bool calibrate_;
             int nbStep_;
