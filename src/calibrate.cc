@@ -27,7 +27,7 @@ namespace sotStateObservation
         contactsNbrSIN(0x0 , "Calibrate("+inName+")::input(unsigned)::contactsNbr"),
         R_(6,6), sumImuIn_(6), sumComIn_(3),
         tc_(6), sumContactsPositionIn_(12),
-        calibrate_(false), nbStep_(0), currentStep_(0), inTime_(0)
+        calibrate_(false), nbStep_(0), currentStep_(0), inTime_(0), mode_(0)
     {
         dynamicgraph::Vector imuVector(6);
         imuVector.setZero();
@@ -137,10 +137,9 @@ namespace sotStateObservation
                "    Start the calibration \n"
                "\n";
 
+
        addCommand(std::string("start"),
-            new
-            ::dynamicgraph::command::Setter <Calibrate,int>
-               (*this, &Calibrate::start, docstring));
+                  ::dynamicgraph::command::makeCommandVoid2(*this, & Calibrate::start, docstring));
 
        docstring  =
                "\n"
@@ -148,7 +147,7 @@ namespace sotStateObservation
                "\n";
 
        addCommand(std::string("reset"),
-                   ::dynamicgraph::command::makeCommandVoid0(*this, & Calibrate::reset ,
+                   ::dynamicgraph::command::makeCommandVoid1(*this, & Calibrate::reset ,
                                        docstring));
 
 
@@ -159,6 +158,7 @@ namespace sotStateObservation
     Calibrate::~Calibrate()
     {
     }
+
 
     stateObservation::Matrix3 Rdetermination(stateObservation::Vector3 v)
     {
@@ -196,39 +196,42 @@ namespace sotStateObservation
         else if(currentStep_ == nbStep_)
         {
             // IMU calibration
-            stateObservation::Vector meanImuIn;
-            meanImuIn=sumImuIn_/nbStep_;
-            R_.block(0,0,3,3)=Rdetermination(meanImuIn.block(0,0,3,1)); // determination of Ra
-            R_.block(3,3,3,3)=R_.block(0,0,3,3); //Rdetermination(meanImuIn.block(3,0,3,1)); // determination of Rg
-
-            // Mean Com
-            stateObservation::Vector meanComIn;
-            meanComIn=sumComIn_/nbStep_;
-            std::cout << "meanCom=" << meanComIn << std::endl;
+            if(mode_==0 || mode_==1)
+            {
+               stateObservation::Vector meanImuIn;
+               meanImuIn=sumImuIn_/nbStep_;
+               R_.block(0,0,3,3)=Rdetermination(meanImuIn.block(0,0,3,1)); // determination of Ra
+               R_.block(3,3,3,3)=R_.block(0,0,3,3); //Rdetermination(meanImuIn.block(3,0,3,1)); // determination of Rg
+            }
 
             // Feet position calibration
-            stateObservation::Vector meanContactsPositionIn(12);
-            meanContactsPositionIn=sumContactsPositionIn_/nbStep_;
-            stateObservation::Vector contactsPositionIn(6);
-            contactsPositionIn  <<  meanContactsPositionIn.block(0,0,3,1),
-                                    meanContactsPositionIn.block(6,0,3,1);
-            stateObservation::Vector calibrateContactsPosition(6);
-            if(contactsNbr==2){
-                calibrateContactsPosition   <<  meanComIn(0),
-                                                contactsPositionIn(1),
-                                                contactsPositionIn(2),
-                                                meanComIn(0),
-                                                contactsPositionIn(4),
-                                                contactsPositionIn(5);
-            }else if (contactsNbr==1){
-                calibrateContactsPosition   <<  meanComIn(0),
-                                                meanComIn(1),
-                                                contactsPositionIn(2),
-                                                contactsPositionIn(3),
-                                                contactsPositionIn(4),
-                                                contactsPositionIn(5);
+            if(mode_==0 || mode_==2)
+            {
+                stateObservation::Vector meanComIn;
+                meanComIn=sumComIn_/nbStep_;
+                stateObservation::Vector meanContactsPositionIn(12);
+                meanContactsPositionIn=sumContactsPositionIn_/nbStep_;
+                stateObservation::Vector contactsPositionIn(6);
+                contactsPositionIn  <<  meanContactsPositionIn.block(0,0,3,1),
+                                        meanContactsPositionIn.block(6,0,3,1);
+                stateObservation::Vector calibrateContactsPosition(6);
+                if(contactsNbr==2){
+                    calibrateContactsPosition   <<  meanComIn(0),
+                                                    contactsPositionIn(1),
+                                                    contactsPositionIn(2),
+                                                    meanComIn(0),
+                                                    contactsPositionIn(4),
+                                                    contactsPositionIn(5);
+                }else if (contactsNbr==1){
+                    calibrateContactsPosition   <<  meanComIn(0),
+                                                    meanComIn(1),
+                                                    contactsPositionIn(2),
+                                                    contactsPositionIn(3),
+                                                    contactsPositionIn(4),
+                                                    contactsPositionIn(5);
+                }
+                tc_=calibrateContactsPosition-contactsPositionIn;
             }
-            tc_=calibrateContactsPosition-contactsPositionIn;
             calibrate_=false;
         }
         inTime_=inTime;

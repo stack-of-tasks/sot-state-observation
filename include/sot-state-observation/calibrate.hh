@@ -79,8 +79,9 @@ namespace sotStateObservation
                 tc_=convertVector<stateObservation::Vector>(v);
             }
 
-            void start(const int & nbStep)
+            void start(const int & nbStep, const int & i=0)
             {
+                mode_=i;
                 calibrate_=true;
                 nbStep_=nbStep;
                 currentStep_=0;
@@ -89,14 +90,23 @@ namespace sotStateObservation
                 sumContactsPositionIn_.setZero();
             }
 
-            void reset()
+
+            void reset(const int & i=0)
             {
-                R_.setIdentity();
-                tc_.setZero();
-                sumImuIn_.setZero();
-                sumComIn_.setZero();
-                sumContactsPositionIn_.setZero();
+                if(i==0 || i==1)
+                {
+                    R_.setIdentity();
+                    sumImuIn_.setZero();
+                }
+
+                if(i==0 || i==2)
+                {
+                    tc_.setZero();
+                    sumComIn_.setZero();
+                    sumContactsPositionIn_.setZero();
+                }
             }
+
 
             void calibrate(const int& inTime);
 
@@ -168,6 +178,9 @@ namespace sotStateObservation
             int nbStep_;
             int currentStep_;
             int inTime_;
+
+            // 0: IMU and contact; 1: Only IMU ; 2: only contacts
+            int mode_;
 
         };
 
