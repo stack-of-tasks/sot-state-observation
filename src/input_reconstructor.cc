@@ -184,8 +184,6 @@ namespace sotStateObservation
         inert.elementAt(4)=inertia(3,5);
         inert.elementAt(5)=inertia(4,5);
 
-        //        std::cout << " INERTIA0= "<< inert << std::endl;
-
         // From waist to com
         inert.elementAt(0) += -m*((com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
         inert.elementAt(1) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
@@ -193,8 +191,6 @@ namespace sotStateObservation
         inert.elementAt(3) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(1)-waist.elementAt(1));
         inert.elementAt(4) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(2)-waist.elementAt(2));
         inert.elementAt(5) += m*(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(2)-waist.elementAt(2));
-
-        //        std::cout << " INERTIA1= "<< inert << std::endl;
 
         // From com to local frame
         inert.elementAt(0) -= -m*((com.elementAt(1))*(com.elementAt(1))+(com.elementAt(2))*(com.elementAt(2)));
@@ -204,15 +200,6 @@ namespace sotStateObservation
         inert.elementAt(4) -= m*(com.elementAt(0))*(com.elementAt(2));
         inert.elementAt(5) -= m*(com.elementAt(1))*(com.elementAt(2));
 
-         //       std::cout << " INERTIA2= "<< inert  << std::endl;
-
-
-//        inert.elementAt(0)=48.2378;
-//        inert.elementAt(1)=48.2378;
-//        inert.elementAt(2)=2.87339;
-//        inert.elementAt(3)=0.0;
-//        inert.elementAt(4)=0.0;
-//        inert.elementAt(5)=0.0;
     }
 
     void InputReconstructor::computeInertDot
@@ -243,17 +230,6 @@ namespace sotStateObservation
 
         // Inertia expressed at waist
         dinert = dinertia;
-
-        //        std::cout << " INERTIA0= "<< inert << std::endl;
-
-        // From com to local frame
-        dinert.elementAt(0) += 2*m*((com.elementAt(1))*(dcom.elementAt(1))+(com.elementAt(2))*(dcom.elementAt(2)));
-        dinert.elementAt(1) += 2*m*((com.elementAt(0))*(dcom.elementAt(0))+(com.elementAt(2))*(dcom.elementAt(2)));
-        dinert.elementAt(2) += 2*m*((com.elementAt(0))*(dcom.elementAt(0))+(com.elementAt(1))*(dcom.elementAt(1)));
-        dinert.elementAt(3) -= m*((com.elementAt(0))*(dcom.elementAt(1)) + (dcom.elementAt(0))*(com.elementAt(1)));
-        dinert.elementAt(4) -= m*((com.elementAt(0))*(dcom.elementAt(2)) + (dcom.elementAt(0))*(com.elementAt(2))) ;
-        dinert.elementAt(5) -= m*((com.elementAt(1))*(dcom.elementAt(2)) + (dcom.elementAt(1))*(com.elementAt(2)));
-
    }
 
     dynamicgraph::Vector& InputReconstructor::computeInput(dynamicgraph::Vector & input, const int& inTime)

@@ -674,6 +674,8 @@ namespace sotStateObservation
         flexibilitySOUT(inTime);
 
         stateObservation::Vector forcesAndMoments=estimator_.getForcesAndMoments();
+        //std::cout << "forcesAndMoments" << forcesAndMoments.transpose() << std::endl;
+        forcesSupport1.resize(6);
         if(forcesAndMoments.size() >= 6){
             forcesSupport1=convertVector<dynamicgraph::Vector>((forcesAndMoments).block(0,0,6,1));
         }else{
@@ -688,6 +690,7 @@ namespace sotStateObservation
         flexibilitySOUT(inTime);
 
         stateObservation::Vector forcesAndMoments=estimator_.getForcesAndMoments();
+        forcesSupport2.resize(6);
         if(forcesAndMoments.size()==12){
             forcesSupport2=convertVector<dynamicgraph::Vector>((forcesAndMoments).block(6,0,6,1));
         }else{
