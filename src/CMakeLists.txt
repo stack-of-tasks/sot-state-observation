@@ -117,6 +117,7 @@ INSTALL(FILES
   dynamic_graph/sot/application/state_observation/initializations/hrp2_model_free_flex_estimator.py
   dynamic_graph/sot/application/state_observation/initializations/hrp2_model_base_flex_estimator.py
   dynamic_graph/sot/application/state_observation/initializations/hrp2_model_base_flex_estimator_imu_force.py
+  dynamic_graph/sot/application/state_observation/initializations/hrp2_model_base_flex_estimator_imu_force_encoders.py
   dynamic_graph/sot/application/state_observation/initializations/hrp2_mocap_to_sot.py
   DESTINATION ${PYTHON_SITELIB}/dynamic_graph/sot/application/state_observation/initializations
   )
