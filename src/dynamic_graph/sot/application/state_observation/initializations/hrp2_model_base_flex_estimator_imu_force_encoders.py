@@ -13,6 +13,7 @@ from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
 from dynamic_graph.sot.application.state_observation import Calibrate
 
+from dynamic_graph.sot.hrp2.dynamic_hrp2_14 import DynamicHrp2_14
 
 class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
     def __init__(self, robot, name='flextimator2'):
@@ -21,8 +22,10 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.setSamplingPeriod(0.005)  
         self.robot = robot
 
-        self.robot.dynamic.inertia.recompute(1)					      
-        self.robot.dynamic.waist.recompute(1)	
+        self.createDynamicEncoders()
+
+        self.robot.dynamicEncoders.inertia.recompute(1)					      
+        self.robot.dynamic.waistEncoders.recompute(1)	
 
         # Sensors stack
         self.sensorStackimu = Stack_of_vector (name+'SensorsIMU')
@@ -54,12 +57,12 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 		# IMU Vector
         self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
         plug(robot.frames['accelerometer'].position,self.inputPos.sin)
-        self.robot.dynamic.createJacobian(name+'ChestJ_OpPoint','chest')	
+        self.robot.dynamicEncoders.createJacobian(name+'ChestJ_OpPoint','chest')	
         self.imuOpPoint = OpPointModifier(name+'IMU_oppoint')
         self.imuOpPoint.setEndEffector(False)
-        self.imuOpPoint.setTransformation(matrixToTuple(np.linalg.inv(np.matrix(self.robot.dynamic.chest.value))*np.matrix(self.robot.frames['accelerometer'].position.value)))
-        plug (self.robot.dynamic.chest,self.imuOpPoint.positionIN)			
-        plug (self.robot.dynamic.signal(name+'ChestJ_OpPoint'),self.imuOpPoint.jacobianIN)
+        self.imuOpPoint.setTransformation(matrixToTuple(np.linalg.inv(np.matrix(self.robot.dynamicEncoders.chest.value))*np.matrix(self.robot.frames['accelerometer'].position.value)))
+        plug (self.robot.dynamicEncoders.chest,self.imuOpPoint.positionIN)			
+        plug (self.robot.dynamicEncoders.signal(name+'ChestJ_OpPoint'),self.imuOpPoint.jacobianIN)
         self.inputVel = Multiply_matrix_vector(name+'InputVelocity')
         plug(self.imuOpPoint.jacobian,self.inputVel.sin1)
         plug(self.robot.device.velocity,self.inputVel.sin2)
@@ -75,9 +78,9 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.IMUVector.setFiniteDifferencesInterval(2)
 
         	# CoM and derivatives
-        self.com=self.robot.dynamic.com
+        self.com=self.robot.dynamicEncoders.com
         self.DCom = Multiply_matrix_vector(name+'DCom')
-        plug(self.robot.dynamic.Jcom,self.DCom.sin1)
+        plug(self.robot.dynamicEncoders.Jcom,self.DCom.sin1)
         plug(self.robot.device.velocity,self.DCom.sin2)
         self.comVectorIn = Stack_of_vector (name+'ComVectorIn')
         plug(self.com,self.comVectorIn.sin1)
@@ -91,17 +94,17 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 		# Compute derivative of Angular Momentum
         self.angMomDerivator = Derivator_of_Vector('angMomDerivator')
-        plug(self.robot.dynamic.angularmomentum,self.angMomDerivator.sin)
+        plug(self.robot.dynamicEncoders.angularmomentum,self.angMomDerivator.sin)
         self.angMomDerivator.dt.value = self.robot.timeStep          
         
         	# Concatenate with InputReconstructor entity
         self.inputVector=InputReconstructor(name+'inputVector')
         plug(self.comVector.sout,self.inputVector.comVector)
-        plug(self.robot.dynamic.inertia,self.inputVector.inertia)
-	plug(self.robot.dynamic.angularmomentum,self.inputVector.angMomentum)
+        plug(self.robot.dynamicEncoders.inertia,self.inputVector.inertia)
+	plug(self.robot.dynamicEncoders.angularmomentum,self.inputVector.angMomentum)
 	plug(self.angMomDerivator.sout,self.inputVector.dangMomentum)
         self.inputVector.dinertia.value=(0,0,0,0,0,0)
-        plug(self.robot.dynamic.waist,self.inputVector.positionWaist)
+        plug(self.robot.dynamicEncoders.waist,self.inputVector.positionWaist)
         plug(self.IMUVector.sout,self.inputVector.imuVector)
         plug(self.contactNbr,self.inputVector.nbContacts)
 
@@ -118,5 +121,56 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.setKfv(matrixToTuple(np.diag((kfv,kfv,kfv))))
         self.setKte(matrixToTuple(np.diag((kte,kte,kte))))
         self.setKtv(matrixToTuple(np.diag((ktv,ktv,ktv))))
+
+
+    # Robot real dynamics ######################################
+
+    def createDynamicEncoders(self):
+        # Robot timestep
+        self.timeStep = 0.005
+	# Enable velocity computation.
+	self.enableVelocityDerivator = False
+	#Enable acceleration computation.
+	self.enableAccelerationDerivator = False
+
+        self.robot.dynamicEncoders = self.robot.loadModelFromJrlDynamics(
+                              self.robot.name + '_dynamicEncoders', 
+                              self.robot.modelDir, 
+                              self.robot.modelName,
+                              self.robot.specificitiesPath,
+                              self.robot.jointRankPath,
+                              DynamicHrp2_14)
+
+        self.dimension = self.robot.dynamicEncoders.getDimension()
+
+	print("=================DIMENSION=====================")
+	self.dimension
+
+        if self.dimension != len(self.robot.halfSitting):
+            raise RuntimeError("Dimension of half-sitting: {0} differs from dimension of robot: {1}".format (len(self.halfSitting), self.dimension))
+
+        # Freeflyer reference frame should be the same as global
+        # frame so that operational point positions correspond to
+        # position in freeflyer frame.
+        plug(self.robot.device.robotState, self.robot.dynamicEncoders.position)
+
+ 	if self.enableVelocityDerivator:
+            self.velocityDerivator = Derivator_of_Vector('velocityDerivator')
+            self.velocityDerivator.dt.value = self.timeStep
+            plug(self.robot.device.robotState, self.velocityDerivator.sin)
+            plug(self.velocityDerivator.sout, self.robot.dynamicEncoders.velocity)
+        else:
+            self.robot.dynamicEncoders.velocity.value = self.dimension*(0.,)
+
+        if self.enableAccelerationDerivator:
+            self.accelerationDerivator = \
+                Derivator_of_Vector('accelerationDerivator')
+            self.accelerationDerivator.dt.value = self.timeStep
+            plug(self.velocityDerivator.sout,
+                 self.accelerationDerivator.sin)
+            plug(self.accelerationDerivator.sout, self.robot.dynamic.acceleration)
+        else:
+            self.robot.dynamicEncoders.acceleration.value = self.dimension*(0.,)
+
 
 
