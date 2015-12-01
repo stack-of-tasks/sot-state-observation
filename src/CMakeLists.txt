@@ -39,6 +39,7 @@ ADD_LIBRARY(${LIBRARY_NAME}
   dg-imu-model-base-flex-estimation.cc
   input_reconstructor.cc
   calibrate.cc
+  stack-of-contacts.cc
   moving-frame-transformation.cc
   position-state-reconstructor.cc
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
