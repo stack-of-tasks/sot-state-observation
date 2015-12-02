@@ -80,6 +80,17 @@ namespace sotStateObservation
                     "Entity that compute the stack of contacts";
             }
 
+            unsigned int& getNbSupport(unsigned int& , const int& time);
+
+            Vector& getSupportPos1(Vector& , const int& time);
+            MatrixHomogeneous& getHomoSupportPos1(MatrixHomogeneous& , const int& time);
+            dynamicgraph::Vector& getForceSupport1(dynamicgraph::Vector& , const int& time);
+
+            dynamicgraph::Vector& getSupportPos2(dynamicgraph::Vector& , const int& time);
+            MatrixHomogeneous& getHomoSupportPos2(MatrixHomogeneous& , const int& time);
+            dynamicgraph::Vector& getForceSupport2(dynamicgraph::Vector& , const int& time);
+
+
             /**
             \name Parameters
             @{
@@ -90,40 +101,33 @@ namespace sotStateObservation
             */
             static const std::string CLASS_NAME;
 
-            unsigned int& getNbSupport(unsigned int& nbSupport, const int& time);
-
-            dynamicgraph::Vector& getSupportPos1(dynamicgraph::Vector& , const int& time);
-            MatrixHomogeneous& getHomoSupportPos1(MatrixHomogeneous& , const int& time);
-            dynamicgraph::Vector& getForceSupport1(dynamicgraph::Vector& , const int& time);
-
-            dynamicgraph::Vector& getSupportPos2(dynamicgraph::Vector& , const int& time);
-            MatrixHomogeneous& getHomoSupportPos2(MatrixHomogeneous& , const int& time);
-            dynamicgraph::Vector& getForceSupport2(dynamicgraph::Vector& , const int& time);
-
         private:
 
             /// Methods
             void computeStack(const int& time);
 
             /// Signals
-            SignalPtr <MatrixHomogeneous, int> leftFootPositionSIN_;
-            SignalPtr <dynamicgraph::Vector, int> forceLeftFootSIN_;
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionSIN_;
+            dynamicgraph::SignalPtr <Vector, int> forceLeftFootSIN_;
 
-            SignalPtr <MatrixHomogeneous, int> rightFootPositionSIN_;
-            SignalPtr <dynamicgraph::Vector, int> forceRightFootSIN_;
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> rightFootPositionSIN_;
+            dynamicgraph::SignalPtr <Vector, int> forceRightFootSIN_;
 
-            SignalTimeDependent <unsigned int, int> nbSupportSOUT_;
+            dynamicgraph::SignalPtr <unsigned int, int> nbSupportSOUT_;
 
-            SignalTimeDependent <dynamicgraph::Vector, int> supportPos1SOUT_;
-            SignalTimeDependent <MatrixHomogeneous, int> homoSupportPos1SOUT_;
-            SignalTimeDependent <dynamicgraph::Vector, int> forceSupport1SOUT_;
+            dynamicgraph::SignalPtr <Vector, int> supportPos1SOUT_;
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> homoSupportPos1SOUT_;
+            dynamicgraph::SignalPtr <Vector, int> forceSupport1SOUT_;
 
-            SignalTimeDependent <dynamicgraph::Vector, int> supportPos2SOUT_;
-            SignalTimeDependent <MatrixHomogeneous, int> homoSupportPos2SOUT_;
-            SignalTimeDependent <dynamicgraph::Vector, int> forceSupport2SOUT_;
+            dynamicgraph::SignalPtr <Vector, int> supportPos2SOUT_;
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> homoSupportPos2SOUT_;
+            dynamicgraph::SignalPtr <Vector, int> forceSupport2SOUT_;
 
             /// Parameters
-            double forceThreshold_;
+            double forceThreshold_, time_;
+            unsigned int nbSupport_;
+            dynamicgraph::Vector supportPos1_, supportPos2_, forceSupport1_, forceSupport2_;
+            MatrixHomogeneous homoSupportPos1_, homoSupportPos2_;
       };
 
 } // namespace sotStateObservation

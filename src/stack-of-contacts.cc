@@ -34,6 +34,7 @@
 
 #include <sot-state-observation/stack-of-contacts.hh>
 
+#include <iostream>
 
 namespace sotStateObservation
 {
@@ -41,17 +42,19 @@ namespace sotStateObservation
 
     StackOfContacts::StackOfContacts( const std::string & inName):
         Entity(inName),
-        leftFootPositionSIN_ (NULL, "HRP2LQRTwoDofCoupledStabilizer("+inName+")::input(HomoMatrix)::leftFootPosition"),
-        rightFootPositionSIN_ (NULL, "HRP2LQRTwoDofCoupledStabilizer("+inName+")::input(HomoMatrix)::rightFootPosition"),
-        forceLeftFootSIN_ (NULL, "HRP2LQRTwoDofCoupledStabilizer("+inName+")::input(vector)::force_lf"),
-        forceRightFootSIN_ (NULL, "HRP2LQRTwoDofCoupledStabilizer("+inName+")::input(vector)::force_rf"),
-        nbSupportSOUT_ ("HRP2LQRTwoDofCoupledStabilizer("+inName+")::output(unsigned)::nbSupport"),
-        supportPos1SOUT_("HRP2LQRTwoDofCoupledStabilizer("+inName+")::output(vector)::supportPos1"),
-        supportPos2SOUT_("HRP2LQRTwoDofCoupledStabilizer("+inName+")::output(vector)::supportPos2"),
-        homoSupportPos1SOUT_(NULL, "HRP2LQRTwoDofCoupledStabilizer("+inName+")::output(HomoMatrix)::homoSupportPos1"),
-        homoSupportPos2SOUT_(NULL, "HRP2LQRTwoDofCoupledStabilizer("+inName+")::output(HomoMatrix)::homoSupportPos2"),
-        forceSupport1SOUT_ (NULL, "HRP2LQRTwoDofCoupledStabilizer("+inName+")::input(vector)::forceSupport1"),
-        forceSupport2SOUT_ (NULL, "HRP2LQRTwoDofCoupledStabilizer("+inName+")::input(vector)::forceSupport2")
+        leftFootPositionSIN_ (NULL, "StackOfContacts("+inName+")::input(HomoMatrix)::leftFootPosition"),
+        rightFootPositionSIN_ (NULL, "StackOfContacts("+inName+")::input(HomoMatrix)::rightFootPosition"),
+        forceLeftFootSIN_ (NULL, "StackOfContacts("+inName+")::input(vector)::force_lf"),
+        forceRightFootSIN_ (NULL, "StackOfContacts("+inName+")::input(vector)::force_rf"),
+        nbSupportSOUT_ (NULL,"StackOfContacts("+inName+")::output(unsigned)::nbSupport"),
+        supportPos1SOUT_(NULL,"StackOfContacts("+inName+")::output(vector)::supportPos1"),
+        supportPos2SOUT_(NULL,"StackOfContacts("+inName+")::output(vector)::supportPos2"),
+        homoSupportPos1SOUT_(NULL, "StackOfContacts("+inName+")::output(HomoMatrix)::homoSupportPos1"),
+        homoSupportPos2SOUT_(NULL, "StackOfContacts("+inName+")::output(HomoMatrix)::homoSupportPos2"),
+        forceSupport1SOUT_ (NULL, "StackOfContacts("+inName+")::output(vector)::forceSupport1"),
+        forceSupport2SOUT_ (NULL, "StackOfContacts("+inName+")::output(vector)::forceSupport2"),
+        forceThreshold_ (.036 * 56.8*stateObservation::cst::gravityConstant), time_(-1),
+        nbSupport_(2), supportPos1_(6), supportPos2_(6), forceSupport1_(6), forceSupport2_(6)
     {
         std::string docstring;
 
@@ -62,23 +65,15 @@ namespace sotStateObservation
         signalRegistration (supportPos1SOUT_ << homoSupportPos1SOUT_ << forceSupport1SOUT_);
         signalRegistration (supportPos2SOUT_ << homoSupportPos2SOUT_ << forceSupport2SOUT_);
 
-        Vector rfconf(6);
-        rfconf.setZero();
-        Vector lfconf(6);
-        lfconf.setZero();
-        rfconf(0) = 0.009490463094;
-        rfconf(1) = -0.095000000000;
-        lfconf(0) = 0.009490463094;
-        lfconf(1) = 0.095000000000;
+        nbSupportSOUT_.setFunction(boost::bind(&StackOfContacts::getNbSupport, this, _1, _2));
 
-        supportPos1SOUT_.setConstant (lfconf);
-        supportPos1SOUT_.setTime (0);
+        supportPos1SOUT_.setFunction(boost::bind(&StackOfContacts::getSupportPos1, this, _1, _2));
+        homoSupportPos1SOUT_.setFunction(boost::bind(&StackOfContacts::getHomoSupportPos1, this, _1, _2));
+        forceSupport1SOUT_.setFunction(boost::bind(&StackOfContacts::getForceSupport1, this, _1, _2));
 
-        supportPos2SOUT_.setConstant (rfconf);
-        supportPos2SOUT_.setTime (0);
-
-        nbSupportSOUT_.setConstant (2);
-        nbSupportSOUT_.setTime (0);
+        supportPos2SOUT_.setFunction(boost::bind(&StackOfContacts::getSupportPos2, this, _1, _2));
+        homoSupportPos2SOUT_.setFunction(boost::bind(&StackOfContacts::getHomoSupportPos2, this, _1, _2));
+        forceSupport2SOUT_.setFunction(boost::bind(&StackOfContacts::getForceSupport2, this, _1, _2));
 
         stateObservation::Matrix leftFootPos;
         leftFootPos.resize(4,4);
@@ -87,6 +82,7 @@ namespace sotStateObservation
                         -2.363e-10,2.70562e-12,1,3.03755e-06,
                         0,0,0,1;
         leftFootPositionSIN_.setConstant(convertMatrix<dynamicgraph::Matrix>(leftFootPos));
+        leftFootPositionSIN_.setTime (time_);
 
         stateObservation::Matrix rightFootPos;
         rightFootPos.resize(4,4);
@@ -95,22 +91,7 @@ namespace sotStateObservation
                         1.68756e-16,1.10345e-16,1,2.55006e-07,
                         0,0,0,1;
         rightFootPositionSIN_.setConstant(convertMatrix<dynamicgraph::Matrix>(rightFootPos));
-
-        stateObservation::Matrix homoSupportPos2;
-        homoSupportPos2.resize(4,4);
-        homoSupportPos2 <<  1,1.94301e-07,2.363e-10,0.00949046,
-                        -1.94301e-07,1,-2.70566e-12,0.095,
-                        -2.363e-10,2.70562e-12,1,3.03755e-06,
-                        0,0,0,1;
-        homoSupportPos2SOUT_.setConstant(convertMatrix<dynamicgraph::Matrix>(homoSupportPos2));
-
-        stateObservation::Matrix homoSupportPos1;
-        homoSupportPos1.resize(4,4);
-        homoSupportPos1 <<  1,-9.18094e-18,-1.52169e-16,0.009496046,
-                            9.184e-18,1,-1.10345e-16,-0.095,
-                            1.68756e-16,1.10345e-16,1,2.55006e-07,
-                            0,0,0,1;
-        homoSupportPos1SOUT_.setConstant(convertMatrix<dynamicgraph::Matrix>(homoSupportPos1));
+        rightFootPositionSIN_.setTime (time_);
 
         stateObservation::Vector forceRightFoot;
         forceRightFoot.resize(6);
@@ -121,6 +102,7 @@ namespace sotStateObservation
                             -14.5562,
                             1.89125;
         forceRightFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(forceRightFoot));
+        forceRightFootSIN_.setTime (time_);
 
         stateObservation::Vector forceLeftFoot;
         forceLeftFoot.resize(6);
@@ -131,28 +113,15 @@ namespace sotStateObservation
                             -14.5158,
                             -1.72017;
         forceLeftFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(forceLeftFoot));
+        forceLeftFootSIN_.setTime (time_);
 
-        stateObservation::Vector forceSupport2;
-        forceSupport2.resize(6);
-        forceSupport2 <<   45.1262,
-                            -21.367,
-                            361.344,
-                            1.12135,
-                            -14.5562,
-                            1.89125;
-        forceSupport2SOUT_.setConstant(convertVector<dynamicgraph::Vector>(forceSupport2));
-
-        stateObservation::Vector forceSupport1;
-        forceSupport1.resize(6);
-        forceSupport1 <<    44.6005,
-                            21.7871,
-                            352.85,
-                            -1.00715,
-                            -14.5158,
-                            -1.72017;
-        forceSupport1SOUT_.setConstant(convertVector<dynamicgraph::Vector>(forceSupport1));
-
-    }
+        supportPos1_.setZero();
+        supportPos2_.setZero();
+        forceSupport1_.setZero();
+        forceSupport2_.setZero();
+        homoSupportPos1_.setIdentity();
+        homoSupportPos2_.setIdentity();
+   }
 
     StackOfContacts::~StackOfContacts()
     {
@@ -160,57 +129,56 @@ namespace sotStateObservation
 
     unsigned int& StackOfContacts::getNbSupport(unsigned int& nbSupport, const int& time)
     {
-        computeStack(time);
-        nbSupport=nbSupportSOUT_.access (time);
+        if(time!=time_) computeStack(time);
+        nbSupport=nbSupport_;
         return nbSupport;
     }
 
-    dynamicgraph::Vector& StackOfContacts::getSupportPos1(dynamicgraph::Vector& supportPos1, const int& time)
+    Vector& StackOfContacts::getSupportPos1(Vector& supportPos1, const int& time)
     {
-        computeStack(time);
-        supportPos1=supportPos1SOUT_.access (time);
+        if(time!=time_) computeStack(time);
+        supportPos1=supportPos1_;
         return supportPos1;
     }
 
     MatrixHomogeneous& StackOfContacts::getHomoSupportPos1(MatrixHomogeneous& homoSupportPos1, const int& time)
     {
-        computeStack(time);
-        homoSupportPos1=homoSupportPos1SOUT_.access (time);
+        if(time!=time_) computeStack(time);
+        homoSupportPos1=homoSupportPos1_;
         return homoSupportPos1;
     }
 
-    dynamicgraph::Vector& StackOfContacts::getForceSupport1(dynamicgraph::Vector& forceSupport1, const int& time)
+    Vector& StackOfContacts::getForceSupport1(Vector& forceSupport1, const int& time)
     {
-        computeStack(time);
-        forceSupport1=forceSupport1SOUT_.access (time);
+        if(time!=time_) computeStack(time);
+        forceSupport1=forceSupport1_;
         return forceSupport1;
     }
 
-    dynamicgraph::Vector& StackOfContacts::getSupportPos2(dynamicgraph::Vector& supportPos2, const int& time)
+    Vector& StackOfContacts::getSupportPos2(Vector& supportPos2, const int& time)
     {
-        computeStack(time);
-        supportPos2=supportPos2SOUT_.access (time);
+        if(time!=time_) computeStack(time);
+        supportPos2=supportPos2_;
         return supportPos2;
     }
 
     MatrixHomogeneous& StackOfContacts::getHomoSupportPos2(MatrixHomogeneous& homoSupportPos2, const int& time)
     {
-        computeStack(time);
-        homoSupportPos2=homoSupportPos2SOUT_.access (time);
+        if(time!=time_) computeStack(time);
+        homoSupportPos2=homoSupportPos2_;
         return homoSupportPos2;
     }
 
-    dynamicgraph::Vector& StackOfContacts::getForceSupport2(dynamicgraph::Vector& forceSupport2, const int& time)
+    Vector& StackOfContacts::getForceSupport2(Vector& forceSupport2, const int& time)
     {
-        computeStack(time);
-        forceSupport2=forceSupport2SOUT_.access (time);
+        if(time!=time_) computeStack(time);
+        forceSupport2=forceSupport2_;
         return forceSupport2;
     }
 
 
-    void StackOfContacts::computeStack(const int& time)  //const MatrixHomogeneous& leftFootPosition, const MatrixHomogeneous& rightFootPosition, const Vector& forceLf, const Vector& forceRf, const int& time)
+    void StackOfContacts::computeStack(const int& time)
     {
-
         /// Forces signals
         const MatrixHomogeneous& leftFootPosition = leftFootPositionSIN_.access (time);
         const MatrixHomogeneous& rightFootPosition = rightFootPositionSIN_.access (time);
@@ -246,7 +214,6 @@ namespace sotStateObservation
           lfconf(i+3) = lfuth(i);
         }
 
-        // Express vertical component of force in global basis
         double flz = leftFootPosition (2,0) * forceLf (0) +
                      leftFootPosition(2,1) * forceLf (1) +
                      leftFootPosition (2,2) * forceLf (2);
@@ -254,41 +221,34 @@ namespace sotStateObservation
                      rightFootPosition(2,1) * forceRf (1) +
                      rightFootPosition (2,2) * forceRf (2);
 
-        //compute the number of supports
-        unsigned int nbSupport = 0;
+        nbSupport_ = 0;
+
         if (flz >= forceThreshold_)
         {
-          supportPos1SOUT_.setConstant (lfconf);
-          supportPos1SOUT_.setTime (time);
-          homoSupportPos1SOUT_.setConstant (leftFootPosition);
-          homoSupportPos1SOUT_.setTime (time);
-          forceSupport1SOUT_.setConstant (forceLeftFootSIN_);
-          forceSupport1SOUT_.setTime (time);
-          nbSupport++;
+          supportPos1_=lfconf;
+          homoSupportPos1_=leftFootPosition;
+          forceSupport1_=forceLf;
+          nbSupport_++;
         }
 
         if (frz >= forceThreshold_)
         {
-          if (nbSupport==0)
+          if (nbSupport_==0)
           {
-            supportPos1SOUT_.setConstant (rfconf);
-            supportPos1SOUT_.setTime (time);
-            homoSupportPos1SOUT_.setConstant (rightFootPosition);
-            homoSupportPos1SOUT_.setTime (time);
-            forceSupport1SOUT_.setConstant (forceRightFootSIN_);
-            forceSupport1SOUT_.setTime (time);
+              supportPos1_=rfconf;
+              homoSupportPos1_=rightFootPosition;
+              forceSupport1_=forceRf;
           }
           else
           {
-            supportPos2SOUT_.setConstant (rfconf);
-            homoSupportPos2SOUT_.setConstant (rightFootPosition);
-            forceSupport2SOUT_.setConstant (forceRightFootSIN_);
+              supportPos2_=rfconf;
+              homoSupportPos2_=rightFootPosition;
+              forceSupport2_=forceRf;
           }
-          nbSupport++;
+          nbSupport_++;
         }
 
-        nbSupportSOUT_.setConstant (nbSupport);
-        nbSupportSOUT_.setTime (time);
+        time_=time;
     }
 
 }

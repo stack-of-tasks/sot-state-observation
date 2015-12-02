@@ -158,7 +158,7 @@ namespace sotStateObservation
 
         measurementSIN.setConstant(measure);
 
-        contactsNbrSIN.setConstant(0);
+        //contactsNbrSIN.setConstant(0);
 
 
         flexibilitySOUT.setConstant(flexibility);

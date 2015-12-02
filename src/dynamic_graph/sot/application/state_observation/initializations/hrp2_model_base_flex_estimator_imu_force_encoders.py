@@ -6,7 +6,7 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose, Selec_of_vector 
-from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor
+from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, StackOfContacts
 
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
@@ -20,38 +20,66 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
         
         self.setSamplingPeriod(0.005)  
-        self.robot = robot
+	self.setContactModel(1)
+	self.setKfe(matrixToTuple(np.diag((40000,40000,40000))))
+	self.setKfv(matrixToTuple(np.diag((600,600,600))))
+	self.setKte(matrixToTuple(np.diag((600,600,600))))
+	self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
+        self.robot = robot
         self.createDynamicEncoders()
 
         self.robot.dynamicEncoders.inertia.recompute(1)					      
-        self.robot.dynamicEncoders.waist.recompute(1)	
+        self.robot.dynamicEncoders.waist.recompute(1)
 
-        # Sensors stack
+	# Stack of contacts
+        self.stackOfContacts=StackOfContacts ('StackOfContacts')
+	plug (self.robot.device.forceLLEG,self.stackOfContacts.force_lf)
+        plug (self.robot.device.forceRLEG,self.stackOfContacts.force_rf)
+        plug (self.robot.frames['rightFootForceSensor'].position,self.stackOfContacts.rightFootPosition)
+        plug (self.robot.frames['leftFootForceSensor'].position,self.stackOfContacts.leftFootPosition)
+        plug (self.stackOfContacts.nbSupport,self.contactNbr)
+
+        # Stack of sensors
+
+		# IMU
         self.sensorStackimu = Stack_of_vector (name+'SensorsIMU')
         plug(self.robot.device.accelerometer,self.sensorStackimu.sin1)
         plug(self.robot.device.gyrometer,self.sensorStackimu.sin2)
         self.sensorStackimu.selec1 (0, 3)
         self.sensorStackimu.selec2 (0, 3)
-	self.calibration= Calibrate('calibration')
-	plug(self.sensorStackimu.sout,self.calibration.imuIn)
-	plug(self.robot.dynamicEncoders.com,self.calibration.comIn)			
 
-        self.sensorStackforce = Stack_of_vector (name+'SensorsFORCE')
-        plug(self.robot.device.forceLLEG,self.sensorStackforce.sin1)
-        plug(self.robot.device.forceRLEG,self.sensorStackforce.sin2)
+                # Contacts position
+        self.contactsPos = Stack_of_vector ('contactsPOS')
+        plug(self.stackOfContacts.supportPos1,self.contactsPos.sin1)
+        plug(self.stackOfContacts.supportPos2,self.contactsPos.sin2)
+        self.contactsPos.selec1 (0, 6)
+        self.contactsPos.selec2 (0, 6)
+
+		# Contacts forces
+	self.sensorStackforce = Stack_of_vector ('SensorsFORCE')
+        plug(self.stackOfContacts.forceSupport1,self.sensorStackforce.sin1)
+        plug(self.stackOfContacts.forceSupport2,self.sensorStackforce.sin2)
         self.sensorStackforce.selec1 (0, 6)
         self.sensorStackforce.selec2 (0, 6)
 
+		# Calibration
+	self.calibration= Calibrate('calibration')
+        plug (self.stackOfContacts.nbSupport,self.calibration.contactsNbr)
+	plug(self.sensorStackimu.sout,self.calibration.imuIn)
+        plug(self.contactsPos.sout,self.calibration.contactsPositionIn)
+	plug(self.robot.dynamicEncoders.com,self.calibration.comIn)
+
+		# Concatenate
         self.sensorStack = Stack_of_vector (name+'Sensors')
         plug(self.calibration.imuOut,self.sensorStack.sin1)
         plug(self.sensorStackforce.sout,self.sensorStack.sin2)
+        self.contactForces = self.sensorStack.sin2
         self.sensorStack.selec1 (0, 6)
         self.sensorStack.selec2 (0, 12)
 
-	plug(self.sensorStack.sout,self.measurement);
-        self.contactForces = self.sensorStack.sin2
-      
+	plug(self.sensorStack.sout,self.measurement)
+    
         # Input reconstruction
 
 		# IMU Vector
@@ -99,6 +127,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         
         	# Concatenate with InputReconstructor entity
         self.inputVector=InputReconstructor(name+'inputVector')
+        plug (self.stackOfContacts.nbSupport,self.inputVector.nbContacts)
         plug(self.comVector.sout,self.inputVector.comVector)
         plug(self.robot.dynamicEncoders.inertia,self.inputVector.inertia)
 	plug(self.robot.dynamicEncoders.angularmomentum,self.inputVector.angMomentum)
@@ -106,22 +135,13 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.inputVector.dinertia.value=(0,0,0,0,0,0)
         plug(self.robot.dynamicEncoders.waist,self.inputVector.positionWaist)
         plug(self.IMUVector.sout,self.inputVector.imuVector)
-        plug(self.contactNbr,self.inputVector.nbContacts)
+        plug(self.calibration.contactsPositionOut,self.inputVector.contactsPosition)
 
         self.inputVector.setSamplingPeriod(robot.timeStep)
         self.inputVector.setFDInertiaDot(True)     
         plug(self.inputVector.input,self.input)
+
         self.robot.flextimator = self
-
-        kfe=40000
-        kfv=600
-        kte=600
-        ktv=60
-        self.setKfe(matrixToTuple(np.diag((kfe,kfe,kfe))))
-        self.setKfv(matrixToTuple(np.diag((kfv,kfv,kfv))))
-        self.setKte(matrixToTuple(np.diag((kte,kte,kte))))
-        self.setKtv(matrixToTuple(np.diag((ktv,ktv,ktv))))
-
 
     # Robot real dynamics ######################################
 
@@ -170,6 +190,4 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
             self.robot.dynamicEncoders.acceleration.value = self.dimension*(0.,)
 
 	self.initializeOpPoints(self.robot.dynamicEncoders)
-
-
 
