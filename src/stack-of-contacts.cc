@@ -34,8 +34,6 @@
 
 #include <sot-state-observation/stack-of-contacts.hh>
 
-#include <iostream>
-
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( StackOfContacts, "StackOfContacts" );

@@ -158,7 +158,7 @@ namespace sotStateObservation
 
         measurementSIN.setConstant(measure);
 
-        //contactsNbrSIN.setConstant(0);
+        contactsNbrSIN.setConstant(0);
 
 
         flexibilitySOUT.setConstant(flexibility);
@@ -518,7 +518,6 @@ namespace sotStateObservation
         {
             contactNumber_ = contactNb;
             estimator_.setContactsNumber(contactNb);
-
         }
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
@@ -527,9 +526,7 @@ namespace sotStateObservation
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
         }
 #endif
-
         flexibility = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
-
         return flexibility;
     }
 
