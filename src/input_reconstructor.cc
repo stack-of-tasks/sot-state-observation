@@ -234,7 +234,6 @@ namespace sotStateObservation
 
     dynamicgraph::Vector& InputReconstructor::computeInput(dynamicgraph::Vector & input, const int& inTime)
     {
-
         if (currentTime==inTime)
         {
           input =  inputSOUT.accessCopy();
@@ -348,6 +347,7 @@ namespace sotStateObservation
 
         //cout << "contacts Position: " << contactsPosition << endl;
         //std::cout << "input" << input << std::endl;
+
 
         return input;
 

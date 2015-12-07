@@ -200,8 +200,8 @@ namespace sotStateObservation
             {
                stateObservation::Vector meanImuIn;
                meanImuIn=sumImuIn_/nbStep_;
-               R_.block(0,0,3,3)=Rdetermination(meanImuIn.block(0,0,3,1)); // determination of Ra
-               R_.block(3,3,3,3)=R_.block(0,0,3,3); //Rdetermination(meanImuIn.block(3,0,3,1)); // determination of Rg
+               R_.block(0,0,3,3)=Rdetermination(meanImuIn.block(0,0,3,1));
+               R_.block(3,3,3,3)=R_.block(0,0,3,3);
             }
 
             // Feet position calibration

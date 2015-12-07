@@ -7,7 +7,6 @@
 
 #include <sot-state-observation/dg-imu-model-base-flex-estimation.hh>
 
-
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( DGIMUModelBaseFlexEstimation, "DGIMUModelBaseFlexEstimation" );
