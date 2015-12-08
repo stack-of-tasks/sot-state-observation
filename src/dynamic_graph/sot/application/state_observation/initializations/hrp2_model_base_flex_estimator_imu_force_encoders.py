@@ -31,8 +31,8 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.stackOfContacts=StackOfContacts ('StackOfContacts')
 	plug (self.robot.device.forceLLEG,self.stackOfContacts.force_lf)
         plug (self.robot.device.forceRLEG,self.stackOfContacts.force_rf)
-        plug (self.robot.dynamic.rightAnkle,self.stackOfContacts.rightFootPosition)
-        plug (self.robot.dynamic.leftAnkle,self.stackOfContacts.leftFootPosition)
+        plug (self.robot.frames["leftFootForceSensor"].position,self.stackOfContacts.rightFootPosition)
+        plug (self.robot.frames["rightFootForceSensor"].position,self.stackOfContacts.leftFootPosition)
         plug (self.stackOfContacts.nbSupport,self.contactNbr)
 
 	# Reconstruction of the position of the free flyer from encoders
@@ -43,15 +43,23 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	plug(self.robot.device.robotState,self.robotState.sin)
 	self.robotState.selec(0,36)
 	self.robot.dynamicFF=self.createDynamic(self.robotState.sout,'_dynamicFF')
-        self.robot.dynamicFF.inertia.recompute(1)					      
+        self.robot.dynamicFF.inertia.recompute(1)
         self.robot.dynamicFF.waist.recompute(1)
+
+		# Reconstruction of the position of the contacts in dynamicFF
+	self.leftFootPosFF=Multiply_of_matrixHomo("leftFootPosFF")
+	plug(self.robot.dynamicFF.leftAnkle,self.leftFootPosFF.sin1)
+	self.leftFootPosFF.sin2.value=self.robot.forceSensorInLeftAnkle
+	self.rightFootPosFF=Multiply_of_matrixHomo("rightFootPosFF")
+	plug(self.robot.dynamicFF.rightAnkle,self.rightFootPosFF.sin1)
+	self.rightFootPosFF.sin2.value=self.robot.forceSensorInRightAnkle
 
 		# Stack of contacts
 	self.stackOfContactsFF=StackOfContacts ('StackOfContactsFF')
 	plug (self.robot.device.forceLLEG,self.stackOfContactsFF.force_lf)
         plug (self.robot.device.forceRLEG,self.stackOfContactsFF.force_rf)
-        plug (self.robot.dynamicFF.leftAnkle,self.stackOfContactsFF.leftFootPosition)
-        plug (self.robot.dynamicFF.rightAnkle,self.stackOfContactsFF.rightFootPosition)
+        plug (self.leftFootPosFF.sout,self.stackOfContactsFF.leftFootPosition)
+        plug (self.rightFootPosFF.sout,self.stackOfContactsFF.rightFootPosition)
 
 		# Reconstruction of the position of the free flyer
 	self.contactPos=Inverse_of_matrixHomo("contactPos")
@@ -74,8 +82,8 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 	# Create dynamicEncoders
 	self.robot.dynamicEncoders=self.createDynamic(self.stateEncoders.sout,'_dynamicEncoders')
-        self.robot.dynamicEncoders.inertia.recompute				      
-        self.robot.dynamicEncoders.waist.recompute
+        #self.robot.dynamicEncoders.inertia.recompute
+        #self.robot.dynamicEncoders.waist.recompute
 
         # Stack of sensors
 
@@ -120,22 +128,35 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         # Input reconstruction
 
 		# IMU Vector
-        self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
-        plug(robot.frames['accelerometer'].position,self.inputPos.sin)
-        self.robot.dynamicEncoders.createJacobian(name+'ChestJ_OpPoint','chest')	
+
+			# Creating an operational point for the IMU
+        self.robot.dynamicEncoders.createJacobian(name+'ChestJ_OpPoint','chest')
         self.imuOpPoint = OpPointModifier(name+'IMU_oppoint')
-        self.imuOpPoint.setEndEffector(False)
         self.imuOpPoint.setTransformation(matrixToTuple(np.linalg.inv(np.matrix(self.robot.dynamicEncoders.chest.value))*np.matrix(self.robot.frames['accelerometer'].position.value)))
-        plug (self.robot.dynamicEncoders.chest,self.imuOpPoint.positionIN)			
+        self.imuOpPoint.setEndEffector(False)
+        plug (self.robot.dynamicEncoders.chest,self.imuOpPoint.positionIN)	
         plug (self.robot.dynamicEncoders.signal(name+'ChestJ_OpPoint'),self.imuOpPoint.jacobianIN)
+
+			# IMU position
+	self.PosAccelerometer=Multiply_of_matrixHomo("PosAccelerometer")
+	plug(self.robot.dynamicEncoders.chest,self.PosAccelerometer.sin1)
+	self.PosAccelerometer.sin2.value=matrixToTuple(self.robot.accelerometerPosition)
+        self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
+        plug(self.PosAccelerometer.sout,self.inputPos.sin)
+ 
+			# IMU velocity
         self.inputVel = Multiply_matrix_vector(name+'InputVelocity')
         plug(self.imuOpPoint.jacobian,self.inputVel.sin1)
         plug(self.robot.device.velocity,self.inputVel.sin2)
+
+			# Concatenate
         self.inputPosVel = Stack_of_vector (name+'InputPosVel')
         plug(self.inputPos.sout,self.inputPosVel.sin1)
         plug(self.inputVel.sout,self.inputPosVel.sin2)
         self.inputPosVel.selec1 (0, 6)
         self.inputPosVel.selec2 (0, 6)
+
+			# IMU Vector
         self.IMUVector = PositionStateReconstructor (name+'EstimatorInput')
         plug(self.inputPosVel.sout,self.IMUVector.sin)
         self.IMUVector.inputFormat.value  = '001111'
@@ -164,7 +185,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         
         	# Concatenate with InputReconstructor entity
         self.inputVector=InputReconstructor(name+'inputVector')
-        plug (self.stackOfContacts.nbSupport,self.inputVector.nbContacts)
+        plug(self.stackOfContacts.nbSupport,self.inputVector.nbContacts)
         plug(self.comVector.sout,self.inputVector.comVector)
         plug(self.robot.dynamicEncoders.inertia,self.inputVector.inertia)
 	plug(self.robot.dynamicEncoders.angularmomentum,self.inputVector.angMomentum)
