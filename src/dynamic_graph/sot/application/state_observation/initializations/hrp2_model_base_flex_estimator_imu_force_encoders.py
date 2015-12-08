@@ -36,6 +36,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         plug (self.stackOfContacts.nbSupport,self.contactNbr)
 
 	# Reconstruction of the position of the free flyer from encoders
+
         	# Create dynamic with the free flyer at the origin of the control frame
 	self.robot.device.robotState.value=46*(0.,)
 	self.robotState = Selec_of_vector('robotState')
@@ -56,8 +57,8 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	self.contactPos=Inverse_of_matrixHomo("contactPos")
 	plug(self.stackOfContactsFF.homoSupportPos1,self.contactPos.sin)
 	self.FFPosHomo=Multiply_of_matrixHomo("FFPosHomo")
-	plug(self.contactPos.sout,self.FFPosHomo.sin1)
-	plug(self.stackOfContacts.homoSupportPos1,self.FFPosHomo.sin2)
+	plug(self.contactPos.sout,self.FFPosHomo.sin2)
+	plug(self.stackOfContacts.homoSupportPos1,self.FFPosHomo.sin1)
 	self.FFPosRPY = MatrixHomoToPoseRollPitchYaw("FFPosRPY")
 	plug(self.FFPosHomo.sout,self.FFPosRPY.sin)
 
@@ -73,7 +74,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 	# Create dynamicEncoders
 	self.robot.dynamicEncoders=self.createDynamic(self.stateEncoders.sout,'_dynamicEncoders')
-        self.robot.dynamicEncoders.inertia.recompute					      
+        self.robot.dynamicEncoders.inertia.recompute				      
         self.robot.dynamicEncoders.waist.recompute
 
         # Stack of sensors

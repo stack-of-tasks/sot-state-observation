@@ -20,7 +20,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         
         self.setSamplingPeriod(0.005)  
         self.robot = robot
-
+	self.setContactModel(1)
         self.robot.dynamic.inertia.recompute(1)					      
         self.robot.dynamic.waist.recompute(1)	
 
