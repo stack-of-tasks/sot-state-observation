@@ -27,12 +27,20 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	self.setKte(matrixToTuple(np.diag((600,600,600))))
 	self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
+		# Reconstruction of the position of the contacts in dynamicFF
+	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
+	plug(self.robot.dynamic.leftAnkle,self.leftFootPos.sin1)
+	self.leftFootPos.sin2.value=self.robot.forceSensorInLeftAnkle
+	self.rightFootPos=Multiply_of_matrixHomo("rightFootPos")
+	plug(self.robot.dynamic.rightAnkle,self.rightFootPos.sin1)
+	self.rightFootPos.sin2.value=self.robot.forceSensorInRightAnkle
+
 	# Stack of contacts
         self.stackOfContacts=StackOfContacts ('StackOfContacts')
 	plug (self.robot.device.forceLLEG,self.stackOfContacts.force_lf)
         plug (self.robot.device.forceRLEG,self.stackOfContacts.force_rf)
-        plug (self.robot.frames["leftFootForceSensor"].position,self.stackOfContacts.rightFootPosition)
-        plug (self.robot.frames["rightFootForceSensor"].position,self.stackOfContacts.leftFootPosition)
+        plug (self.leftFootPos.sout,self.stackOfContacts.rightFootPosition)
+        plug (self.rightFootPos.sout,self.stackOfContacts.leftFootPosition)
         plug (self.stackOfContacts.nbSupport,self.contactNbr)
 
 	# Reconstruction of the position of the free flyer from encoders
@@ -219,7 +227,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	# Pluging position
 	plug(state, dynamicTmp.position)
 
-	self.derivative=False
+	self.derivative=True
 
 	# Pluging velocity
 	self.robot.enableVelocityDerivator = self.derivative
