@@ -40,6 +40,7 @@ ADD_LIBRARY(${LIBRARY_NAME}
   input_reconstructor.cc
   calibrate.cc
   stack-of-contacts.cc
+  odometry.cc
   moving-frame-transformation.cc
   position-state-reconstructor.cc
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
