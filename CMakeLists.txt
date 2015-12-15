@@ -59,7 +59,6 @@ SET(${PROJECT_NAME}_HEADERS
     include/sot-state-observation/odometry.hh
 )
 
-
 # Add subdirectories.
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(unit-testing)

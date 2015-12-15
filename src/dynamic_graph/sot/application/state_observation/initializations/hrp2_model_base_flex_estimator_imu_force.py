@@ -6,7 +6,7 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose
-from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, StackOfContacts
+from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, StackOfContacts, Odometry
 
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
@@ -31,6 +31,12 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug (self.robot.frames['rightFootForceSensor'].position,self.stackOfContacts.rightFootPosition)
         plug (self.robot.frames['leftFootForceSensor'].position,self.stackOfContacts.leftFootPosition)
         plug (self.stackOfContacts.nbSupport,self.contactNbr)
+
+        self.odometry=Odometry ('Odometry')
+	plug (self.robot.device.forceLLEG,self.odometry.force_lf)
+        plug (self.robot.device.forceRLEG,self.odometry.force_rf)
+        plug (self.robot.frames['rightFootForceSensor'].position,self.odometry.rightFootPosition)
+        plug (self.robot.frames['leftFootForceSensor'].position,self.odometry.leftFootPosition)
 
 	# Contacts definition
 	self.contacts = Stack_of_vector ('contacts')

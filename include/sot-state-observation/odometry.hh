@@ -26,7 +26,7 @@
 #include <dynamic-graph/linear-algebra.h>
 
 //#include <sot/core/matrix-rotation.hh>
-//#include <sot/core/matrix-homogeneous.hh>
+#include <sot/core/matrix-homogeneous.hh>
 //#include <sot/core/multi-bound.hh>
 #include <sot/core/vector-utheta.hh>
 //#include <sot/core/vector-roll-pitch-yaw.hh>
@@ -34,6 +34,8 @@
 #include <sot/core/matrix-homogeneous.hh>
 #include <state-observation/tools/miscellaneous-algorithms.hpp>
 #include <sot-state-observation/tools/definitions.hh>
+
+#include <vector>
 
 namespace sotStateObservation
 {
@@ -51,6 +53,14 @@ namespace sotStateObservation
 
     using namespace sotStateObservation;
     using namespace stateObservation;
+
+    struct contact
+    {
+      static const unsigned nbMax=2;
+      // index for the contacts
+      static const unsigned lf = 0;
+      static const unsigned rf = 1;
+    };
 
         /**
            \brief
@@ -77,7 +87,7 @@ namespace sotStateObservation
             virtual std::string getDocString () const
             {
                 return
-                    "Entity that compute the stack of contacts";
+                    "Entity that compute the stack of contacts and their position using odometry";
             }
 
             unsigned int& getNbSupport(unsigned int& , const int& time);
@@ -125,11 +135,12 @@ namespace sotStateObservation
 
             /// Parameters
             double forceThreshold_, time_;
-            unsigned int nbSupport_;
-            dynamicgraph::Vector supportPos1_, supportPos2_, forceSupport1_, forceSupport2_;
-            MatrixHomogeneous homoSupportPos1_, homoSupportPos2_;
 
-
+            std::list<int> stackOfContacts_;
+            std::list<int>::iterator iterator;
+            std::vector<MatrixHomogeneous> candidatesHomoPosition_;
+            std::vector<stateObservation::Vector6> candidatesPosition_;
+            std::vector<stateObservation::Vector6> candidatesForces_;
       };
 
 } // namespace sotStateObservation

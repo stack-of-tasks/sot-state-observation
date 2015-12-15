@@ -51,8 +51,8 @@ namespace sotStateObservation
         homoSupportPos2SOUT_(NULL, "Odometry("+inName+")::output(HomoMatrix)::homoSupportPos2"),
         forceSupport1SOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupport1"),
         forceSupport2SOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupport2"),
-        forceThreshold_ (.036 * 56.8*stateObservation::cst::gravityConstant), time_(-1),
-        nbSupport_(2), supportPos1_(6), supportPos2_(6), forceSupport1_(6), forceSupport2_(6)
+        forceThreshold_ (.036 * 56.8*stateObservation::cst::gravityConstant), time_(0),
+        candidatesForces_(contact::nbMax), candidatesPosition_(contact::nbMax), candidatesHomoPosition_(contact::nbMax)
     {
         std::string docstring;
 
@@ -113,12 +113,7 @@ namespace sotStateObservation
         forceLeftFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(forceLeftFoot));
         forceLeftFootSIN_.setTime (time_);
 
-        supportPos1_.setZero();
-        supportPos2_.setZero();
-        forceSupport1_.setZero();
-        forceSupport2_.setZero();
-        homoSupportPos1_.setIdentity();
-        homoSupportPos2_.setIdentity();
+        computeStackOfContacts(0);
    }
 
     Odometry::~Odometry()
@@ -128,122 +123,121 @@ namespace sotStateObservation
     unsigned int& Odometry::getNbSupport(unsigned int& nbSupport, const int& time)
     {
         if(time!=time_) computeStackOfContacts(time);
-        nbSupport=nbSupport_;
+        nbSupport = stackOfContacts_.size();
         return nbSupport;
     }
 
     Vector& Odometry::getSupportPos1(Vector& supportPos1, const int& time)
     {
         if(time!=time_) computeStackOfContacts(time);
-        supportPos1=supportPos1_;
+        if (stackOfContacts_.size()>=1) {
+            iterator = stackOfContacts_.begin();
+            supportPos1=convertVector<dynamicgraph::Vector>(candidatesPosition_[*iterator]);
+        } else {
+            supportPos1.setZero();
+        }
         return supportPos1;
     }
 
     MatrixHomogeneous& Odometry::getHomoSupportPos1(MatrixHomogeneous& homoSupportPos1, const int& time)
     {
         if(time!=time_) computeStackOfContacts(time);
-        homoSupportPos1=homoSupportPos1_;
+        if (stackOfContacts_.size()>=1) {
+            iterator = stackOfContacts_.begin();
+            homoSupportPos1=candidatesHomoPosition_[*iterator];
+        } else {
+            homoSupportPos1.setIdentity();
+        }
         return homoSupportPos1;
     }
 
     Vector& Odometry::getForceSupport1(Vector& forceSupport1, const int& time)
     {
         if(time!=time_) computeStackOfContacts(time);
-        forceSupport1=forceSupport1_;
+        if (stackOfContacts_.size()>=1) {
+            iterator = stackOfContacts_.begin();
+            forceSupport1=convertVector<dynamicgraph::Vector>(candidatesForces_[*iterator]);
+        } else {
+            forceSupport1.setZero();
+        }
         return forceSupport1;
     }
 
     Vector& Odometry::getSupportPos2(Vector& supportPos2, const int& time)
     {
         if(time!=time_) computeStackOfContacts(time);
-        supportPos2=supportPos2_;
+        if (stackOfContacts_.size()>=2) {
+            iterator = stackOfContacts_.begin();
+            for(int i=1; i<2; ++i) ++iterator ;
+            supportPos2=convertVector<dynamicgraph::Vector>(candidatesPosition_[*iterator]);
+        } else {
+            supportPos2.setZero();
+        }
         return supportPos2;
     }
 
     MatrixHomogeneous& Odometry::getHomoSupportPos2(MatrixHomogeneous& homoSupportPos2, const int& time)
     {
         if(time!=time_) computeStackOfContacts(time);
-        homoSupportPos2=homoSupportPos2_;
+        if (stackOfContacts_.size()>=2) {
+            iterator = stackOfContacts_.begin();
+            for(int i=1; i<2; ++i) ++iterator ;
+            homoSupportPos2=candidatesHomoPosition_[*iterator];
+        } else {
+            homoSupportPos2.setIdentity();
+        }
         return homoSupportPos2;
     }
 
     Vector& Odometry::getForceSupport2(Vector& forceSupport2, const int& time)
     {
         if(time!=time_) computeStackOfContacts(time);
-        forceSupport2=forceSupport2_;
+        if (stackOfContacts_.size()>=2) {
+            iterator = stackOfContacts_.begin();
+            for(int i=1; i<2; ++i) ++iterator ;
+            forceSupport2=convertVector<dynamicgraph::Vector>(candidatesForces_[*iterator]);
+        } else {
+            forceSupport2.setZero();
+        }
         return forceSupport2;
     }
 
 
     void Odometry::computeStackOfContacts(const int& time)
     {
-        /// Forces signals
-        const MatrixHomogeneous& leftFootPosition = leftFootPositionSIN_.access (time);
-        const MatrixHomogeneous& rightFootPosition = rightFootPositionSIN_.access (time);
-        const Vector& forceLf = forceLeftFootSIN_.access (time);
-        const Vector& forceRf = forceRightFootSIN_.access (time);
+        candidatesHomoPosition_[contact::rf] = rightFootPositionSIN_.access (time);
+        candidatesForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
 
-        //feet position
-        Vector rfpos(3);
-        MatrixRotation rfrot;
-        VectorUTheta rfuth;
-        rightFootPosition.extract(rfpos);
-        rightFootPosition.extract(rfrot);
-        rfuth.fromMatrix(rfrot);
-        Vector rfconf(6);
-        double frz = rightFootPosition (2,0) * forceRf (0) +
-                     rightFootPosition(2,1) * forceRf (1) +
-                     rightFootPosition (2,2) * forceRf (2);
+        candidatesHomoPosition_[contact::lf] = leftFootPositionSIN_.access (time);
+        candidatesForces_[contact::lf] = convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
 
-        Vector lfpos(3);
-        MatrixRotation lfrot;
-        VectorUTheta lfuth;
-        leftFootPosition.extract(lfpos);
-        leftFootPosition.extract(lfrot);
-        lfuth.fromMatrix(lfrot);
-        Vector lfconf(6);
-        double flz = leftFootPosition (2,0) * forceLf (0) +
-                     leftFootPosition(2,1) * forceLf (1) +
-                     leftFootPosition (2,2) * forceLf (2);
+        Vector pos(3);
+        MatrixRotation rot;
+        VectorUTheta uth;
+        double fz;
+        bool found;
 
-        for (size_t i=0; i<3; ++i)
-        {
-          rfconf(i)   = rfpos(i);
-          rfconf(i+3) = rfuth(i);
-          lfconf(i)   = lfpos(i);
-          lfconf(i+3) = lfuth(i);
-        }
+        for (int i=0; i<contact::nbMax;++i){
+            candidatesHomoPosition_[i].extract(pos);
+            candidatesHomoPosition_[i].extract(rot);
+            uth.fromMatrix(rot);
+            candidatesPosition_[i] << convertVector<stateObservation::Vector>(pos),
+                                      convertVector<stateObservation::Vector>(uth);
 
+            fz =  candidatesHomoPosition_[i](2,0) * candidatesForces_[i](0) +
+                  candidatesHomoPosition_[i](2,1) * candidatesForces_[i](1) +
+                  candidatesHomoPosition_[i](2,2) * candidatesForces_[i](2);
 
-        nbSupport_ = 0;
+            found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
 
-        if (flz >= forceThreshold_)
-        {
-          supportPos1_=lfconf;
-          homoSupportPos1_=leftFootPosition;
-          forceSupport1_=forceLf;
-          nbSupport_++;
-        }
-
-        if (frz >= forceThreshold_)
-        {
-          if (nbSupport_==0)
-          {
-              supportPos1_=rfconf;
-              homoSupportPos1_=rightFootPosition;
-              forceSupport1_=forceRf;
-          }
-          else
-          {
-              supportPos2_=rfconf;
-              homoSupportPos2_=rightFootPosition;
-              forceSupport2_=forceRf;
-          }
-          nbSupport_++;
+            if(fz>forceThreshold_) {
+                if (!found) stackOfContacts_.push_back(i);
+            } else {
+                if(found) stackOfContacts_.remove(i);
+            }
         }
 
         time_=time;
     }
-
 }
 
