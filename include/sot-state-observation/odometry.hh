@@ -115,6 +115,8 @@ namespace sotStateObservation
 
             /// Methods
             void computeStackOfContacts(const int& time);
+            void computeOdometry(const int& time);
+            stateObservation::Vector6 computePosUTheta (MatrixHomogeneous m);
 
             /// Signals
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionSIN_;
@@ -138,9 +140,19 @@ namespace sotStateObservation
 
             std::list<int> stackOfContacts_;
             std::list<int>::iterator iterator;
+
             std::vector<MatrixHomogeneous> candidatesHomoPosition_;
             std::vector<stateObservation::Vector6> candidatesPosition_;
             std::vector<stateObservation::Vector6> candidatesForces_;
+
+            MatrixHomogeneous pivotPosition_;
+            std::vector<MatrixHomogeneous> odometryRelativePosition_;
+
+            // To comput pos utheta from homogeneous matrix
+            Vector pos_;
+            MatrixRotation rot_;
+            VectorUTheta uth_;
+            stateObservation::Vector posUTheta_;
       };
 
 } // namespace sotStateObservation
