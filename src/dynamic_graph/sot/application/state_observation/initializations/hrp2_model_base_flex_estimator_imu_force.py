@@ -37,6 +37,8 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug (self.robot.device.forceRLEG,self.odometry.force_rf)
         plug (self.robot.frames['rightFootForceSensor'].position,self.odometry.rightFootPosition)
         plug (self.robot.frames['leftFootForceSensor'].position,self.odometry.leftFootPosition)
+	plug (self.robot.device.state,self.odometry.robotStateIn)
+	self.odometry.setFeetPosition(self.robot.frames['leftFootForceSensor'].position.value,self.robot.frames['rightFootForceSensor'].position.value)
 
 	# Contacts definition
 	self.contacts = Stack_of_vector ('contacts')

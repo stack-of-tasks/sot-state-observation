@@ -45,11 +45,9 @@ namespace sotStateObservation
     using dynamicgraph::Vector;
     using dynamicgraph::Matrix;
     using dynamicgraph::Entity;
-    //using dynamicgraph::sot::VectorMultiBound;
     using dynamicgraph::sot::MatrixHomogeneous;
     using dynamicgraph::sot::MatrixRotation;
     using dynamicgraph::sot::VectorUTheta;
-    //using dynamicgraph::sot::VectorRollPitchYaw;
 
     using namespace sotStateObservation;
     using namespace stateObservation;
@@ -100,6 +98,9 @@ namespace sotStateObservation
             MatrixHomogeneous& getHomoSupportPos2(MatrixHomogeneous& , const int& time);
             dynamicgraph::Vector& getForceSupport2(dynamicgraph::Vector& , const int& time);
 
+            Vector& getRobotStateOut(Vector& robotState, const int& time);
+
+            void setFeetPosition(const Matrix & mL, const Matrix & mR);
 
             /**
             \name Parameters
@@ -125,6 +126,9 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> rightFootPositionSIN_;
             dynamicgraph::SignalPtr <Vector, int> forceRightFootSIN_;
 
+            dynamicgraph::SignalPtr <Vector, int> robotStateInSIN_;
+            dynamicgraph::SignalPtr <Vector, int> robotStateOutSOUT_;
+
             dynamicgraph::SignalPtr <unsigned int, int> nbSupportSOUT_;
 
             dynamicgraph::SignalPtr <Vector, int> supportPos1SOUT_;
@@ -147,6 +151,8 @@ namespace sotStateObservation
 
             MatrixHomogeneous pivotPosition_;
             std::vector<MatrixHomogeneous> odometryRelativePosition_;
+
+            MatrixHomogeneous odometryFreeFlyer_;
 
             // To comput pos utheta from homogeneous matrix
             Vector pos_;
