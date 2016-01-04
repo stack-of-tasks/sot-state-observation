@@ -6,7 +6,7 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose
-from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, StackOfContacts, Odometry
+from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, Odometry
 
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
@@ -24,26 +24,21 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.robot.dynamic.inertia.recompute(1)					      
         self.robot.dynamic.waist.recompute(1)	
 
-	# Stack of contacts
-        self.stackOfContacts=StackOfContacts ('StackOfContacts')
-	plug (self.robot.device.forceLLEG,self.stackOfContacts.force_lf)
-        plug (self.robot.device.forceRLEG,self.stackOfContacts.force_rf)
-        plug (self.robot.frames['rightFootForceSensor'].position,self.stackOfContacts.rightFootPosition)
-        plug (self.robot.frames['leftFootForceSensor'].position,self.stackOfContacts.leftFootPosition)
-        plug (self.stackOfContacts.nbSupport,self.contactNbr)
-
+	# Odometry
         self.odometry=Odometry ('Odometry')
 	plug (self.robot.device.forceLLEG,self.odometry.force_lf)
         plug (self.robot.device.forceRLEG,self.odometry.force_rf)
         plug (self.robot.frames['rightFootForceSensor'].position,self.odometry.rightFootPosition)
         plug (self.robot.frames['leftFootForceSensor'].position,self.odometry.leftFootPosition)
 	plug (self.robot.device.state,self.odometry.robotStateIn)
-	self.odometry.setFeetPosition(self.robot.frames['leftFootForceSensor'].position.value,self.robot.frames['rightFootForceSensor'].position.value)
+	self.odometry.setLeftFootPosition(self.robot.frames['leftFootForceSensor'].position.value)
+	self.odometry.setRightFootPosition(self.robot.frames['rightFootForceSensor'].position.value)
+	plug (self.odometry.nbSupport,self.contactNbr)
 
 	# Contacts definition
 	self.contacts = Stack_of_vector ('contacts')
-        plug(self.stackOfContacts.supportPos1,self.contacts.sin1)
-        plug(self.stackOfContacts.supportPos2,self.contacts.sin2)
+        plug(self.odometry.supportPos1,self.contacts.sin1)
+        plug(self.odometry.supportPos2,self.contacts.sin2)
 	self.contacts.selec1 (0, 6)
 	self.contacts.selec2 (0, 6)
 
@@ -62,13 +57,13 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug(self.robot.device.forceRLEG,self.sensorStackforce.sin2)
         self.sensorStackforce.selec1 (0, 6)
         self.sensorStackforce.selec2 (0, 6)
-        plug(self.stackOfContacts.forceSupport1,self.sensorStackforce.sin1)
-        plug(self.stackOfContacts.forceSupport2,self.sensorStackforce.sin2)
+        plug(self.odometry.forceSupport1,self.sensorStackforce.sin1)
+        plug(self.odometry.forceSupport2,self.sensorStackforce.sin2)
         self.contactForces = self.sensorStackforce.sout
 
 		# Calibration
 	self.calibration= Calibrate('calibration')
-	plug(self.stackOfContacts.nbSupport,self.calibration.contactsNbr)
+	plug(self.odometry.nbSupport,self.calibration.contactsNbr)
 	plug(self.robot.dynamic.com,self.calibration.comIn)
 	plug(self.contacts.sout,self.calibration.contactsPositionIn)
 	plug(self.sensorStackimu.sout,self.calibration.imuIn)	
@@ -135,7 +130,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	plug(self.angMomDerivator.sout,self.inputVector.dangMomentum)
         plug(self.robot.dynamic.waist,self.inputVector.positionWaist)
         plug(self.IMUVector.sout,self.inputVector.imuVector)
-        plug(self.stackOfContacts.nbSupport,self.inputVector.nbContacts)
+        plug(self.odometry.nbSupport,self.inputVector.nbContacts)
 	plug(self.calibration.contactsPositionOut,self.inputVector.contactsPosition)
 
         self.inputVector.setSamplingPeriod(robot.timeStep)

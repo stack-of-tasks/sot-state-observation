@@ -6,7 +6,7 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose, Selec_of_vector, Inverse_of_matrixHomo, Multiply_of_matrixHomo, MatrixHomoToPoseRollPitchYaw
-from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, StackOfContacts
+from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, Odometry
 
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
@@ -27,21 +27,12 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	self.setKte(matrixToTuple(np.diag((600,600,600))))
 	self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
-		# Reconstruction of the position of the contacts in dynamicFF
 	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
 	plug(self.robot.dynamic.leftAnkle,self.leftFootPos.sin1)
 	self.leftFootPos.sin2.value=self.robot.forceSensorInLeftAnkle
 	self.rightFootPos=Multiply_of_matrixHomo("rightFootPos")
 	plug(self.robot.dynamic.rightAnkle,self.rightFootPos.sin1)
 	self.rightFootPos.sin2.value=self.robot.forceSensorInRightAnkle
-
-	# Stack of contacts
-        self.stackOfContacts=StackOfContacts ('StackOfContacts')
-	plug (self.robot.device.forceLLEG,self.stackOfContacts.force_lf)
-        plug (self.robot.device.forceRLEG,self.stackOfContacts.force_rf)
-        plug (self.leftFootPos.sout,self.stackOfContacts.rightFootPosition)
-        plug (self.rightFootPos.sout,self.stackOfContacts.leftFootPosition)
-        plug (self.stackOfContacts.nbSupport,self.contactNbr)
 
 	# Reconstruction of the position of the free flyer from encoders
 
@@ -62,36 +53,21 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	plug(self.robot.dynamicFF.rightAnkle,self.rightFootPosFF.sin1)
 	self.rightFootPosFF.sin2.value=self.robot.forceSensorInRightAnkle
 
-		# Stack of contacts
-	self.stackOfContactsFF=StackOfContacts ('StackOfContactsFF')
-	plug (self.robot.device.forceLLEG,self.stackOfContactsFF.force_lf)
-        plug (self.robot.device.forceRLEG,self.stackOfContactsFF.force_rf)
-        plug (self.leftFootPosFF.sout,self.stackOfContactsFF.leftFootPosition)
-        plug (self.rightFootPosFF.sout,self.stackOfContactsFF.rightFootPosition)
-
-		# Reconstruction of the position of the free flyer
-	self.contactPos=Inverse_of_matrixHomo("contactPos")
-	plug(self.stackOfContactsFF.homoSupportPos1,self.contactPos.sin)
-	self.FFPosHomo=Multiply_of_matrixHomo("FFPosHomo")
-	plug(self.contactPos.sout,self.FFPosHomo.sin2)
-	plug(self.stackOfContacts.homoSupportPos1,self.FFPosHomo.sin1)
-	self.FFPosRPY = MatrixHomoToPoseRollPitchYaw("FFPosRPY")
-	plug(self.FFPosHomo.sout,self.FFPosRPY.sin)
-
-		# Concatenate the free flyer position and the encodersState
-	self.encodersState = Selec_of_vector('encodersState')
-	plug(self.robot.device.robotState,self.encodersState.sin)
-	self.encodersState.selec(6,36)
-        self.stateEncoders = Stack_of_vector (name+'stateEncoders')
-        plug(self.FFPosRPY.sout,self.stateEncoders.sin1)
-        plug(self.encodersState.sout,self.stateEncoders.sin2)
-        self.stateEncoders.selec1 (0, 6)
-        self.stateEncoders.selec2 (0, 30)
+		# OdometryFF
+        self.odometryFF=Odometry ('OdometryFF')
+	plug (self.robot.device.forceLLEG,self.odometryFF.force_lf)
+        plug (self.robot.device.forceRLEG,self.odometryFF.force_rf)
+        plug (self.rightFootPosFF.sout,self.odometryFF.rightFootPosition)
+        plug (self.leftFootPosFF.sout,self.odometryFF.leftFootPosition)
+	plug (self.robot.device.robotState,self.odometryFF.robotStateIn)
+#	self.odometryFF.setLeftFootPosition(self.robot.frames['leftFootForceSensor'].position.value)
+#	self.odometryFF.setRightFootPosition(self.robot.frames['rightFootForceSensor'].position.value)
+	plug (self.odometryFF.nbSupport,self.contactNbr)
 
 	# Create dynamicEncoders
-	self.robot.dynamicEncoders=self.createDynamic(self.stateEncoders.sout,'_dynamicEncoders')
-        #self.robot.dynamicEncoders.inertia.recompute
-        #self.robot.dynamicEncoders.waist.recompute
+	self.robot.dynamicEncoders=self.createDynamic(self.odometryFF.robotStateOut,'_dynamicEncoders')
+#        self.robot.dynamicEncoders.inertia.recompute
+#        self.robot.dynamicEncoders.waist.recompute
 
         # Stack of sensors
 
@@ -104,21 +80,21 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
                 # Contacts position
         self.contactsPos = Stack_of_vector ('contactsPOS')
-        plug(self.stackOfContacts.supportPos1,self.contactsPos.sin1)
-        plug(self.stackOfContacts.supportPos2,self.contactsPos.sin2)
+        plug(self.odometryFF.supportPos1,self.contactsPos.sin1)
+        plug(self.odometryFF.supportPos2,self.contactsPos.sin2)
         self.contactsPos.selec1 (0, 6)
         self.contactsPos.selec2 (0, 6)
 
 		# Contacts forces
 	self.sensorStackforce = Stack_of_vector ('SensorsFORCE')
-        plug(self.stackOfContacts.forceSupport1,self.sensorStackforce.sin1)
-        plug(self.stackOfContacts.forceSupport2,self.sensorStackforce.sin2)
+        plug(self.odometryFF.forceSupport1,self.sensorStackforce.sin1)
+        plug(self.odometryFF.forceSupport2,self.sensorStackforce.sin2)
         self.sensorStackforce.selec1 (0, 6)
         self.sensorStackforce.selec2 (0, 6)
 
 		# Calibration
 	self.calibration= Calibrate('calibration')
-        plug(self.stackOfContacts.nbSupport,self.calibration.contactsNbr)
+        plug(self.odometryFF.nbSupport,self.calibration.contactsNbr)
 	plug(self.sensorStackimu.sout,self.calibration.imuIn)
         plug(self.contactsPos.sout,self.calibration.contactsPositionIn)
 	plug(self.robot.dynamicEncoders.com,self.calibration.comIn)
@@ -193,7 +169,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         
         	# Concatenate with InputReconstructor entity
         self.inputVector=InputReconstructor(name+'inputVector')
-        plug(self.stackOfContacts.nbSupport,self.inputVector.nbContacts)
+        plug(self.odometryFF.nbSupport,self.inputVector.nbContacts)
         plug(self.comVector.sout,self.inputVector.comVector)
         plug(self.robot.dynamicEncoders.inertia,self.inputVector.inertia)
 	plug(self.robot.dynamicEncoders.angularmomentum,self.inputVector.angMomentum)

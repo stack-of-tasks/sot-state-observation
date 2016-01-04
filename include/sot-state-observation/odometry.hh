@@ -29,7 +29,7 @@
 #include <sot/core/matrix-homogeneous.hh>
 //#include <sot/core/multi-bound.hh>
 #include <sot/core/vector-utheta.hh>
-//#include <sot/core/vector-roll-pitch-yaw.hh>
+#include <sot/core/vector-roll-pitch-yaw.hh>
 
 #include <sot/core/matrix-homogeneous.hh>
 #include <state-observation/tools/miscellaneous-algorithms.hpp>
@@ -48,6 +48,7 @@ namespace sotStateObservation
     using dynamicgraph::sot::MatrixHomogeneous;
     using dynamicgraph::sot::MatrixRotation;
     using dynamicgraph::sot::VectorUTheta;
+    using dynamicgraph::sot::VectorRollPitchYaw;
 
     using namespace sotStateObservation;
     using namespace stateObservation;
@@ -100,7 +101,8 @@ namespace sotStateObservation
 
             Vector& getRobotStateOut(Vector& robotState, const int& time);
 
-            void setFeetPosition(const Matrix & mL, const Matrix & mR);
+            void setLeftFootPosition(const Matrix & mL);
+            void setRightFootPosition(const Matrix & mR);
 
             /**
             \name Parameters
@@ -158,6 +160,7 @@ namespace sotStateObservation
             Vector pos_;
             MatrixRotation rot_;
             VectorUTheta uth_;
+            VectorRollPitchYaw rpy_;
             stateObservation::Vector posUTheta_;
       };
 
