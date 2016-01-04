@@ -53,6 +53,7 @@ namespace sotStateObservation
         homoSupportPos2SOUT_(NULL, "Odometry("+inName+")::output(HomoMatrix)::homoSupportPos2"),
         forceSupport1SOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupport1"),
         forceSupport2SOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupport2"),
+        pivotPositionSOUT_ (NULL, "Odometry("+inName+")::output(Vector)::pivotPosition"),
         forceThreshold_ (.036 * 56.8*stateObservation::cst::gravityConstant), time_(0), pos_(3), posUTheta_(6),
         candidatesForces_(contact::nbMax), candidatesPosition_(contact::nbMax), candidatesHomoPosition_(contact::nbMax),
         odometryRelativePosition_(contact::nbMax)
@@ -67,6 +68,8 @@ namespace sotStateObservation
         signalRegistration (nbSupportSOUT_);
         signalRegistration (supportPos1SOUT_ << homoSupportPos1SOUT_ << forceSupport1SOUT_);
         signalRegistration (supportPos2SOUT_ << homoSupportPos2SOUT_ << forceSupport2SOUT_);
+
+        signalRegistration (pivotPositionSOUT_);
 
         std::string docstring;
 
@@ -265,12 +268,14 @@ namespace sotStateObservation
         leftFootPositionSIN_.setConstant(convertMatrix<MatrixHomogeneous>(mL));
         leftFootPositionSIN_.setTime (time_);
         pivotPosition_=convertMatrix<MatrixHomogeneous>(mL);
+        computeOdometry(time_);
     }
 
     void Odometry::setRightFootPosition(const Matrix & mR)
     {
         rightFootPositionSIN_.setConstant(convertMatrix<MatrixHomogeneous>(mR));
         rightFootPositionSIN_.setTime (time_);
+        computeOdometry(time_);
     }
 
     stateObservation::Vector6 Odometry::computePosUTheta (MatrixHomogeneous m)
@@ -314,7 +319,7 @@ namespace sotStateObservation
 
     void Odometry::computeOdometry(const int& time){
 
-                std::cout << "\ntime_=" << time_ << std::endl;
+                std::cout << "\ntimeOdo_=" << time_ << std::endl;
 
         computeStackOfContacts(time);
 
@@ -349,6 +354,9 @@ namespace sotStateObservation
         freeFlyerInHomo.buildFrom(rot,trans);
             // reconstruction of odometryFreeFlyer
         odometryFreeFlyer_=pivotPosition_*candidatesHomoPosition_[pivotContact].inverse()*freeFlyerInHomo;
+
+        pivotPositionSOUT_.setConstant(convertVector<dynamicgraph::Vector>(computePosUTheta(pivotPosition_)));
+        pivotPositionSOUT_.setTime (time);
 
         time_=time;
     }

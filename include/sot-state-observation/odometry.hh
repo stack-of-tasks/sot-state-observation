@@ -141,6 +141,8 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> homoSupportPos2SOUT_;
             dynamicgraph::SignalPtr <Vector, int> forceSupport2SOUT_;
 
+            dynamicgraph::SignalPtr <Vector, int> pivotPositionSOUT_;
+
             /// Parameters
             double forceThreshold_, time_;
 
