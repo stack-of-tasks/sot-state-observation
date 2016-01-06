@@ -42,6 +42,8 @@ namespace sotStateObservation
         Entity(inName),
         leftFootPositionSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::leftFootPosition"),
         rightFootPositionSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::rightFootPosition"),
+        leftFootPositionRefSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::leftFootPositionRef"),
+        rightFootPositionRefSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::rightFootPositionRef"),
         forceLeftFootSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_lf"),
         forceRightFootSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_rf"),
         robotStateInSIN_ (NULL, "Odometry("+inName+")::input(vector)::robotStateIn"),
@@ -54,13 +56,18 @@ namespace sotStateObservation
         forceSupport1SOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupport1"),
         forceSupport2SOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupport2"),
         pivotPositionSOUT_ (NULL, "Odometry("+inName+")::output(Vector)::pivotPosition"),
-        forceThreshold_ (.036 * 56.8*stateObservation::cst::gravityConstant), time_(0), pos_(3), posUTheta_(6),
-        candidatesForces_(contact::nbMax), candidatesPosition_(contact::nbMax), candidatesHomoPosition_(contact::nbMax),
+        forceThreshold_ (.02 * 56.8*stateObservation::cst::gravityConstant), time_(0), pos_(3), posUTheta_(6), // .036 * 56.8*stateObservation::cst::gravityConstant
+        candidatesForces_(contact::nbMax),
+        candidatesPosition_(contact::nbMax), candidatesHomoPosition_(contact::nbMax),
+        candidatesPositionRef_(contact::nbMax), candidatesHomoPositionRef_(contact::nbMax),
         odometryRelativePosition_(contact::nbMax)
     {
 
         signalRegistration (leftFootPositionSIN_ << forceLeftFootSIN_);
         signalRegistration (rightFootPositionSIN_ << forceRightFootSIN_);
+
+        signalRegistration (leftFootPositionRefSIN_);
+        signalRegistration (rightFootPositionRefSIN_);
 
         signalRegistration (robotStateInSIN_);
         signalRegistration (robotStateOutSOUT_);
@@ -119,6 +126,11 @@ namespace sotStateObservation
         rightFootPositionSIN_.setConstant(convertMatrix<dynamicgraph::Matrix>(rightFootPos));
         rightFootPositionSIN_.setTime (time_);
 
+        leftFootPositionRefSIN_.setConstant(convertMatrix<dynamicgraph::Matrix>(leftFootPos));
+        leftFootPositionRefSIN_.setTime (time_);
+        rightFootPositionRefSIN_.setConstant(convertMatrix<dynamicgraph::Matrix>(rightFootPos));
+        rightFootPositionRefSIN_.setTime (time_);
+
         stateObservation::Vector forceRightFoot;
         forceRightFoot.resize(6);
         forceRightFoot <<   45.1262,
@@ -146,6 +158,7 @@ namespace sotStateObservation
         uth_.setZero();
         rpy_.setZero();
         posUTheta_.setZero();
+        homo_.setIdentity();
 
         Vector robotState;
         robotState.resize(36);
@@ -175,6 +188,9 @@ namespace sotStateObservation
         if (stackOfContacts_.size()>=1) {
             iterator = stackOfContacts_.begin();
             supportPos1=convertVector<dynamicgraph::Vector>(computePosUTheta(odometryRelativePosition_[*iterator]*pivotPosition_));
+            supportPos1.elementAt(2)=candidatesPositionRef_[*iterator][2]; // Position along the Z axis
+            supportPos1.elementAt(3)=candidatesPositionRef_[*iterator][3]; // Orientation around the X axis
+            supportPos1.elementAt(4)=candidatesPositionRef_[*iterator][4]; // Orientation around the Y axis
         } else {
             supportPos1.setZero();
         }
@@ -182,14 +198,11 @@ namespace sotStateObservation
     }
 
     MatrixHomogeneous& Odometry::getHomoSupportPos1(MatrixHomogeneous& homoSupportPos1, const int& time)
-    {
+    {      
         if(time!=time_) computeOdometry(time);
-        if (stackOfContacts_.size()>=1) {
-            iterator = stackOfContacts_.begin();
-            homoSupportPos1=odometryRelativePosition_[*iterator]*pivotPosition_;
-        } else {
-            homoSupportPos1.setIdentity();
-        }
+        Vector supportPos1; supportPos1.setZero();
+        supportPos1=getSupportPos1(supportPos1, time);
+        homoSupportPos1=computeMatrixHomogeneous(convertVector<stateObservation::Vector6>(supportPos1));
         return homoSupportPos1;
     }
 
@@ -212,22 +225,21 @@ namespace sotStateObservation
             iterator = stackOfContacts_.begin();
             for(int i=1; i<2; ++i) ++iterator ;
             supportPos2=convertVector<dynamicgraph::Vector>(computePosUTheta(odometryRelativePosition_[*iterator]*pivotPosition_));
+            supportPos2.elementAt(2)=candidatesPositionRef_[*iterator][2]; // Position along the Z axis
+            supportPos2.elementAt(3)=candidatesPositionRef_[*iterator][3]; // Orientation around the X axis
+            supportPos2.elementAt(4)=candidatesPositionRef_[*iterator][4]; // Orientation around the Y axis
         } else {
             supportPos2.setZero();
         }
         return supportPos2;
     }
 
-    MatrixHomogeneous& Odometry::getHomoSupportPos2(MatrixHomogeneous& homoSupportPos2, const int& time)
+    MatrixHomogeneous & Odometry::getHomoSupportPos2(MatrixHomogeneous & homoSupportPos2, const int& time)
     {
         if(time!=time_) computeOdometry(time);
-        if (stackOfContacts_.size()>=2) {
-            iterator = stackOfContacts_.begin();
-            for(int i=1; i<2; ++i) ++iterator ;
-            homoSupportPos2=odometryRelativePosition_[*iterator]*pivotPosition_;
-        } else {
-            homoSupportPos2.setIdentity();
-        }
+        Vector supportPos2; supportPos2.setZero();
+        supportPos2=getSupportPos2(supportPos2, time);
+        homoSupportPos2=computeMatrixHomogeneous(convertVector<stateObservation::Vector6>(supportPos2));
         return homoSupportPos2;
     }
 
@@ -288,20 +300,33 @@ namespace sotStateObservation
         return posUTheta_;
     }
 
+    MatrixHomogeneous Odometry::computeMatrixHomogeneous (stateObservation::Vector6 v)
+    {
+        pos_=convertVector<dynamicgraph::Vector>(v.block(0,0,3,1));
+        uth_=convertVector<VectorUTheta>(v.block(3,0,3,1));
+        rot_.fromVector(uth_);
+        homo_.buildFrom(rot_,pos_);
+        return homo_;
+    }
+
 
     void Odometry::computeStackOfContacts(const int& time)
     {
 
         candidatesForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
         candidatesHomoPosition_[contact::rf] = rightFootPositionSIN_.access (time);
-        candidatesHomoPosition_[contact::lf] = leftFootPositionSIN_.access (time);
+        candidatesHomoPositionRef_[contact::rf] = rightFootPositionRefSIN_.access (time);
+
         candidatesForces_[contact::lf] = convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
+        candidatesHomoPosition_[contact::lf] = leftFootPositionSIN_.access (time);
+        candidatesHomoPositionRef_[contact::lf] = leftFootPositionRefSIN_.access (time);
 
         double fz;
         bool found;
 
         for (int i=0; i<contact::nbMax;++i){
             candidatesPosition_[i]=computePosUTheta (candidatesHomoPosition_[i]);
+            candidatesPositionRef_[i]=computePosUTheta (candidatesHomoPositionRef_[i]);
 
             fz =  candidatesHomoPosition_[i](2,0) * candidatesForces_[i](0) +
                   candidatesHomoPosition_[i](2,1) * candidatesForces_[i](1) +
@@ -355,6 +380,7 @@ namespace sotStateObservation
             // reconstruction of odometryFreeFlyer
         odometryFreeFlyer_=pivotPosition_*candidatesHomoPosition_[pivotContact].inverse()*freeFlyerInHomo;
 
+        /// Set pivot position
         pivotPositionSOUT_.setConstant(convertVector<dynamicgraph::Vector>(computePosUTheta(pivotPosition_)));
         pivotPositionSOUT_.setTime (time);
 

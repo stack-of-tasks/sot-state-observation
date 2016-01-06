@@ -119,7 +119,8 @@ namespace sotStateObservation
             /// Methods
             void computeStackOfContacts(const int& time);
             void computeOdometry(const int& time);
-            stateObservation::Vector6 computePosUTheta (MatrixHomogeneous m);
+            stateObservation::Vector6 computePosUTheta (MatrixHomogeneous  m);
+            MatrixHomogeneous computeMatrixHomogeneous (stateObservation::Vector6 v);
 
             /// Signals
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionSIN_;
@@ -127,6 +128,9 @@ namespace sotStateObservation
 
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> rightFootPositionSIN_;
             dynamicgraph::SignalPtr <Vector, int> forceRightFootSIN_;
+
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionRefSIN_;
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> rightFootPositionRefSIN_;
 
             dynamicgraph::SignalPtr <Vector, int> robotStateInSIN_;
             dynamicgraph::SignalPtr <Vector, int> robotStateOutSOUT_;
@@ -151,6 +155,8 @@ namespace sotStateObservation
 
             std::vector<MatrixHomogeneous> candidatesHomoPosition_;
             std::vector<stateObservation::Vector6> candidatesPosition_;
+            std::vector<MatrixHomogeneous> candidatesHomoPositionRef_;
+            std::vector<stateObservation::Vector6> candidatesPositionRef_;
             std::vector<stateObservation::Vector6> candidatesForces_;
 
             MatrixHomogeneous pivotPosition_;
@@ -164,6 +170,7 @@ namespace sotStateObservation
             VectorUTheta uth_;
             VectorRollPitchYaw rpy_;
             stateObservation::Vector posUTheta_;
+            MatrixHomogeneous homo_;
       };
 
 } // namespace sotStateObservation
