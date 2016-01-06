@@ -152,7 +152,7 @@ namespace sotStateObservation
             /// Parameters
             double forceThreshold_, time_;
 
-            std::list<int> stackOfContacts_;
+            std::list<int> stackOfSupports_;
             std::list<int>::iterator iterator;
 
             std::vector<MatrixHomogeneous> candidatesHomoPosition_;

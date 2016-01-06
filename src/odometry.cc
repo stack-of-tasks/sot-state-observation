@@ -179,15 +179,15 @@ namespace sotStateObservation
     unsigned int& Odometry::getNbSupport(unsigned int& nbSupport, const int& time)
     {
         if(time!=time_) computeOdometry(time);
-        nbSupport = stackOfContacts_.size();
+        nbSupport = stackOfSupports_.size();
         return nbSupport;
     }
 
     Vector& Odometry::getSupportPos1(Vector& supportPos1, const int& time)
     {
         if(time!=time_) computeOdometry(time);
-        if (stackOfContacts_.size()>=1) {
-            iterator = stackOfContacts_.begin();
+        if (stackOfSupports_.size()>=1) {
+            iterator = stackOfSupports_.begin();
             supportPos1=convertVector<dynamicgraph::Vector>(posUThetaFromMatrixHomogeneous(odometryRelativePosition_[*iterator]*pivotPosition_));
         } else {
             supportPos1.setZero();
@@ -207,8 +207,8 @@ namespace sotStateObservation
     Vector& Odometry::getForceSupport1(Vector& forceSupport1, const int& time)
     {
         if(time!=time_) computeOdometry(time);
-        if (stackOfContacts_.size()>=1) {
-            iterator = stackOfContacts_.begin();
+        if (stackOfSupports_.size()>=1) {
+            iterator = stackOfSupports_.begin();
             forceSupport1=convertVector<dynamicgraph::Vector>(candidatesForces_[*iterator]);
         } else {
             forceSupport1.setZero();
@@ -219,8 +219,8 @@ namespace sotStateObservation
     Vector& Odometry::getSupportPos2(Vector& supportPos2, const int& time)
     {
         if(time!=time_) computeOdometry(time);
-        if (stackOfContacts_.size()>=2) {
-            iterator = stackOfContacts_.begin();
+        if (stackOfSupports_.size()>=2) {
+            iterator = stackOfSupports_.begin();
             for(int i=1; i<2; ++i) ++iterator ;
             supportPos2=convertVector<dynamicgraph::Vector>(posUThetaFromMatrixHomogeneous(odometryRelativePosition_[*iterator]*pivotPosition_));
         } else {
@@ -241,8 +241,8 @@ namespace sotStateObservation
     Vector& Odometry::getForceSupport2(Vector& forceSupport2, const int& time)
     {
         if(time!=time_) computeOdometry(time);
-        if (stackOfContacts_.size()>=2) {
-            iterator = stackOfContacts_.begin();
+        if (stackOfSupports_.size()>=2) {
+            iterator = stackOfSupports_.begin();
             for(int i=1; i<2; ++i) ++iterator ;
             forceSupport2=convertVector<dynamicgraph::Vector>(candidatesForces_[*iterator]);
         } else {
@@ -312,7 +312,6 @@ namespace sotStateObservation
         return homo_;
     }
 
-
     void Odometry::computeStackOfContacts(const int& time)
     {
 
@@ -335,12 +334,12 @@ namespace sotStateObservation
                   candidatesHomoPosition_[i](2,1) * candidatesForces_[i](1) +
                   candidatesHomoPosition_[i](2,2) * candidatesForces_[i](2);
 
-            found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
+            found = (std::find(stackOfSupports_.begin(), stackOfSupports_.end(), i) != stackOfSupports_.end());
 
             if(fz>forceThreshold_) {
-                if (!found) stackOfContacts_.push_back(i);
+                if (!found) stackOfSupports_.push_back(i);
             } else {
-                if(found) stackOfContacts_.remove(i);
+                if(found) stackOfSupports_.remove(i);
             }
         }
     }
@@ -359,13 +358,14 @@ namespace sotStateObservation
 
         computeStackOfContacts(time);
 
-        /// Find the support used as pivot.
-        bool pivotFound=false;
-        iterator = stackOfContacts_.begin();
-        while (pivotFound != true) {
-            if(*iterator == contact::lf || *iterator == contact::rf) pivotFound=true;
-        }
-        int pivotContact=*iterator;
+//        /// Find the support used as pivot.
+//        bool pivotFound=false;
+//        iterator = stackOfSupports_.begin();
+//        while (pivotFound != true) {
+//            if(*iterator == contact::lf || *iterator == contact::rf) pivotFound=true;
+//        }
+//        int pivotContact=*iterator;
+        int pivotContact=*(stackOfSupports_.begin());
 
         /// Compute the pivot position from old pivot position
         pivotPosition_=pivotPosition_*odometryRelativePosition_[pivotContact];
