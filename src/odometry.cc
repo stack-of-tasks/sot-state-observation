@@ -189,9 +189,6 @@ namespace sotStateObservation
         if (stackOfContacts_.size()>=1) {
             iterator = stackOfContacts_.begin();
             supportPos1=convertVector<dynamicgraph::Vector>(posUThetaFromMatrixHomogeneous(odometryRelativePosition_[*iterator]*pivotPosition_));
-            supportPos1.elementAt(2)=candidatesPositionRef_[*iterator][2]; // Position along the Z axis
-            supportPos1.elementAt(3)=candidatesPositionRef_[*iterator][3]; // Orientation around the X axis
-            supportPos1.elementAt(4)=candidatesPositionRef_[*iterator][4]; // Orientation around the Y axis
         } else {
             supportPos1.setZero();
         }
@@ -226,9 +223,6 @@ namespace sotStateObservation
             iterator = stackOfContacts_.begin();
             for(int i=1; i<2; ++i) ++iterator ;
             supportPos2=convertVector<dynamicgraph::Vector>(posUThetaFromMatrixHomogeneous(odometryRelativePosition_[*iterator]*pivotPosition_));
-            supportPos2.elementAt(2)=candidatesPositionRef_[*iterator][2]; // Position along the Z axis
-            supportPos2.elementAt(3)=candidatesPositionRef_[*iterator][3]; // Orientation around the X axis
-            supportPos2.elementAt(4)=candidatesPositionRef_[*iterator][4]; // Orientation around the Y axis
         } else {
             supportPos2.setZero();
         }
@@ -351,6 +345,14 @@ namespace sotStateObservation
         }
     }
 
+    MatrixHomogeneous Odometry::regulateOdometryWithRef(MatrixHomogeneous m, stateObservation::Vector v)
+    {
+        posUTheta_=posUThetaFromMatrixHomogeneous(m);
+        posUTheta_.block(2,0,3,1)=v.block(2,0,3,1);
+        homo_=matrixHomogeneousFromPosUTheta(posUTheta_);
+        return homo_;
+    }
+
     void Odometry::computeOdometry(const int& time){
 
                 std::cout << "\ntimeOdo_=" << time_ << std::endl;
@@ -374,6 +376,7 @@ namespace sotStateObservation
                 odometryRelativePosition_[i].setIdentity();
             } else {
                 odometryRelativePosition_[i]=candidatesHomoPosition_[pivotContact].inverse()*candidatesHomoPosition_[i];
+                odometryRelativePosition_[i]=regulateOdometryWithRef(odometryRelativePosition_[i], candidatesPositionRef_[i]);
             }
         }
 
