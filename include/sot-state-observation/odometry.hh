@@ -100,6 +100,7 @@ namespace sotStateObservation
             dynamicgraph::Vector& getForceSupport2(dynamicgraph::Vector& , const int& time);
 
             Vector& getRobotStateOut(Vector& robotState, const int& time);
+            Vector& getPivotPositionOut(Vector& pivotPositionOut, const int& time);
 
             void setLeftFootPosition(const Matrix & mL);
             void setRightFootPosition(const Matrix & mR);
@@ -119,8 +120,8 @@ namespace sotStateObservation
             /// Methods
             void computeStackOfContacts(const int& time);
             void computeOdometry(const int& time);
-            stateObservation::Vector6 computePosUTheta (MatrixHomogeneous  m);
-            MatrixHomogeneous computeMatrixHomogeneous (stateObservation::Vector6 v);
+            stateObservation::Vector6 posUThetaFromMatrixHomogeneous (MatrixHomogeneous  m);
+            MatrixHomogeneous matrixHomogeneousFromPosUTheta (stateObservation::Vector6 v);
 
             /// Signals
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionSIN_;

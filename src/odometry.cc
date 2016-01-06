@@ -107,6 +107,7 @@ namespace sotStateObservation
         forceSupport2SOUT_.setFunction(boost::bind(&Odometry::getForceSupport2, this, _1, _2));
 
         robotStateOutSOUT_.setFunction(boost::bind(&Odometry::getRobotStateOut, this, _1, _2));
+        pivotPositionSOUT_.setFunction(boost::bind(&Odometry::getPivotPositionOut, this, _1, _2));
 
         stateObservation::Matrix leftFootPos;
         leftFootPos.resize(4,4);
@@ -187,7 +188,7 @@ namespace sotStateObservation
         if(time!=time_) computeOdometry(time);
         if (stackOfContacts_.size()>=1) {
             iterator = stackOfContacts_.begin();
-            supportPos1=convertVector<dynamicgraph::Vector>(computePosUTheta(odometryRelativePosition_[*iterator]*pivotPosition_));
+            supportPos1=convertVector<dynamicgraph::Vector>(posUThetaFromMatrixHomogeneous(odometryRelativePosition_[*iterator]*pivotPosition_));
             supportPos1.elementAt(2)=candidatesPositionRef_[*iterator][2]; // Position along the Z axis
             supportPos1.elementAt(3)=candidatesPositionRef_[*iterator][3]; // Orientation around the X axis
             supportPos1.elementAt(4)=candidatesPositionRef_[*iterator][4]; // Orientation around the Y axis
@@ -202,7 +203,7 @@ namespace sotStateObservation
         if(time!=time_) computeOdometry(time);
         Vector supportPos1; supportPos1.setZero();
         supportPos1=getSupportPos1(supportPos1, time);
-        homoSupportPos1=computeMatrixHomogeneous(convertVector<stateObservation::Vector6>(supportPos1));
+        homoSupportPos1=matrixHomogeneousFromPosUTheta(convertVector<stateObservation::Vector6>(supportPos1));
         return homoSupportPos1;
     }
 
@@ -224,7 +225,7 @@ namespace sotStateObservation
         if (stackOfContacts_.size()>=2) {
             iterator = stackOfContacts_.begin();
             for(int i=1; i<2; ++i) ++iterator ;
-            supportPos2=convertVector<dynamicgraph::Vector>(computePosUTheta(odometryRelativePosition_[*iterator]*pivotPosition_));
+            supportPos2=convertVector<dynamicgraph::Vector>(posUThetaFromMatrixHomogeneous(odometryRelativePosition_[*iterator]*pivotPosition_));
             supportPos2.elementAt(2)=candidatesPositionRef_[*iterator][2]; // Position along the Z axis
             supportPos2.elementAt(3)=candidatesPositionRef_[*iterator][3]; // Orientation around the X axis
             supportPos2.elementAt(4)=candidatesPositionRef_[*iterator][4]; // Orientation around the Y axis
@@ -239,7 +240,7 @@ namespace sotStateObservation
         if(time!=time_) computeOdometry(time);
         Vector supportPos2; supportPos2.setZero();
         supportPos2=getSupportPos2(supportPos2, time);
-        homoSupportPos2=computeMatrixHomogeneous(convertVector<stateObservation::Vector6>(supportPos2));
+        homoSupportPos2=matrixHomogeneousFromPosUTheta(convertVector<stateObservation::Vector6>(supportPos2));
         return homoSupportPos2;
     }
 
@@ -275,6 +276,14 @@ namespace sotStateObservation
         return robotState;
     }
 
+    Vector& Odometry::getPivotPositionOut(Vector& pivotPositionOut, const int& time)
+    {
+        if(time!=time_) computeOdometry(time);
+        pivotPositionOut=convertVector<dynamicgraph::Vector>(posUThetaFromMatrixHomogeneous(pivotPosition_));
+        return pivotPositionOut;
+    }
+
+
     void Odometry::setLeftFootPosition(const Matrix & mL)
     {
         leftFootPositionSIN_.setConstant(convertMatrix<MatrixHomogeneous>(mL));
@@ -290,7 +299,7 @@ namespace sotStateObservation
         computeOdometry(time_);
     }
 
-    stateObservation::Vector6 Odometry::computePosUTheta (MatrixHomogeneous m)
+    stateObservation::Vector6 Odometry::posUThetaFromMatrixHomogeneous (MatrixHomogeneous m)
     {
         m.extract(pos_);
         m.extract(rot_);
@@ -300,7 +309,7 @@ namespace sotStateObservation
         return posUTheta_;
     }
 
-    MatrixHomogeneous Odometry::computeMatrixHomogeneous (stateObservation::Vector6 v)
+    MatrixHomogeneous Odometry::matrixHomogeneousFromPosUTheta (stateObservation::Vector6 v)
     {
         pos_=convertVector<dynamicgraph::Vector>(v.block(0,0,3,1));
         uth_=convertVector<VectorUTheta>(v.block(3,0,3,1));
@@ -325,8 +334,8 @@ namespace sotStateObservation
         bool found;
 
         for (int i=0; i<contact::nbMax;++i){
-            candidatesPosition_[i]=computePosUTheta (candidatesHomoPosition_[i]);
-            candidatesPositionRef_[i]=computePosUTheta (candidatesHomoPositionRef_[i]);
+            candidatesPosition_[i]=posUThetaFromMatrixHomogeneous (candidatesHomoPosition_[i]);
+            candidatesPositionRef_[i]=posUThetaFromMatrixHomogeneous (candidatesHomoPositionRef_[i]);
 
             fz =  candidatesHomoPosition_[i](2,0) * candidatesForces_[i](0) +
                   candidatesHomoPosition_[i](2,1) * candidatesForces_[i](1) +
@@ -379,10 +388,6 @@ namespace sotStateObservation
         freeFlyerInHomo.buildFrom(rot,trans);
             // reconstruction of odometryFreeFlyer
         odometryFreeFlyer_=pivotPosition_*candidatesHomoPosition_[pivotContact].inverse()*freeFlyerInHomo;
-
-        /// Set pivot position
-        pivotPositionSOUT_.setConstant(convertVector<dynamicgraph::Vector>(computePosUTheta(pivotPosition_)));
-        pivotPositionSOUT_.setTime (time);
 
         time_=time;
     }
