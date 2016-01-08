@@ -36,6 +36,7 @@
 #include <sot-state-observation/tools/definitions.hh>
 
 #include <vector>
+#include <algorithm>
 
 namespace sotStateObservation
 {
@@ -162,9 +163,12 @@ namespace sotStateObservation
             std::vector<stateObservation::Vector6> candidatesForces_;
 
             MatrixHomogeneous pivotPosition_;
+            int pivotSupport_;
             std::vector<MatrixHomogeneous> odometryRelativePosition_;
 
             MatrixHomogeneous odometryFreeFlyer_;
+
+            stateObservation::Vector alpha_;
 
             // To comput pos utheta from homogeneous matrix
             Vector pos_;

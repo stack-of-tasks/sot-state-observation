@@ -34,6 +34,8 @@
 
 #include <sot-state-observation/odometry.hh>
 
+#include <iostream>
+
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( Odometry, "Odometry" );
@@ -60,7 +62,7 @@ namespace sotStateObservation
         candidatesForces_(contact::nbMax),
         candidatesPosition_(contact::nbMax), candidatesHomoPosition_(contact::nbMax),
         candidatesPositionRef_(contact::nbMax), candidatesHomoPositionRef_(contact::nbMax),
-        odometryRelativePosition_(contact::nbMax)
+        odometryRelativePosition_(contact::nbMax), alpha_(contact::nbMax)
     {
 
         signalRegistration (leftFootPositionSIN_ << forceLeftFootSIN_);
@@ -167,8 +169,30 @@ namespace sotStateObservation
         robotStateInSIN_.setConstant(robotState);
         robotStateInSIN_.setTime (time_);
 
-        for (int i=0;i<contact::nbMax;++i) odometryRelativePosition_[i].setIdentity();
-        pivotPosition_=convertMatrix<MatrixHomogeneous>(leftFootPos);
+        /// According to previsous forces.
+        computeStackOfContacts(time_);
+            // Computation of alpha
+        alpha_.setZero();
+        double sum=0;
+        double f=0;
+        for (iterator=stackOfSupports_.begin(); iterator != stackOfSupports_.end(); ++iterator)
+        {
+            f=candidatesForces_[*iterator].block(0,0,3,1).norm();
+            alpha_[*iterator]=f;
+            sum+=f;
+        }
+        alpha_=(1/sum)*alpha_;
+        pivotSupport_=std::distance(&alpha_[0], (std::max_element(&alpha_[0],&alpha_[alpha_.size()])));
+        pivotPosition_=candidatesHomoPosition_[pivotSupport_];
+            // Compute odometryRelativeHomoPosition.
+        for (int i=0; i<contact::nbMax; ++i){
+            if(i==pivotSupport_){
+                odometryRelativePosition_[i].setIdentity();
+            } else {
+                odometryRelativePosition_[i]=candidatesHomoPosition_[pivotSupport_].inverse()*candidatesHomoPosition_[i];
+            }
+        }
+
         computeOdometry(time_);
    }
 
@@ -337,7 +361,7 @@ namespace sotStateObservation
             found = (std::find(stackOfSupports_.begin(), stackOfSupports_.end(), i) != stackOfSupports_.end());
 
             if(fz>forceThreshold_) {
-                if (!found) stackOfSupports_.push_back(i);
+                if (!found) stackOfSupports_.push_back(i);              
             } else {
                 if(found) stackOfSupports_.remove(i);
             }
@@ -358,25 +382,29 @@ namespace sotStateObservation
 
         computeStackOfContacts(time);
 
-//        /// Find the support used as pivot.
-//        bool pivotFound=false;
-//        iterator = stackOfSupports_.begin();
-//        while (pivotFound != true) {
-//            if(*iterator == contact::lf || *iterator == contact::rf) pivotFound=true;
-//        }
-//        int pivotContact=*iterator;
-        int pivotContact=*(stackOfSupports_.begin());
+        /// Computation of alpha
+        alpha_.setZero();
+        double sum=0;
+        double f=0;
+        for (iterator=stackOfSupports_.begin(); iterator != stackOfSupports_.end(); ++iterator)
+        {
+            f=candidatesForces_[*iterator].block(0,0,3,1).norm();
+            alpha_[*iterator]=f;
+            sum+=f;
+        }
+        alpha_=(1/sum)*alpha_;
 
-        /// Compute the pivot position from old pivot position
-        pivotPosition_=pivotPosition_*odometryRelativePosition_[pivotContact];
+        /// Find the pivot support and compute its position.
+        pivotSupport_=std::distance(&alpha_[0], (std::max_element(&alpha_[0],&alpha_[alpha_.size()])));
+        pivotPosition_=pivotPosition_*odometryRelativePosition_[pivotSupport_];
 
         /// Compute odometryRelativeHomoPosition.
         for (int i=0; i<contact::nbMax; ++i){
-            if(i==pivotContact){
+            if(i==pivotSupport_){
                 odometryRelativePosition_[i].setIdentity();
             } else {
-                odometryRelativePosition_[i]=candidatesHomoPosition_[pivotContact].inverse()*candidatesHomoPosition_[i];
-                odometryRelativePosition_[i]=regulateOdometryWithRef(odometryRelativePosition_[i], candidatesPositionRef_[i]);
+                odometryRelativePosition_[i]=candidatesHomoPosition_[pivotSupport_].inverse()*candidatesHomoPosition_[i];
+//                odometryRelativePosition_[i]=regulateOdometryWithRef(odometryRelativePosition_[i], candidatesPositionRef_[i]);
             }
         }
 
@@ -390,7 +418,7 @@ namespace sotStateObservation
         trans=convertVector<Vector>(freeFlyerIn.block(0,0,3,1));
         freeFlyerInHomo.buildFrom(rot,trans);
             // reconstruction of odometryFreeFlyer
-        odometryFreeFlyer_=pivotPosition_*candidatesHomoPosition_[pivotContact].inverse()*freeFlyerInHomo;
+        odometryFreeFlyer_=pivotPosition_*candidatesHomoPosition_[pivotSupport_].inverse()*freeFlyerInHomo;
 
         time_=time;
     }
