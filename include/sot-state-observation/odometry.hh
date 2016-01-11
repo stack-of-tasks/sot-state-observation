@@ -123,7 +123,7 @@ namespace sotStateObservation
             void computeOdometry(const int& time);
             stateObservation::Vector6 posUThetaFromMatrixHomogeneous (MatrixHomogeneous  m);
             MatrixHomogeneous matrixHomogeneousFromPosUTheta (stateObservation::Vector6 v);
-            MatrixHomogeneous regulateOdometryWithRef(MatrixHomogeneous m, stateObservation::Vector v);
+            MatrixHomogeneous regulateOdometryWithRef(MatrixHomogeneous m, stateObservation::Vector v, double alpha);
 
             /// Signals
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionSIN_;
@@ -164,8 +164,8 @@ namespace sotStateObservation
 
             MatrixHomogeneous pivotPosition_;
             int pivotSupport_;
-            std::vector<MatrixHomogeneous> odometryRelativePosition_;
 
+            std::vector<MatrixHomogeneous> odometryRelativePosition_;
             MatrixHomogeneous odometryFreeFlyer_;
 
             stateObservation::Vector alpha_;

@@ -182,8 +182,9 @@ namespace sotStateObservation
             sum+=f;
         }
         alpha_=(1/sum)*alpha_;
-        pivotSupport_=std::distance(&alpha_[0], (std::max_element(&alpha_[0],&alpha_[alpha_.size()])));
-        pivotPosition_=candidatesHomoPosition_[pivotSupport_];
+//        pivotSupport_=std::distance(&alpha_[0], (std::max_element(&alpha_[0],&alpha_[alpha_.size()])));
+        pivotSupport_=*(stackOfSupports_.begin());
+        pivotPosition_=candidatesHomoPositionRef_[pivotSupport_];
             // Compute odometryRelativeHomoPosition.
         for (int i=0; i<contact::nbMax; ++i){
             if(i==pivotSupport_){
@@ -368,10 +369,10 @@ namespace sotStateObservation
         }
     }
 
-    MatrixHomogeneous Odometry::regulateOdometryWithRef(MatrixHomogeneous m, stateObservation::Vector v)
+    MatrixHomogeneous Odometry::regulateOdometryWithRef(MatrixHomogeneous posEnc, stateObservation::Vector posRef, double alpha)
     {
-        posUTheta_=posUThetaFromMatrixHomogeneous(m);
-        posUTheta_.block(2,0,3,1)=v.block(2,0,3,1);
+        posUTheta_=posUThetaFromMatrixHomogeneous(posEnc);
+        posUTheta_.block(2,0,3,1)=alpha*posRef.block(2,0,3,1)+(1-alpha)*posUTheta_.block(2,0,3,1);
         homo_=matrixHomogeneousFromPosUTheta(posUTheta_);
         return homo_;
     }
@@ -395,29 +396,59 @@ namespace sotStateObservation
         alpha_=(1/sum)*alpha_;
 
         /// Find the pivot support and compute its position.
-        pivotSupport_=std::distance(&alpha_[0], (std::max_element(&alpha_[0],&alpha_[alpha_.size()])));
+//        pivotSupport_=std::distance(&alpha_[0], (std::max_element(&alpha_[0],&alpha_[alpha_.size()])));
+        pivotSupport_=*(stackOfSupports_.begin());
         pivotPosition_=pivotPosition_*odometryRelativePosition_[pivotSupport_];
+//        pivotPosition_=regulateOdometryWithRef(pivotPosition_, candidatesPositionRef_[pivotSupport_],1);//alpha_[pivotSupport_]);
 
         /// Compute odometryRelativeHomoPosition.
         for (int i=0; i<contact::nbMax; ++i){
-            if(i==pivotSupport_){
+            if(i==pivotSupport_){//alpha[i]!=0){//
                 odometryRelativePosition_[i].setIdentity();
             } else {
                 odometryRelativePosition_[i]=candidatesHomoPosition_[pivotSupport_].inverse()*candidatesHomoPosition_[i];
-//                odometryRelativePosition_[i]=regulateOdometryWithRef(odometryRelativePosition_[i], candidatesPositionRef_[i]);
             }
         }
 
         /// Compute odometryFreeFlyer
             // reconstruction of freeFlyerInHomo
-        MatrixRotation rot;
-        Vector trans;
-        MatrixHomogeneous freeFlyerInHomo; freeFlyerInHomo.setIdentity();
         stateObservation::Vector6 freeFlyerIn = convertVector<stateObservation::Vector>(robotStateInSIN_.access (time)).block(0,0,6,1);
-        convertVector<VectorRollPitchYaw>(freeFlyerIn.block(3,0,3,1)).toMatrix(rot);
-        trans=convertVector<Vector>(freeFlyerIn.block(0,0,3,1));
-        freeFlyerInHomo.buildFrom(rot,trans);
+        convertVector<VectorRollPitchYaw>(freeFlyerIn.block(3,0,3,1)).toMatrix(rot_);
+        pos_=convertVector<Vector>(freeFlyerIn.block(0,0,3,1));
+        MatrixHomogeneous freeFlyerInHomo; freeFlyerInHomo.setIdentity();
+        freeFlyerInHomo.buildFrom(rot_,pos_);
+
             // reconstruction of odometryFreeFlyer
+
+//        if(stackOfSupports_.size()==1){
+//            odometryFreeFlyer_=pivotPosition_*candidatesHomoPosition_[pivotSupport_].inverse()*freeFlyerInHomo;
+//        } else if (stackOfSupports_.size()==2){
+//            Matrix rot1;
+//            rot1.resize(3,3);
+//            stateObservation::Matrix3 R1,R2;
+//            Vector pos1,pos2;
+//            pos1.resize(3); pos2.resize(3);
+//            MatrixHomogeneous odometryFreeFlyer1, odometryFreeFlyer2;
+//            odometryFreeFlyer1=odometryRelativePosition_[0]*pivotPosition_*candidatesHomoPosition_[0].inverse()*freeFlyerInHomo;
+//            odometryFreeFlyer2=odometryRelativePosition_[1]*pivotPosition_*candidatesHomoPosition_[1].inverse()*freeFlyerInHomo;
+//            odometryFreeFlyer1.extract(rot1);
+//            odometryFreeFlyer1.extract(pos1);
+//            odometryFreeFlyer2.extract(pos2);
+//            pos_=alpha_[0]*pos1+alpha_[1]*pos2;
+//            homo_=odometryFreeFlyer1.inverse()*odometryFreeFlyer2;
+//            homo_.extract(rot_);
+//            uth_.fromMatrix(rot_);
+//            uth_*=alpha_[1];
+//            rot_.fromVector(uth_);
+//            R1=convertMatrix<stateObservation::Matrix>(rot1);
+//
+//            homo_.buildFrom(rot_,pos_);
+//            homo_.extract(rot1);
+//            R2=convertMatrix<stateObservation::Matrix>(rot1);
+//            rot_=convertMatrix<MatrixRotation>(R1*R2);
+//            odometryFreeFlyer_.buildFrom(rot_,pos_);
+//        }
+
         odometryFreeFlyer_=pivotPosition_*candidatesHomoPosition_[pivotSupport_].inverse()*freeFlyerInHomo;
 
         time_=time;
