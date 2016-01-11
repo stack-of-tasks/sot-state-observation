@@ -124,6 +124,7 @@ namespace sotStateObservation
             stateObservation::Vector6 posUThetaFromMatrixHomogeneous (MatrixHomogeneous  m);
             MatrixHomogeneous matrixHomogeneousFromPosUTheta (stateObservation::Vector6 v);
             MatrixHomogeneous regulateOdometryWithRef(MatrixHomogeneous m, stateObservation::Vector v, double alpha);
+            MatrixHomogeneous homogeneousMatricesAverage(MatrixHomogeneous m1, MatrixHomogeneous m2, double alpha);
 
             /// Signals
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionSIN_;
