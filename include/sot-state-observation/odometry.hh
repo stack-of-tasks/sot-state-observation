@@ -166,7 +166,7 @@ namespace sotStateObservation
             MatrixHomogeneous pivotPosition_;
             int pivotSupport_;
 
-            std::vector<MatrixHomogeneous> odometryRelativePosition_;
+            std::vector<MatrixHomogeneous> odometryHomoPosition_;
             MatrixHomogeneous odometryFreeFlyer_;
 
             stateObservation::Vector alpha_;
