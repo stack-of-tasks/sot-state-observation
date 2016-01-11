@@ -156,11 +156,11 @@ namespace sotStateObservation
             std::list<int> stackOfSupports_;
             std::list<int>::iterator iterator;
 
-            std::vector<MatrixHomogeneous> candidatesHomoPosition_;
-            std::vector<stateObservation::Vector6> candidatesPosition_;
-            std::vector<MatrixHomogeneous> candidatesHomoPositionRef_;
-            std::vector<stateObservation::Vector6> candidatesPositionRef_;
-            std::vector<stateObservation::Vector6> candidatesForces_;
+            std::vector<MatrixHomogeneous> inputHomoPosition_;
+            std::vector<stateObservation::Vector6> inputPosition_;
+            std::vector<MatrixHomogeneous> referenceHomoPosition_;
+            std::vector<stateObservation::Vector6> referencePosition_;
+            std::vector<stateObservation::Vector6> inputForces_;
 
             MatrixHomogeneous pivotPosition_;
             int pivotSupport_;
