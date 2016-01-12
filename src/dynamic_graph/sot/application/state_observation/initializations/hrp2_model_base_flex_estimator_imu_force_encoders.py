@@ -28,10 +28,10 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
 	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
-	plug(self.robot.dynamic.leftAnkle,self.leftFootPos.sin1)
+	plug(self.robot.dynamic.signal('left-ankle'),self.leftFootPos.sin1)
 	self.leftFootPos.sin2.value=self.robot.forceSensorInLeftAnkle
 	self.rightFootPos=Multiply_of_matrixHomo("rightFootPos")
-	plug(self.robot.dynamic.rightAnkle,self.rightFootPos.sin1)
+	plug(self.robot.dynamic.signal('right-ankle'),self.rightFootPos.sin1)
 	self.rightFootPos.sin2.value=self.robot.forceSensorInRightAnkle
 
 	# Reconstruction of the position of the free flyer from encoders
@@ -47,10 +47,10 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 		# Reconstruction of the position of the contacts in dynamicFF
 	self.leftFootPosFF=Multiply_of_matrixHomo("leftFootPosFF")
-	plug(self.robot.dynamicFF.leftAnkle,self.leftFootPosFF.sin1)
+	plug(self.robot.dynamicFF.signal('left-ankle'),self.leftFootPosFF.sin1)
 	self.leftFootPosFF.sin2.value=self.robot.forceSensorInLeftAnkle
 	self.rightFootPosFF=Multiply_of_matrixHomo("rightFootPosFF")
-	plug(self.robot.dynamicFF.rightAnkle,self.rightFootPosFF.sin1)
+	plug(self.robot.dynamicFF.signal('right-ankle'),self.rightFootPosFF.sin1)
 	self.rightFootPosFF.sin2.value=self.robot.forceSensorInRightAnkle
 
 		# OdometryFF
