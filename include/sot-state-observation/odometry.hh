@@ -121,10 +121,8 @@ namespace sotStateObservation
             /// Methods
             void computeStackOfContacts(const int& time);
             void computeOdometry(const int& time);
-            stateObservation::Vector6 posUThetaFromMatrixHomogeneous (MatrixHomogeneous  m);
-            MatrixHomogeneous matrixHomogeneousFromPosUTheta (stateObservation::Vector6 v);
-            MatrixHomogeneous regulateOdometryWithRef(MatrixHomogeneous m, stateObservation::Vector v, double alpha);
-            MatrixHomogeneous homogeneousMatricesAverage(MatrixHomogeneous m1, MatrixHomogeneous m2, double alpha);
+            stateObservation::Matrix4 regulateOdometryWithRef(stateObservation::Matrix4 posEnc, stateObservation::Vector posRef, double alpha);
+            stateObservation::Matrix4 homogeneousMatricesAverage(stateObservation::Matrix4 m1, stateObservation::Matrix4 m2, double alpha);
 
             /// Signals
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionSIN_;
@@ -133,8 +131,8 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> rightFootPositionSIN_;
             dynamicgraph::SignalPtr <Vector, int> forceRightFootSIN_;
 
-            dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionRefSIN_;
-            dynamicgraph::SignalPtr <MatrixHomogeneous, int> rightFootPositionRefSIN_;
+            dynamicgraph::SignalPtr <Matrix, int> leftFootPositionRefSIN_;
+            dynamicgraph::SignalPtr <Matrix, int> rightFootPositionRefSIN_;
 
             dynamicgraph::SignalPtr <Vector, int> robotStateInSIN_;
             dynamicgraph::SignalPtr <Vector, int> robotStateOutSOUT_;
@@ -157,27 +155,26 @@ namespace sotStateObservation
             std::list<int> stackOfSupports_;
             std::list<int>::iterator iterator;
 
-            std::vector<MatrixHomogeneous> inputHomoPosition_;
+            std::vector<stateObservation::Matrix4> inputHomoPosition_;
             std::vector<stateObservation::Vector6> inputPosition_;
-            std::vector<MatrixHomogeneous> referenceHomoPosition_;
+            std::vector<stateObservation::Matrix4> referenceHomoPosition_;
             std::vector<stateObservation::Vector6> referencePosition_;
             std::vector<stateObservation::Vector6> inputForces_;
 
-            MatrixHomogeneous pivotPosition_;
             int pivotSupport_;
 
-            std::vector<MatrixHomogeneous> odometryHomoPosition_;
-            MatrixHomogeneous odometryFreeFlyer_;
+            std::vector<stateObservation::Matrix4> odometryHomoPosition_;
+            stateObservation::Matrix4 odometryFreeFlyer_;
 
             stateObservation::Vector alpha_;
 
-            // To comput pos utheta from homogeneous matrix
-            Vector pos_;
-            MatrixRotation rot_;
-            VectorUTheta uth_;
-            VectorRollPitchYaw rpy_;
-            stateObservation::Vector posUTheta_;
-            MatrixHomogeneous homo_;
+            // To optimize memory access
+            stateObservation::Vector6 posUTheta_;
+            stateObservation::Matrix3 rot_;
+            stateObservation::Matrix4 homo_;
+            stateObservation::AngleAxis aa_;
+
+
       };
 
 } // namespace sotStateObservation
