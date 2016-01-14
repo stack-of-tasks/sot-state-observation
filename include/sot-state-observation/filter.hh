@@ -65,7 +65,7 @@ namespace sotStateObservation
             /**
             \brief Constructor by name
             */
-            Filter(const std::string& inName);
+            Filter(const std::string& inName, unsigned n=3);
 
             ~Filter();
 
@@ -82,6 +82,12 @@ namespace sotStateObservation
                     "Entity that filter an input";
             }
 
+            void setOn(const bool& b){
+                on_=b;
+            }
+
+            Vector& getOutput(dynamicgraph::Vector& output, const int& time);
+
             /**
             \name Parameters
             @{
@@ -97,8 +103,16 @@ namespace sotStateObservation
             /// Methods
 
             /// Signals
+            dynamicgraph::SignalPtr <Vector, int> inputSIN_;
+
+            unsigned ioSize_;
+            unsigned int time_;
+
+            dynamicgraph::SignalPtr <Vector, int> outputSOUT_;
 
             /// Parameters
+
+            bool on_;
 
       };
 
