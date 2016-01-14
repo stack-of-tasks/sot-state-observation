@@ -46,6 +46,8 @@ namespace sotStateObservation
         currentTime_=0;
 #endif
 
+        stateSize=estimator_.getStateSize();
+
         signalRegistration (measurementSIN);
         signalRegistration (inputSIN);
         signalRegistration (contactsNbrSIN);
@@ -473,6 +475,15 @@ namespace sotStateObservation
         addCommand(std::string("setWithForceSensors"),
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool >
                     (*this, & DGIMUModelBaseFlexEstimation::setWithForce,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets if the flexibility state contains comBias or not "
+                "\n";
+
+        addCommand(std::string("setWithComBias"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool >
+                    (*this, & DGIMUModelBaseFlexEstimation::setWithComBias,docstring));
 
 
       docstring  =

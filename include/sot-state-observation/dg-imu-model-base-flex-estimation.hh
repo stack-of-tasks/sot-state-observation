@@ -141,6 +141,11 @@ namespace sotStateObservation
                 estimator_.setWithForcesMeasurements(b);
             }
 
+            void setWithComBias(const bool & b)
+            {
+                estimator_.setWithComBias(b);
+            }
+
             void setForceVariance(const double & d)
             {
                 estimator_.setForceVariance(d);
@@ -359,7 +364,7 @@ namespace sotStateObservation
 
 
             ///Sizes of the states for the state, the measurement, and the input vector
-            static const unsigned stateSize=20;
+            unsigned stateSize;
             static const unsigned measurementSize=6;
             static const unsigned inputSizeBase=42;
             unsigned inputSize_;
