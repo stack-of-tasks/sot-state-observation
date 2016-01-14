@@ -98,6 +98,8 @@ namespace sotStateObservation
         addCommand(std::string("setRightFootPosition"),
                    ::dynamicgraph::command::makeCommandVoid1(*this, & Odometry::setRightFootPosition, docstring));
 
+        nbSupportSOUT_.setFunction(boost::bind(&Odometry::getNbSupport, this, _1, _2));
+
         supportPos1SOUT_.setFunction(boost::bind(&Odometry::getSupportPos1, this, _1, _2));
         homoSupportPos1SOUT_.setFunction(boost::bind(&Odometry::getHomoSupportPos1, this, _1, _2));
         forceSupport1SOUT_.setFunction(boost::bind(&Odometry::getForceSupport1, this, _1, _2));

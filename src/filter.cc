@@ -52,6 +52,8 @@ namespace sotStateObservation
 
         outputSOUT_.setFunction(boost::bind(&Filter::getOutput, this, _1, _2));
 
+        updateDistribution();
+
     }
 
     Filter::~Filter()
@@ -66,17 +68,18 @@ namespace sotStateObservation
 
     void Filter::updateDistribution()
     {
-        distr_.resize(n_);
+        distr_.resize(u_.size());
         distr_.setOnes();
-        distr_=(1/n_)*distr_;
+        distr_=double(1./double(distr_.size()))*distr_;
     }
 
     dynamicgraph::Vector& Filter::getOutput(dynamicgraph::Vector& output, const int& time)
     {
         stateObservation::Vector lastInput=convertVector<stateObservation::Vector>(inputSIN_.access(time));
 
-        // Update the input window
+        // Update the input window and the distribution accordingly
         updateU(lastInput);
+        updateDistribution();
 
         // Compute filtering
         output_.resize(lastInput.size()); output_.setZero();
@@ -84,6 +87,8 @@ namespace sotStateObservation
         for (iterator=u_.begin(); iterator != u_.end(); ++iterator)
         {
             output_+=distr_[i]*(*iterator);
+            std::cout << "distr_[i]" << distr_[i] << std::endl;
+            std::cout << "*iterator" << *iterator << std::endl;
             ++i;
         }
 
