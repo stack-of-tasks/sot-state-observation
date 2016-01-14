@@ -17,26 +17,19 @@
 // with sot-dynamic.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef STACKOFVECTORS_HH
-#define STACKOFVECTORS_HH
+#ifndef FILTER_HH
+#define FILTER_HH
 
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/signal-ptr.h>
 #include <dynamic-graph/signal-time-dependent.h>
 #include <dynamic-graph/linear-algebra.h>
 
-//#include <sot/core/matrix-rotation.hh>
-#include <sot/core/matrix-homogeneous.hh>
-//#include <sot/core/multi-bound.hh>
-#include <sot/core/vector-utheta.hh>
-#include <sot/core/vector-roll-pitch-yaw.hh>
-
 #include <sot/core/matrix-homogeneous.hh>
 #include <state-observation/tools/miscellaneous-algorithms.hpp>
 #include <sot-state-observation/tools/definitions.hh>
 
-#include <vector>
-#include <algorithm>
+#include <queue>
 
 namespace sotStateObservation
 {
@@ -46,10 +39,6 @@ namespace sotStateObservation
     using dynamicgraph::Vector;
     using dynamicgraph::Matrix;
     using dynamicgraph::Entity;
-    using dynamicgraph::sot::MatrixHomogeneous;
-    using dynamicgraph::sot::MatrixRotation;
-    using dynamicgraph::sot::VectorUTheta;
-    using dynamicgraph::sot::VectorRollPitchYaw;
 
     using namespace sotStateObservation;
     using namespace stateObservation;
@@ -65,7 +54,7 @@ namespace sotStateObservation
             /**
             \brief Constructor by name
             */
-            Filter(const std::string& inName, unsigned n=3);
+            Filter(const std::string& inName);
 
             ~Filter();
 
@@ -86,7 +75,12 @@ namespace sotStateObservation
                 on_=b;
             }
 
-            Vector& getOutput(dynamicgraph::Vector& output, const int& time);
+            void setWindowSize(const unsigned& n){
+                n_=n;
+                updateDistribution();
+            }
+
+            dynamicgraph::Vector& getOutput(dynamicgraph::Vector& output, const int& time);
 
             /**
             \name Parameters
@@ -101,21 +95,29 @@ namespace sotStateObservation
         private:
 
             /// Methods
+            void updateU(const stateObservation::Vector& lastInput);
+            void updateDistribution();
 
             /// Signals
             dynamicgraph::SignalPtr <Vector, int> inputSIN_;
-
-            unsigned ioSize_;
-            unsigned int time_;
 
             dynamicgraph::SignalPtr <Vector, int> outputSOUT_;
 
             /// Parameters
 
             bool on_;
+            unsigned int time_;
+
+            unsigned int n_; // Size of the window
+            std::list<stateObservation::Vector> u_; // list of maximum size n_ with vector of size ioSize_ as elements
+            std::list<stateObservation::Vector>::iterator iterator;
+
+            stateObservation::Vector distr_; // Filtering distribution
+
+            stateObservation::Vector output_;
 
       };
 
 } // namespace sotStateObservation
 
-#endif // STACKOFVECTORS_HH
+#endif // FILTER_HH
