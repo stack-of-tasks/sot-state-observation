@@ -131,7 +131,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 			# IMU velocity
         self.inputVel = Multiply_matrix_vector(name+'InputVelocity')
         plug(self.imuOpPoint.jacobian,self.inputVel.sin1)
-        plug(self.robot.device.velocity,self.inputVel.sin2)
+        plug(self.robot.dynamicEncoders.velocity,self.inputVel.sin2)
 
 			# Concatenate
         self.inputPosVel = Stack_of_vector (name+'InputPosVel')
@@ -151,7 +151,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.com=self.robot.dynamicEncoders.com
         self.DCom = Multiply_matrix_vector(name+'DCom')
         plug(self.robot.dynamicEncoders.Jcom,self.DCom.sin1)
-        plug(self.robot.device.velocity,self.DCom.sin2)
+        plug(self.robot.dynamicEncoders.velocity,self.DCom.sin2)
         self.comVectorIn = Stack_of_vector (name+'ComVectorIn')
         plug(self.com,self.comVectorIn.sin1)
         plug(self.DCom.sout,self.comVectorIn.sin2)

@@ -70,7 +70,13 @@ namespace sotStateObservation
               dt_=dt;
             }
 
-
+            void setConfig(const dynamicgraph::Vector& config)
+            {
+                for(int i=0;i<3;++i){
+                    if(config.elementAt(i)==1) config_[i]=true;
+                    if(config.elementAt(i)==0) config_[i]=false;
+                }
+            }
 
                     /**
             \name Parameters
@@ -138,6 +144,8 @@ namespace sotStateObservation
             bool derivateInertiaFD_;
 
             ::dynamicgraph::Vector lastInertia_;
+
+            std::vector<bool> config_;
 
             int currentTime;
             double dt_;

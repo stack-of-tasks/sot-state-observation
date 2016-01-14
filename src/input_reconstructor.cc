@@ -33,7 +33,7 @@ namespace sotStateObservation
         nbContactsSIN(0x0 , "InputReconstructor("+inName+")::input(unsigned)::nbContacts"),
         contactsPositionSIN(0x0 , "InputReconstructor("+inName+")::input(vector)::contactsPosition"),
         inputSOUT("InputReconstructor("+inName+")::output(vector)::input"),
-        lastInertia_(6)
+        lastInertia_(6), config_(3)
     {
         bias_[0].resize(6);
         bias_[1].resize(6);
@@ -141,6 +141,16 @@ namespace sotStateObservation
 	     ::dynamicgraph::command::Setter <InputReconstructor,double>
                 (*this, &InputReconstructor::setSamplingPeriod, docstring));
 
+        docstring =
+                "\n"
+                "    Set config"
+                "\n";
+
+        addCommand(std::string("setConfig"),
+             new
+             ::dynamicgraph::command::Setter <InputReconstructor,dynamicgraph::Vector>
+                (*this, &InputReconstructor::setConfig, docstring));
+
 
 
 
@@ -151,7 +161,9 @@ namespace sotStateObservation
 
         inputSOUT.setFunction(boost::bind(&InputReconstructor::computeInput, this, _1, _2));
 
-//        std::cout << "input reconstructor" << std::endl;
+        stateObservation::Vector3 True;
+        True.setOnes();
+        setConfig(convertVector<dynamicgraph::Vector>(True));
     }
 
     InputReconstructor::~InputReconstructor()
@@ -275,12 +287,23 @@ namespace sotStateObservation
           computeInertDot(inertia,dinertia,homoWaist,dinert,comVector);
 
         lastInertia_ = inert;
-//        std::cout << "Com: "<< comVector << std::endl;
-//        std::cout << "Inertia: ="<< inert << std::endl;
+
 
         input.resize(42+6*nbContacts,true);
-        for(i=0;i<9;++i){
+        input.setZero();
+
+        for(i=0;i<3;++i){
             input.elementAt(u)=comVector(i);
+            u++;
+        }
+
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1]) input.elementAt(u)=comVector(i+3);
+            u++;
+        }
+
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=comVector(i+6);
             u++;
         }
 
@@ -290,7 +313,7 @@ namespace sotStateObservation
         }
 
         for(i=0;i<6;++i){
-            input.elementAt(u)=dinert(i);
+            if(config_[0] & config_[1]) input.elementAt(u)=dinert(i);
             u++;
         }
 
@@ -311,43 +334,40 @@ namespace sotStateObservation
           comddot(i) = comVector(i+6);
         }
 
-
         angMomentumOut=angMomentum;
-
         dangMomentumOut = m*crossProduct(com,comddot);
 
-
         for(i=0;i<3;++i){
-            input.elementAt(u)=angMomentumOut(i);
+            if(config_[0] & config_[1]) input.elementAt(u)=angMomentumOut(i);
             u++;
         }
 
 
         for(i=0;i<3;++i){
-            input.elementAt(u)=dangMomentumOut(i);
+            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=dangMomentumOut(i);
             u++;
         }
 
-        for(i=0;i<15;++i){
+        for(i=0;i<6;++i){
             input.elementAt(u)=imuVector(i);
             u++;
         }
 
+        for(i=0;i<6;++i){
+            if(config_[0] & config_[1]) input.elementAt(u)=imuVector(i+6);
+            u++;
+        }
+
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=imuVector(i+12);
+            u++;
+        }
 
         for(i=0;i<6*nbContacts;++i){
 
             input.elementAt(u)=contactsPosition(i)+bias_[i/6](i%6);
-//            if(i==2)
-//            {
-//                input.elementAt(u) += -0.0015;
-//            }
-
             u++;
         }
-
-        //cout << "contacts Position: " << contactsPosition << endl;
-        //std::cout << "input" << input << std::endl;
-
 
         return input;
 
