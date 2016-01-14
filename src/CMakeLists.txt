@@ -41,6 +41,7 @@ ADD_LIBRARY(${LIBRARY_NAME}
   calibrate.cc
   stack-of-contacts.cc
   odometry.cc
+  filter.cc
   moving-frame-transformation.cc
   position-state-reconstructor.cc
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
