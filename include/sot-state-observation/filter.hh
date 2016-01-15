@@ -98,6 +98,10 @@ namespace sotStateObservation
             void updateU(const stateObservation::Vector& lastInput);
             void updateDistribution();
 
+                // Differents distribution for different filtering
+            stateObservation::Vector averageDistribution(const unsigned n);
+            stateObservation::Vector gaussianDistribution(const unsigned n, const double mean, const double stddev);
+
             /// Signals
             dynamicgraph::SignalPtr <Vector, int> inputSIN_;
 
@@ -113,6 +117,7 @@ namespace sotStateObservation
             std::list<stateObservation::Vector>::iterator iterator;
 
             stateObservation::Vector distr_; // Filtering distribution
+            stateObservation::Vector vec_;
 
             stateObservation::Vector output_;
 

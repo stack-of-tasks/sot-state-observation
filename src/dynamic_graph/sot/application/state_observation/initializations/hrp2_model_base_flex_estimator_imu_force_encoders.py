@@ -6,7 +6,7 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose, Selec_of_vector, Inverse_of_matrixHomo, Multiply_of_matrixHomo, MatrixHomoToPoseRollPitchYaw
-from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, Odometry
+from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, Odometry, Filter
 
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
@@ -148,13 +148,21 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.IMUVector.setFiniteDifferencesInterval(2)
 
         	# CoM and derivatives
-        self.com=self.robot.dynamicEncoders.com
-        self.DCom = Multiply_matrix_vector(name+'DCom')
-        plug(self.robot.dynamicEncoders.Jcom,self.DCom.sin1)
-        plug(self.robot.dynamicEncoders.velocity,self.DCom.sin2)
+        self.comIn=self.robot.dynamicEncoders.com
+	self.comFilter=Filter("ComFilter")
+	self.comFilter.setWindowSize(100)
+	plug(self.comIn,self.comFilter.sin)
+
+        self.dComIn = Multiply_matrix_vector(name+'DComIn')
+        plug(self.robot.dynamicEncoders.Jcom,self.dComIn.sin1)
+        plug(self.robot.dynamicEncoders.velocity,self.dComIn.sin2)
+	self.dComFilter=Filter("DComFilter")
+	self.dComFilter.setWindowSize(100)
+	plug(self.dComIn.sout,self.dComFilter.sin)
+
         self.comVectorIn = Stack_of_vector (name+'ComVectorIn')
-        plug(self.com,self.comVectorIn.sin1)
-        plug(self.DCom.sout,self.comVectorIn.sin2)
+        plug(self.comFilter.sout,self.comVectorIn.sin1)
+        plug(self.dComFilter.sout,self.comVectorIn.sin2)
         self.comVectorIn.selec1 (0, 3)
         self.comVectorIn.selec2 (0, 3)
         self.comVector = PositionStateReconstructor (name+'ComVector')
