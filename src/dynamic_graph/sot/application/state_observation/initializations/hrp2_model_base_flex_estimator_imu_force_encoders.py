@@ -27,6 +27,12 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	self.setKte(matrixToTuple(np.diag((600,600,600))))
 	self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
+	self.setWithForceSensors(True)
+	self.setForceVariance(1e-4)
+	self.setWithComBias(False)
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6)))
+	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3))) 
+
 	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
 	plug(self.robot.dynamic.signal('left-ankle'),self.leftFootPos.sin1)
 	self.leftFootPos.sin2.value=self.robot.forceSensorInLeftAnkle
@@ -56,8 +62,6 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 		# OdometryFF
         self.odometryFF=Odometry ('OdometryFF')
 	plug (self.robot.device.robotState,self.odometryFF.robotStateIn)
-#	self.odometryFF.setLeftFootPosition(self.robot.frames['leftFootForceSensor'].position.value)
-#	self.odometryFF.setRightFootPosition(self.robot.frames['rightFootForceSensor'].position.value)
 	plug(self.robot.frames['leftFootForceSensor'].position,self.odometryFF.leftFootPositionRef)
 	plug(self.robot.frames['rightFootForceSensor'].position,self.odometryFF.rightFootPositionRef)
 	plug (self.robot.device.forceLLEG,self.odometryFF.force_lf)
@@ -65,6 +69,8 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         plug (self.rightFootPosFF.sout,self.odometryFF.rightFootPosition)
         plug (self.leftFootPosFF.sout,self.odometryFF.leftFootPosition)
 	plug (self.odometryFF.nbSupport,self.contactNbr)
+	self.odometryFF.setLeftFootPosition(self.robot.frames['leftFootForceSensor'].position.value)
+	self.odometryFF.setRightFootPosition(self.robot.frames['rightFootForceSensor'].position.value)
 
 	# Create dynamicEncoders
 	self.robot.dynamicEncoders=self.createDynamic(self.odometryFF.robotStateOut,'_dynamicEncoders')
@@ -149,26 +155,11 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
         	# CoM and derivatives
         self.comIn=self.robot.dynamicEncoders.com
-	self.comFilter=Filter("ComFilter")
-	self.comFilter.setWindowSize(100)
-	plug(self.comIn,self.comFilter.sin)
-
-        self.dComIn = Multiply_matrix_vector(name+'DComIn')
-        plug(self.robot.dynamicEncoders.Jcom,self.dComIn.sin1)
-        plug(self.robot.dynamicEncoders.velocity,self.dComIn.sin2)
-	self.dComFilter=Filter("DComFilter")
-	self.dComFilter.setWindowSize(100)
-	plug(self.dComIn.sout,self.dComFilter.sin)
-
-        self.comVectorIn = Stack_of_vector (name+'ComVectorIn')
-        plug(self.comFilter.sout,self.comVectorIn.sin1)
-        plug(self.dComFilter.sout,self.comVectorIn.sin2)
-        self.comVectorIn.selec1 (0, 3)
-        self.comVectorIn.selec2 (0, 3)
         self.comVector = PositionStateReconstructor (name+'ComVector')
-        plug(self.comVectorIn.sout,self.comVector.sin)
-        self.comVector.inputFormat.value  = '000101'
+        plug(self.comIn,self.comVector.sin)
+        self.comVector.inputFormat.value  = '000001'
         self.comVector.outputFormat.value = '010101'  
+	self.comVector.setFiniteDifferencesInterval(20)
 
 		# Compute derivative of Angular Momentum
         self.angMomDerivator = Derivator_of_Vector('angMomDerivator')

@@ -24,6 +24,12 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.robot.dynamic.inertia.recompute(1)					      
         self.robot.dynamic.waist.recompute(1)	
 
+	self.setWithForceSensors(True)
+	self.setForceVariance(1e-4)
+	self.setWithComBias(False)
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6)))
+	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3))) 
+
 	# Odometry
         self.odometry=Odometry ('Odometry')
 	plug (self.robot.device.state,self.odometry.robotStateIn)
@@ -117,6 +123,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug(self.comVectorIn.sout,self.comVector.sin)
         self.comVector.inputFormat.value  = '000101'
         self.comVector.outputFormat.value = '010101'  
+	self.comVector.setFiniteDifferencesInterval(20)
 
 		# Compute derivative of Angular Momentum
         self.angMomDerivator = Derivator_of_Vector('angMomDerivator')

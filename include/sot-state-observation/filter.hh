@@ -95,7 +95,6 @@ namespace sotStateObservation
         private:
 
             /// Methods
-            void updateU(const stateObservation::Vector& lastInput);
             void updateDistribution();
 
                 // Differents distribution for different filtering

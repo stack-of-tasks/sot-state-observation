@@ -60,12 +60,6 @@ namespace sotStateObservation
     {
     }
 
-    void Filter::updateU(const stateObservation::Vector& lastInput)
-    {
-        u_.push_front(lastInput);
-        if(u_.size()>=n_) u_.pop_back();
-    }
-
     stateObservation::Vector Filter::averageDistribution(const unsigned n)
     {
         vec_.resize(n);
@@ -98,8 +92,11 @@ namespace sotStateObservation
     {
         stateObservation::Vector lastInput=convertVector<stateObservation::Vector>(inputSIN_.access(time));
 
-        // Update the input window and the distribution accordingly
-        updateU(lastInput);
+        // Update the input window
+        u_.push_front(lastInput);
+        if(u_.size()>=n_) u_.pop_back();
+
+        // Update the distribution accordingly
         updateDistribution();
 
         // Compute filtering
