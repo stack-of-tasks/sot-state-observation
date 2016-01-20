@@ -7,8 +7,6 @@
 #ifndef SOT_DYNAMIC_GRAPH_IMU_MODEL_BASE_FLEX_ESTIMATION_HH
 #define SOT_DYNAMIC_GRAPH_IMU_MODEL_BASE_FLEX_ESTIMATION_HH
 
-#define SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
-
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/signal-ptr.h>
 #include <dynamic-graph/signal-time-dependent.h>
@@ -222,6 +220,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexInverseOmega
                         (::dynamicgraph::Vector & flexInverseOmega, const int &inTime);
 
+            ::dynamicgraph::Vector& computeComBias
+                                (::dynamicgraph::Vector & comBias, const int& inTime);
+
             ::dynamicgraph::Vector& computeSimulatedSensors
                         (::dynamicgraph::Vector & sensorSignal, const int &inTime);
 
@@ -333,6 +334,10 @@ namespace sotStateObservation
                                 < ::dynamicgraph::Vector,int> flexInverseVelocitySOUT;
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> flexInverseOmegaSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> comBiasSOUT;
+
             /**
             \brief A simulation of the sensors' signals
             */
@@ -370,10 +375,7 @@ namespace sotStateObservation
             unsigned inputSize_;
             unsigned contactNumber_;
 
-
-#ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
             int currentTime_;
-#endif
 
         };
 
