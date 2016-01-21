@@ -141,7 +141,7 @@ namespace sotStateObservation
 
             void setWithComBias(const bool & b)
             {
-                estimator_.setWithComBias(b);
+                withComBias_=b;
             }
 
             void setForceVariance(const double & d)
@@ -374,6 +374,8 @@ namespace sotStateObservation
             static const unsigned inputSizeBase=42;
             unsigned inputSize_;
             unsigned contactNumber_;
+
+            bool withComBias_;
 
             int currentTime_;
 

@@ -382,6 +382,8 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double >
                     (*this, & DGIMUModelBaseFlexEstimation::setForceVariance,docstring));
 
+        withComBias_=false;
+
         stateObservation::ObserverBase::InputVector input;
         input.resize(inputSizeBase);
         input <<    0.0135672,
@@ -492,6 +494,8 @@ namespace sotStateObservation
 
         // Update of inputSize_ considering contactsNb
 
+        if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
+
         if (contactNumber_!= contactNb)
         {
             contactNumber_ = contactNb;
@@ -505,12 +509,14 @@ namespace sotStateObservation
         }
 #endif
         flexibility = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
+
         return flexibility;
     }
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeFlexPosition
                         (::dynamicgraph::Vector & flexibilityPosition, const int& inTime)
     {
+
         flexibilitySOUT(inTime);
 
         flexibilityPosition = convertVector<dynamicgraph::Vector>
