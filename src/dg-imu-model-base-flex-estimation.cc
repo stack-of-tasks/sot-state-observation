@@ -382,7 +382,12 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double >
                     (*this, & DGIMUModelBaseFlexEstimation::setForceVariance,docstring));
 
+        addCommand(std::string("setVirtualBiasCom"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
+                    (*this, & DGIMUModelBaseFlexEstimation::setBias ,docstring));
+
         withComBias_=false;
+        bias_.resize(2); bias_.setZero();
 
         stateObservation::ObserverBase::InputVector input;
         input.resize(inputSizeBase);
@@ -469,6 +474,8 @@ namespace sotStateObservation
         dynamicgraph::Vector flexibility(estimator_.getStateSize()+estimator_.getWithComBias()*2);
         flexibility=computeFlexibility(flexibility,0);
 
+//        Q_=estimator_.getProcessNoiseCovariance();
+        recomputeQ_=false;
 
     }
 
@@ -492,10 +499,16 @@ namespace sotStateObservation
         const dynamicgraph::Vector & input = inputSIN(inTime);
         const unsigned & contactNb = contactsNbrSIN(inTime);
 
-        // Update of inputSize_ considering contactsNb
-
+        // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
 
+        // Update the process noise covariance
+        if(recomputeQ_) {
+            estimator_.setProcessNoiseCovariance(Q_);
+            recomputeQ_=false;
+        }
+
+        // Update of inputSize_ considering contactsNb
         if (contactNumber_!= contactNb)
         {
             contactNumber_ = contactNb;
@@ -503,7 +516,11 @@ namespace sotStateObservation
         }
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
-        estimator_.setMeasurementInput(convertVector<stateObservation::Vector>(input));
+
+        stateObservation::Vector inputWBias = convertVector<stateObservation::Vector>(input);
+        inputWBias.block(0,0,2,1)=inputWBias.block(0,0,2,1)+bias_;
+
+        estimator_.setMeasurementInput(inputWBias);
 
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
         }

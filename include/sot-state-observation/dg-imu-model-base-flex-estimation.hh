@@ -85,7 +85,8 @@ namespace sotStateObservation
 
             void setProcessNoiseCovariance(const ::dynamicgraph::Matrix & q)
             {
-                estimator_.setProcessNoiseCovariance(convertMatrix<stateObservation::Matrix>(q));
+                Q_=convertMatrix<stateObservation::Matrix>(q);
+                recomputeQ_=true;
             }
 
             ::dynamicgraph::Matrix getProcessNoiseCovariance() const
@@ -147,6 +148,11 @@ namespace sotStateObservation
             void setForceVariance(const double & d)
             {
                 estimator_.setForceVariance(d);
+            }
+
+            void setBias(const dynamicgraph::Vector & bias)
+            {
+                bias_=convertVector<stateObservation::Vector>(bias).block(0,0,2,1);
             }
 
             /**
@@ -377,7 +383,12 @@ namespace sotStateObservation
 
             bool withComBias_;
 
+            stateObservation::Vector bias_;
+
             int currentTime_;
+
+            stateObservation::Matrix Q_;
+            bool recomputeQ_;
 
         };
 
