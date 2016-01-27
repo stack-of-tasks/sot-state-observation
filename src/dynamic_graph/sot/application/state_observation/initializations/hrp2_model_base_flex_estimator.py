@@ -11,6 +11,7 @@ from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEs
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
+from dynamic_graph.sot.application.state_observation import Calibrate
 
 
 class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
@@ -26,7 +27,13 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
         plug(self.robot.device.gyrometer,self.sensorStack.sin2)
         self.sensorStack.selec1 (0, 3)
         self.sensorStack.selec2 (0, 3)
-        plug(self.sensorStack.sout,self.measurement);
+
+	# Calibration
+	self.calibration= Calibrate('calibration')
+	plug(self.sensorStack.sout,self.calibration.imuIn)
+	plug(self.robot.dynamic.com,self.calibration.comIn)
+        plug(self.calibration.imuOut,self.measurement)
+
         self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
         plug(robot.frames['accelerometer'].position,self.inputPos.sin)
         self.robot.dynamic.createJacobian('ChestJ_OpPoint','chest')
@@ -51,25 +58,26 @@ class HRP2ModelBaseFlexEstimator(DGIMUModelBaseFlexEstimation):
 
 
         # Definition of inertia, angular momentum and derivatives
-        self.robot.dynamic.inertia.recompute(1)
+        self.robot.dynamic.inertia.recompute(0)
         self.inertia=self.robot.dynamic.inertia #(48.2378,48.2378,2.87339,0,0,0) #
         self.dotInertia=(0,0,0,0,0,0)
         self.zeroMomentum=(0,0,0,0,0,0)
         
         # Waist position
-        self.robot.dynamic.waist.recompute(1)
+        self.robot.dynamic.waist.recompute(0)
         #self.robot.dynamic.chest.recompute(1)
         #self.robot.dynamic.com.recompute(1)
         self.positionWaist=self.robot.dynamic.waist
 
 
         # Definition of com and derivatives
-        self.com=self.robot.dynamic.com#(0,0,0.75) # /!\ In the local frame!
+        self.com=self.calibration.comOut #self.robot.dynamic.com
         self.DCom = Multiply_matrix_vector(name+'DCom')
+	self.robot.dynamic.Jcom.recompute(0)
         plug(self.robot.dynamic.Jcom,self.DCom.sin1)
         plug(self.robot.device.velocity,self.DCom.sin2)
         self.comVectorIn = Stack_of_vector (name+'ComVectorIn')
-        plug(self.com,self.comVectorIn.sin1)
+        plug(self.calibration.comOut,self.comVectorIn.sin1)
         plug(self.DCom.sout,self.comVectorIn.sin2)
         self.comVectorIn.selec1 (0, 3)
         self.comVectorIn.selec2 (0, 3)

@@ -7,8 +7,6 @@
 #ifndef SOT_DYNAMIC_GRAPH_IMU_MODEL_BASE_FLEX_ESTIMATION_HH
 #define SOT_DYNAMIC_GRAPH_IMU_MODEL_BASE_FLEX_ESTIMATION_HH
 
-#define SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
-
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/signal-ptr.h>
 #include <dynamic-graph/signal-time-dependent.h>
@@ -87,7 +85,8 @@ namespace sotStateObservation
 
             void setProcessNoiseCovariance(const ::dynamicgraph::Matrix & q)
             {
-                estimator_.setProcessNoiseCovariance(convertMatrix<stateObservation::Matrix>(q));
+                Q_=convertMatrix<stateObservation::Matrix>(q);
+                recomputeQ_=true;
             }
 
             ::dynamicgraph::Matrix getProcessNoiseCovariance() const
@@ -135,9 +134,15 @@ namespace sotStateObservation
                 estimator_.setKtv(convertMatrix<stateObservation::Matrix3>(m));
             }
 
+
             void setWithForce(const bool & b)
             {
                 estimator_.setWithForcesMeasurements(b);
+            }
+
+            void setWithComBias(const bool & b)
+            {
+                withComBias_=b;
             }
 
             void setForceVariance(const double & d)
@@ -145,6 +150,10 @@ namespace sotStateObservation
                 estimator_.setForceVariance(d);
             }
 
+            void setBias(const dynamicgraph::Vector & bias)
+            {
+                bias_=convertVector<stateObservation::Vector>(bias).block(0,0,2,1);
+            }
 
             /**
             \name Parameters
@@ -217,11 +226,20 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexInverseOmega
                         (::dynamicgraph::Vector & flexInverseOmega, const int &inTime);
 
+            ::dynamicgraph::Vector& computeComBias
+                                (::dynamicgraph::Vector & comBias, const int& inTime);
+
             ::dynamicgraph::Vector& computeSimulatedSensors
                         (::dynamicgraph::Vector & sensorSignal, const int &inTime);
 
             ::dynamicgraph::Vector& getForcesAndMoments
                         (::dynamicgraph::Vector & forcesAndMoments, const int &inTime);
+
+            ::dynamicgraph::Vector& getForcesSupport1
+                    (::dynamicgraph::Vector & forcesSupport1, const int& inTime);
+
+            ::dynamicgraph::Vector& getForcesSupport2
+                    (::dynamicgraph::Vector & forcesSupport2, const int& inTime);
 
             ::dynamicgraph::Vector& computeInovation
                         (::dynamicgraph::Vector & inovation, const int &inTime);
@@ -258,6 +276,11 @@ namespace sotStateObservation
 
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> forcesAndMomentsSOUT;
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> forcesSupport1SOUT;
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Vector, int> forcesSupport2SOUT;
+
 
             /**
             \brief Estimation of the flexibility
@@ -317,6 +340,10 @@ namespace sotStateObservation
                                 < ::dynamicgraph::Vector,int> flexInverseVelocitySOUT;
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> flexInverseOmegaSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> comBiasSOUT;
+
             /**
             \brief A simulation of the sensors' signals
             */
@@ -348,16 +375,20 @@ namespace sotStateObservation
 
 
             ///Sizes of the states for the state, the measurement, and the input vector
-            static const unsigned stateSize=18;
+            unsigned stateSize;
             static const unsigned measurementSize=6;
             static const unsigned inputSizeBase=42;
             unsigned inputSize_;
             unsigned contactNumber_;
 
+            bool withComBias_;
 
-#ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
+            stateObservation::Vector bias_;
+
             int currentTime_;
-#endif
+
+            stateObservation::Matrix Q_;
+            bool recomputeQ_;
 
         };
 

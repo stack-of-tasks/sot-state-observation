@@ -50,12 +50,15 @@ SET(${PROJECT_NAME}_HEADERS
     include/sot-state-observation/dg-imu-attitude-estimation.hh
     include/sot-state-observation/dg-imu-model-free-flex-estimation.hh
     include/sot-state-observation/dg-imu-model-base-flex-estimation.hh
-    include/sot-state-observation/input_reconstructor.hh
+    include/sot-state-observation/input_reconstructor.hh  
+    include/sot-state-observation/calibrate.hh
     include/sot-state-observation/moving-frame-transformation.hh
     include/sot-state-observation/position-state-reconstructor.hh
     include/sot-state-observation/tools/definitions.hh
+    include/sot-state-observation/stack-of-contacts.hh
+    include/sot-state-observation/odometry.hh
+    include/sot-state-observation/filter.hh
 )
-
 
 # Add subdirectories.
 ADD_SUBDIRECTORY(src)

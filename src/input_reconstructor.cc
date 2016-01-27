@@ -33,7 +33,7 @@ namespace sotStateObservation
         nbContactsSIN(0x0 , "InputReconstructor("+inName+")::input(unsigned)::nbContacts"),
         contactsPositionSIN(0x0 , "InputReconstructor("+inName+")::input(vector)::contactsPosition"),
         inputSOUT("InputReconstructor("+inName+")::output(vector)::input"),
-        lastInertia_(6)
+        lastInertia_(6), config_(3)
     {
         bias_[0].resize(6);
         bias_[1].resize(6);
@@ -141,6 +141,16 @@ namespace sotStateObservation
 	     ::dynamicgraph::command::Setter <InputReconstructor,double>
                 (*this, &InputReconstructor::setSamplingPeriod, docstring));
 
+        docstring =
+                "\n"
+                "    Set config"
+                "\n";
+
+        addCommand(std::string("setConfig"),
+             new
+             ::dynamicgraph::command::Setter <InputReconstructor,dynamicgraph::Vector>
+                (*this, &InputReconstructor::setConfig, docstring));
+
 
 
 
@@ -151,7 +161,9 @@ namespace sotStateObservation
 
         inputSOUT.setFunction(boost::bind(&InputReconstructor::computeInput, this, _1, _2));
 
-//        std::cout << "input reconstructor" << std::endl;
+        stateObservation::Vector3 True;
+        True.setOnes();
+        setConfig(convertVector<dynamicgraph::Vector>(True));
     }
 
     InputReconstructor::~InputReconstructor()
@@ -184,8 +196,6 @@ namespace sotStateObservation
         inert.elementAt(4)=inertia(3,5);
         inert.elementAt(5)=inertia(4,5);
 
-        //        std::cout << " INERTIA0= "<< inert << std::endl;
-
         // From waist to com
         inert.elementAt(0) += -m*((com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
         inert.elementAt(1) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
@@ -193,8 +203,6 @@ namespace sotStateObservation
         inert.elementAt(3) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(1)-waist.elementAt(1));
         inert.elementAt(4) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(2)-waist.elementAt(2));
         inert.elementAt(5) += m*(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(2)-waist.elementAt(2));
-
-        //        std::cout << " INERTIA1= "<< inert << std::endl;
 
         // From com to local frame
         inert.elementAt(0) -= -m*((com.elementAt(1))*(com.elementAt(1))+(com.elementAt(2))*(com.elementAt(2)));
@@ -204,15 +212,6 @@ namespace sotStateObservation
         inert.elementAt(4) -= m*(com.elementAt(0))*(com.elementAt(2));
         inert.elementAt(5) -= m*(com.elementAt(1))*(com.elementAt(2));
 
-         //       std::cout << " INERTIA2= "<< inert  << std::endl;
-
-
-//        inert.elementAt(0)=48.2378;
-//        inert.elementAt(1)=48.2378;
-//        inert.elementAt(2)=2.87339;
-//        inert.elementAt(3)=0.0;
-//        inert.elementAt(4)=0.0;
-//        inert.elementAt(5)=0.0;
     }
 
     void InputReconstructor::computeInertDot
@@ -243,22 +242,10 @@ namespace sotStateObservation
 
         // Inertia expressed at waist
         dinert = dinertia;
-
-        //        std::cout << " INERTIA0= "<< inert << std::endl;
-
-        // From com to local frame
-        dinert.elementAt(0) += 2*m*((com.elementAt(1))*(dcom.elementAt(1))+(com.elementAt(2))*(dcom.elementAt(2)));
-        dinert.elementAt(1) += 2*m*((com.elementAt(0))*(dcom.elementAt(0))+(com.elementAt(2))*(dcom.elementAt(2)));
-        dinert.elementAt(2) += 2*m*((com.elementAt(0))*(dcom.elementAt(0))+(com.elementAt(1))*(dcom.elementAt(1)));
-        dinert.elementAt(3) -= m*((com.elementAt(0))*(dcom.elementAt(1)) + (dcom.elementAt(0))*(com.elementAt(1)));
-        dinert.elementAt(4) -= m*((com.elementAt(0))*(dcom.elementAt(2)) + (dcom.elementAt(0))*(com.elementAt(2))) ;
-        dinert.elementAt(5) -= m*((com.elementAt(1))*(dcom.elementAt(2)) + (dcom.elementAt(1))*(com.elementAt(2)));
-
    }
 
     dynamicgraph::Vector& InputReconstructor::computeInput(dynamicgraph::Vector & input, const int& inTime)
     {
-
         if (currentTime==inTime)
         {
           input =  inputSOUT.accessCopy();
@@ -300,12 +287,23 @@ namespace sotStateObservation
           computeInertDot(inertia,dinertia,homoWaist,dinert,comVector);
 
         lastInertia_ = inert;
-//        std::cout << "Com: "<< comVector << std::endl;
-//        std::cout << "Inertia: ="<< inert << std::endl;
+
 
         input.resize(42+6*nbContacts,true);
-        for(i=0;i<9;++i){
+        input.setZero();
+
+        for(i=0;i<3;++i){
             input.elementAt(u)=comVector(i);
+            u++;
+        }
+
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1]) input.elementAt(u)=comVector(i+3);
+            u++;
+        }
+
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=comVector(i+6);
             u++;
         }
 
@@ -315,7 +313,7 @@ namespace sotStateObservation
         }
 
         for(i=0;i<6;++i){
-            input.elementAt(u)=dinert(i);
+            if(config_[0] & config_[1]) input.elementAt(u)=dinert(i);
             u++;
         }
 
@@ -336,40 +334,40 @@ namespace sotStateObservation
           comddot(i) = comVector(i+6);
         }
 
-
         angMomentumOut=angMomentum;
-
         dangMomentumOut = m*crossProduct(com,comddot);
 
-
         for(i=0;i<3;++i){
-            input.elementAt(u)=angMomentumOut(i);
+            if(config_[0] & config_[1]) input.elementAt(u)=angMomentumOut(i);
             u++;
         }
 
 
         for(i=0;i<3;++i){
-            input.elementAt(u)=dangMomentumOut(i);
+            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=dangMomentumOut(i);
             u++;
         }
 
-        for(i=0;i<15;++i){
+        for(i=0;i<6;++i){
             input.elementAt(u)=imuVector(i);
             u++;
         }
 
-
-        for(i=0;i<6*nbContacts;++i){
-            input.elementAt(u)=contactsPosition(i)+bias_[i/6](i%6);
-//            if(i==2)
-//            {
-//                input.elementAt(u) += -0.0015;
-//            }
+        for(i=0;i<6;++i){
+            if(config_[0] & config_[1]) input.elementAt(u)=imuVector(i+6);
             u++;
         }
 
-        //cout << "contacts Position: " << contactsPosition << endl;
-        //std::cout << "input" << input << std::endl;
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=imuVector(i+12);
+            u++;
+        }
+
+        for(i=0;i<6*nbContacts;++i){
+
+            input.elementAt(u)=contactsPosition(i)+bias_[i/6](i%6);
+            u++;
+        }
 
         return input;
 

@@ -38,6 +38,10 @@ ADD_LIBRARY(${LIBRARY_NAME}
   dg-imu-model-free-flex-estimation.cc
   dg-imu-model-base-flex-estimation.cc
   input_reconstructor.cc
+  calibrate.cc
+  stack-of-contacts.cc
+  odometry.cc
+  filter.cc
   moving-frame-transformation.cc
   position-state-reconstructor.cc
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
@@ -115,6 +119,8 @@ INSTALL(FILES
   dynamic_graph/sot/application/state_observation/initializations/__init__.py
   dynamic_graph/sot/application/state_observation/initializations/hrp2_model_free_flex_estimator.py
   dynamic_graph/sot/application/state_observation/initializations/hrp2_model_base_flex_estimator.py
+  dynamic_graph/sot/application/state_observation/initializations/hrp2_model_base_flex_estimator_imu_force.py
+  dynamic_graph/sot/application/state_observation/initializations/hrp2_model_base_flex_estimator_imu_force_encoders.py
   dynamic_graph/sot/application/state_observation/initializations/hrp2_mocap_to_sot.py
   DESTINATION ${PYTHON_SITELIB}/dynamic_graph/sot/application/state_observation/initializations
   )
