@@ -41,7 +41,8 @@ namespace sotStateObservation
         forcesSupport2SOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::forcesSupport2"),
         flexibilityComputationTimeSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(double)::flexibilityComputationTime"),
         inovationSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::inovation"),
-        predictionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::prediction")
+        predictionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::prediction"),
+        stateCovarianceSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::stateCovariance")
     {
         signalRegistration (measurementSIN);
         signalRegistration (inputSIN);
@@ -76,6 +77,7 @@ namespace sotStateObservation
         signalRegistration (forcesSupport2SOUT);
         signalRegistration (inovationSOUT);
         signalRegistration (predictionSOUT);
+        signalRegistration (stateCovarianceSOUT);
 
        flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
 				    this, _1, _2));
@@ -155,7 +157,7 @@ namespace sotStateObservation
         predictionSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computePrediction,
                     this, _1, _2));
 
-
+        stateCovarianceSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getStateCovariance, this, _1, _2));
 
         std::ostringstream stateSizeString;
         stateSizeString << stateSize;
@@ -678,6 +680,15 @@ namespace sotStateObservation
 
         return forcesAndMoments;
     }
+
+    dynamicgraph::Vector & DGIMUModelBaseFlexEstimation::getStateCovariance(::dynamicgraph::Vector & stateCovariance, const int& inTime)
+    {
+        stateCovariance=convertVector<dynamicgraph::Vector>(estimator_.getStateCovariance());
+        return stateCovariance;
+    }
+
+
+
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::getForcesSupport1(::dynamicgraph::Vector & forcesSupport1, const int& inTime)
     {

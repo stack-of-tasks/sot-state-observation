@@ -379,7 +379,7 @@ namespace sotStateObservation
 
     void Odometry::computeOdometry(const int& time){
 
-//                std::cout << "\ntimeOdo_=" << time_ << std::endl;
+                std::cout << "\ntimeOdo_=" << time_ << std::endl;
 
         computeStackOfContacts(time);
 
