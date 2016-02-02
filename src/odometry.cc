@@ -294,9 +294,10 @@ namespace sotStateObservation
         if(time!=time_) computeOdometry(time);
 
         stateObservation::Vector3 rpy=(Matrix3(odometryFreeFlyer_.block(0,0,3,3))).eulerAngles(0, 1, 2);
-        stateObservation::Vector stateEncoders = convertVector<stateObservation::Vector>(robotStateInSIN_.access (time)).segment(6,30);
+        stateObservation::Vector robotStateIn = convertVector<stateObservation::Vector>(robotStateInSIN_.access (time));
+        stateObservation::Vector stateEncoders(robotStateIn.tail<30>());
 
-        stateObservation::Vector state; state.resize(36);
+        stateObservation::Vector state(36);
         state << odometryFreeFlyer_.block(0,3,3,1),
                  rpy,
                  stateEncoders;
