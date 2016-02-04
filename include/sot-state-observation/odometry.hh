@@ -35,7 +35,7 @@
 #include <state-observation/tools/miscellaneous-algorithms.hpp>
 #include <sot-state-observation/tools/definitions.hh>
 
-#include <vector>
+#include <Eigen/StdVector>
 #include <algorithm>
 
 namespace sotStateObservation
@@ -155,15 +155,15 @@ namespace sotStateObservation
             std::list<int> stackOfSupports_;
             std::list<int>::iterator iterator;
 
-            std::vector<stateObservation::Matrix4> inputHomoPosition_;
-            std::vector<stateObservation::Vector6> inputPosition_;
-            std::vector<stateObservation::Matrix4> referenceHomoPosition_;
-            std::vector<stateObservation::Vector6> referencePosition_;
-            std::vector<stateObservation::Vector6> inputForces_;
+            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
+            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > referenceHomoPosition_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > referencePosition_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
 
             int pivotSupport_;
 
-            std::vector<stateObservation::Matrix4> odometryHomoPosition_;
+            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > odometryHomoPosition_;
             stateObservation::Matrix4 odometryFreeFlyer_;
 
             stateObservation::Vector alpha_;
@@ -174,6 +174,8 @@ namespace sotStateObservation
             stateObservation::Matrix4 homo_;
             stateObservation::AngleAxis aa_;
 
+        public:
+          EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
       };
 
