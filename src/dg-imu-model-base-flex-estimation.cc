@@ -809,7 +809,7 @@ namespace sotStateObservation
         flexibilitySOUT(inTime);
 
         return sensorSignal = convertVector <dynamicgraph::Vector>
-                                        (estimator_.getPredictedMeasurement());
+                                        (estimator_.getLastPredictedMeasurement());
     }
 
         double& DGIMUModelBaseFlexEstimation::computeFlexibilityComputationTime
@@ -834,6 +834,6 @@ namespace sotStateObservation
         flexibilitySOUT(inTime);
 
         return prediction = convertVector <dynamicgraph::Vector>
-                                        (estimator_.getPrediction());
+                                        (estimator_.getLastPrediction());
     }
 }
