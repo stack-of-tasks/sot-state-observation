@@ -377,7 +377,7 @@ namespace sotStateObservation
 
       docstring  =
                 "\n"
-                "    Sets the variance of the noise of force/toraue sensors. "
+                "    Sets the variance of the noise of force/torque sensors. "
                 "\n";
 
         addCommand(std::string("setForceVariance"),
@@ -388,7 +388,9 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
                     (*this, & DGIMUModelBaseFlexEstimation::setBias ,docstring));
 
-        withComBias_=false;
+        withComBias_=true;
+        estimator_.setWithComBias(withComBias_);
+
         bias_.resize(2); bias_.setZero();
 
         stateObservation::ObserverBase::InputVector input;
