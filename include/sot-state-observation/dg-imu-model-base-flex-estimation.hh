@@ -162,6 +162,11 @@ namespace sotStateObservation
                 bias_=convertVector<stateObservation::Vector>(bias).block(0,0,2,1);
             }
 
+            void setRobotMass(const double & m)
+            {
+                estimator_.setMass(m);
+            }
+
 
             /**
             \name Parameters

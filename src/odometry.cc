@@ -34,7 +34,6 @@
 
 #include <sot-state-observation/odometry.hh>
 
-
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( Odometry, "Odometry" );

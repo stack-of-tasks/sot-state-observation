@@ -401,6 +401,10 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
                     (*this, & DGIMUModelBaseFlexEstimation::setBias ,docstring));
 
+        addCommand(std::string("setRobotMass"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double>
+                    (*this, & DGIMUModelBaseFlexEstimation::setRobotMass ,docstring));
+
         withComBias_=true;
         estimator_.setWithComBias(withComBias_);
 
@@ -512,9 +516,9 @@ namespace sotStateObservation
         {
             currentTime_=inTime;
 #endif
-        const dynamicgraph::Vector & measurement = measurementSIN(inTime);
-        const dynamicgraph::Vector & input = inputSIN(inTime);
-        const unsigned & contactNb = contactsNbrSIN(inTime);
+        const dynamicgraph::Vector & measurement = measurementSIN.access(inTime);
+        const dynamicgraph::Vector & input = inputSIN.access(inTime);
+        const unsigned & contactNb = contactsNbrSIN.access(inTime);
 
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
