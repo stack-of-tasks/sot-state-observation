@@ -182,6 +182,19 @@ namespace sotStateObservation
 	     ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool>
                 (*this, &DGIMUModelBaseFlexEstimation::setOn, docstring));
 
+        //setComBias
+        docstring =
+                "\n"
+                "    Set a guess for the com bias \n"
+                "    takes a tuple of 2 \n"
+                "    floating point mumbers as input \n"
+                "\n";
+
+        addCommand(std::string("setComBiasGuess"),
+             new
+             ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
+                (*this, &DGIMUModelBaseFlexEstimation::setComBiasGuess, docstring));
+
         //setStateGuess
         docstring =
                 "\n"
@@ -635,7 +648,7 @@ namespace sotStateObservation
         flexibilitySOUT(inTime);
 
         stateObservation::Vector3 bias; bias.setZero();
-        if(estimator_.getWithComBias()==true) bias.segment(0,2) = estimator_.getFlexibilityVector().segment(stateObservation::kine::comBias,2);
+        bias.segment(0,2) = estimator_.getFlexibilityVector().segment(stateObservation::kine::comBias,2);
 
         comBias= convertVector<dynamicgraph::Vector>(bias);
         return comBias;

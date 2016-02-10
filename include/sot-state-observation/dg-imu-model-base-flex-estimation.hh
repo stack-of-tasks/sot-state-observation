@@ -60,6 +60,11 @@ namespace sotStateObservation
                     "A state observer which takes an IMU and gives the flexibility state\n";
             }
 
+            void setComBiasGuess (const ::dynamicgraph::Vector & x)
+            {
+                estimator_.setComBiasGuess(convertVector<stateObservation::Vector>(x));
+            }
+
             void setFlexibilityGuess (const ::dynamicgraph::Vector & xh0)
             {
                 estimator_.setFlexibilityGuess(convertVector<stateObservation::Vector>(xh0));
