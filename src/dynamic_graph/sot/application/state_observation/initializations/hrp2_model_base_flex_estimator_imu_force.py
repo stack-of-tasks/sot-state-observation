@@ -23,6 +23,11 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	self.setContactModel(1)
         self.robot.dynamic.inertia.recompute(1)					      
         self.robot.dynamic.waist.recompute(1)	
+        self.robot.frames['leftFootForceSensor'].position.recompute(1)
+	self.robot.frames['rightFootForceSensor'].position.recompute(1)
+	self.robot.device.forceLLEG.recompute(1)
+	self.robot.device.forceRLEG.recompute(1)
+
 
 	self.setWithForceSensors(True)
 	self.setForceVariance(1e-4)
