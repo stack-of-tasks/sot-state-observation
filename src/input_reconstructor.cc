@@ -91,8 +91,12 @@ namespace sotStateObservation
         imuVectorSIN.setConstant(imuVector);
 
         signalRegistration (nbContactsSIN);
+        nbContactsSIN.setConstant(1);
 
         signalRegistration (contactsPositionSIN);
+        dynamicgraph::Vector contactsPosition(6);
+        contactsPositionSIN.setConstant(contactsPosition);
+
 
         std::string docstring;
 
@@ -154,10 +158,8 @@ namespace sotStateObservation
 
 
 
-        // Output that is input
+//        // Output that is input
         signalRegistration (inputSOUT);
-        dynamicgraph::Vector input(42);
-        inputSOUT.setConstant(input);
 
         inputSOUT.setFunction(boost::bind(&InputReconstructor::computeInput, this, _1, _2));
 
