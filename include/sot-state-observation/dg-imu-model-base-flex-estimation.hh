@@ -7,6 +7,8 @@
 #ifndef SOT_DYNAMIC_GRAPH_IMU_MODEL_BASE_FLEX_ESTIMATION_HH
 #define SOT_DYNAMIC_GRAPH_IMU_MODEL_BASE_FLEX_ESTIMATION_HH
 
+#define SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
+
 #include <dynamic-graph/entity.h>
 #include <dynamic-graph/signal-ptr.h>
 #include <dynamic-graph/signal-time-dependent.h>
@@ -56,6 +58,11 @@ namespace sotStateObservation
             {
                 return
                     "A state observer which takes an IMU and gives the flexibility state\n";
+            }
+
+            void setComBiasGuess (const ::dynamicgraph::Vector & x)
+            {
+                estimator_.setComBiasGuess(convertVector<stateObservation::Vector>(x));
             }
 
             void setFlexibilityGuess (const ::dynamicgraph::Vector & xh0)
@@ -155,6 +162,12 @@ namespace sotStateObservation
                 bias_=convertVector<stateObservation::Vector>(bias).block(0,0,2,1);
             }
 
+            void setRobotMass(const double & m)
+            {
+                estimator_.setMass(m);
+            }
+
+
             /**
             \name Parameters
             @{
@@ -234,6 +247,9 @@ namespace sotStateObservation
 
             ::dynamicgraph::Vector& getForcesAndMoments
                         (::dynamicgraph::Vector & forcesAndMoments, const int &inTime);
+
+            dynamicgraph::Vector & getStateCovariance
+                    (::dynamicgraph::Vector & stateCovariance, const int& inTime);
 
             ::dynamicgraph::Vector& getForcesSupport1
                     (::dynamicgraph::Vector & forcesSupport1, const int& inTime);
@@ -369,6 +385,9 @@ namespace sotStateObservation
 
             dynamicgraph::SignalTimeDependent
                                 < ::dynamicgraph::Vector,int> predictionSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                                < ::dynamicgraph::Vector,int> stateCovarianceSOUT;
 
 
             stateObservation::flexibilityEstimation::ModelBaseEKFFlexEstimatorIMU estimator_;

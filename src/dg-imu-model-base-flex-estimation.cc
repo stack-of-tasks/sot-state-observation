@@ -41,7 +41,8 @@ namespace sotStateObservation
         forcesSupport2SOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::forcesSupport2"),
         flexibilityComputationTimeSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(double)::flexibilityComputationTime"),
         inovationSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::inovation"),
-        predictionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::prediction")
+        predictionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::prediction"),
+        stateCovarianceSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::stateCovariance")
     {
         signalRegistration (measurementSIN);
         signalRegistration (inputSIN);
@@ -76,6 +77,7 @@ namespace sotStateObservation
         signalRegistration (forcesSupport2SOUT);
         signalRegistration (inovationSOUT);
         signalRegistration (predictionSOUT);
+        signalRegistration (stateCovarianceSOUT);
 
        flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
 				    this, _1, _2));
@@ -155,7 +157,7 @@ namespace sotStateObservation
         predictionSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computePrediction,
                     this, _1, _2));
 
-
+        stateCovarianceSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getStateCovariance, this, _1, _2));
 
         std::ostringstream stateSizeString;
         stateSizeString << stateSize;
@@ -179,6 +181,19 @@ namespace sotStateObservation
 	     new
 	     ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool>
                 (*this, &DGIMUModelBaseFlexEstimation::setOn, docstring));
+
+        //setComBias
+        docstring =
+                "\n"
+                "    Set a guess for the com bias \n"
+                "    takes a tuple of 2 \n"
+                "    floating point mumbers as input \n"
+                "\n";
+
+        addCommand(std::string("setComBiasGuess"),
+             new
+             ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
+                (*this, &DGIMUModelBaseFlexEstimation::setComBiasGuess, docstring));
 
         //setStateGuess
         docstring =
@@ -375,7 +390,7 @@ namespace sotStateObservation
 
       docstring  =
                 "\n"
-                "    Sets the variance of the noise of force/toraue sensors. "
+                "    Sets the variance of the noise of force/torque sensors. "
                 "\n";
 
         addCommand(std::string("setForceVariance"),
@@ -386,7 +401,13 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
                     (*this, & DGIMUModelBaseFlexEstimation::setBias ,docstring));
 
-        withComBias_=false;
+        addCommand(std::string("setRobotMass"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double>
+                    (*this, & DGIMUModelBaseFlexEstimation::setRobotMass ,docstring));
+
+        withComBias_=true;
+        estimator_.setWithComBias(withComBias_);
+
         bias_.resize(2); bias_.setZero();
 
         stateObservation::ObserverBase::InputVector input;
@@ -495,9 +516,9 @@ namespace sotStateObservation
         {
             currentTime_=inTime;
 #endif
-        const dynamicgraph::Vector & measurement = measurementSIN(inTime);
-        const dynamicgraph::Vector & input = inputSIN(inTime);
-        const unsigned & contactNb = contactsNbrSIN(inTime);
+        const dynamicgraph::Vector & measurement = measurementSIN.access(inTime);
+        const dynamicgraph::Vector & input = inputSIN.access(inTime);
+        const unsigned & contactNb = contactsNbrSIN.access(inTime);
 
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
@@ -631,7 +652,7 @@ namespace sotStateObservation
         flexibilitySOUT(inTime);
 
         stateObservation::Vector3 bias; bias.setZero();
-        if(estimator_.getWithComBias()==true) bias.segment(0,2) = estimator_.getFlexibilityVector().segment(stateObservation::kine::comBias,2);
+        bias.segment(0,2) = estimator_.getFlexibilityVector().segment(stateObservation::kine::comBias,2);
 
         comBias= convertVector<dynamicgraph::Vector>(bias);
         return comBias;
@@ -678,6 +699,15 @@ namespace sotStateObservation
 
         return forcesAndMoments;
     }
+
+    dynamicgraph::Vector & DGIMUModelBaseFlexEstimation::getStateCovariance(::dynamicgraph::Vector & stateCovariance, const int& inTime)
+    {
+        stateCovariance=convertVector<dynamicgraph::Vector>(estimator_.getStateCovariance());
+        return stateCovariance;
+    }
+
+
+
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::getForcesSupport1(::dynamicgraph::Vector & forcesSupport1, const int& inTime)
     {

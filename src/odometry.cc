@@ -34,8 +34,6 @@
 
 #include <sot-state-observation/odometry.hh>
 
-#include <iostream>
-
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( Odometry, "Odometry" );
@@ -217,6 +215,8 @@ namespace sotStateObservation
     Vector& Odometry::getSupportPos1(Vector& supportPos1, const int& time)
     {
         if(time!=time_) computeOdometry(time);
+
+        supportPos1.resize(6);
         if (stackOfSupports_.size()>=1) {
             iterator = stackOfSupports_.begin();
             supportPos1=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[*iterator]));
@@ -241,11 +241,13 @@ namespace sotStateObservation
     Vector& Odometry::getForceSupport1(Vector& forceSupport1, const int& time)
     {
         if(time!=time_) computeOdometry(time);
+
+        forceSupport1.resize(6);
         if (stackOfSupports_.size()>=1) {
             iterator = stackOfSupports_.begin();
             forceSupport1=convertVector<dynamicgraph::Vector>(inputForces_[*iterator]);
         } else {
-            forceSupport1.setZero();
+                        forceSupport1.setZero();
         }
         return forceSupport1;
     }
@@ -253,6 +255,8 @@ namespace sotStateObservation
     Vector& Odometry::getSupportPos2(Vector& supportPos2, const int& time)
     {
         if(time!=time_) computeOdometry(time);
+
+        supportPos2.resize(6);
         if (stackOfSupports_.size()>=2) {
             iterator = stackOfSupports_.begin();
             for(int i=1; i<2; ++i) ++iterator ;
@@ -279,12 +283,14 @@ namespace sotStateObservation
     Vector& Odometry::getForceSupport2(Vector& forceSupport2, const int& time)
     {
         if(time!=time_) computeOdometry(time);
+
+        forceSupport2.resize(6);
         if (stackOfSupports_.size()>=2) {
             iterator = stackOfSupports_.begin();
             for(int i=1; i<2; ++i) ++iterator ;
             forceSupport2=convertVector<dynamicgraph::Vector>(inputForces_[*iterator]);
         } else {
-            forceSupport2.setZero();
+                        forceSupport2.setZero();
         }
         return forceSupport2;
     }
@@ -294,9 +300,10 @@ namespace sotStateObservation
         if(time!=time_) computeOdometry(time);
 
         stateObservation::Vector3 rpy=(Matrix3(odometryFreeFlyer_.block(0,0,3,3))).eulerAngles(0, 1, 2);
-        stateObservation::Vector stateEncoders = convertVector<stateObservation::Vector>(robotStateInSIN_.access (time)).segment(6,30);
+        stateObservation::Vector robotStateIn = convertVector<stateObservation::Vector>(robotStateInSIN_.access (time));
+        stateObservation::Vector stateEncoders(robotStateIn.tail<30>());
 
-        stateObservation::Vector state; state.resize(36);
+        stateObservation::Vector state(36);
         state << odometryFreeFlyer_.block(0,3,3,1),
                  rpy,
                  stateEncoders;
@@ -378,8 +385,6 @@ namespace sotStateObservation
     }
 
     void Odometry::computeOdometry(const int& time){
-
-//                std::cout << "\ntimeOdo_=" << time_ << std::endl;
 
         computeStackOfContacts(time);
 
