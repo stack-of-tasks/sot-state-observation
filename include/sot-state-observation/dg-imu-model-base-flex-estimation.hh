@@ -195,9 +195,11 @@ namespace sotStateObservation
         private:
             /**
             */
-            ::dynamicgraph::Vector& computeFlexibility
-                        (::dynamicgraph::Vector & flexibility, const int& inTime);
+            ::dynamicgraph::Vector& computeState
+                        (::dynamicgraph::Vector & state, const int& inTime);
 
+            ::dynamicgraph::Vector& computeFlexibility
+                          (dynamicgraph::Vector & flexibility, const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexPosition
                         (::dynamicgraph::Vector & flexibilityPosition, const int& inTime);
@@ -310,6 +312,11 @@ namespace sotStateObservation
                             < ::dynamicgraph::Vector, int> forcesSupport1SOUT;
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> forcesSupport2SOUT;
+
+            /**
+            \brief Estimation of the state
+            */
+            dynamicgraph::Signal < ::dynamicgraph::Vector, int> stateSOUT;
 
 
             /**
