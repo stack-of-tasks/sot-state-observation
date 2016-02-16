@@ -66,6 +66,32 @@ namespace sotStateObservation
 
         outputSOUT_.setFunction(boost::bind(&Filter::getOutput, this, _1, _2));
 
+        docstring  =
+                "\n"
+                "    Get the wondow size \n"
+                "\n";
+
+        addCommand(std::string("getWindowSize"),
+             new
+             ::dynamicgraph::command::Getter <Filter,unsigned>
+                (*this, &Filter::getWindowSize, docstring));
+
+        outputSOUT_.setFunction(boost::bind(&Filter::getOutput, this, _1, _2));
+
+        docstring  =
+                "\n"
+                "    Get the filter type (0 by default)\n"
+                "    \t 0: Gaussian filter \n"
+                "    \t 1: Average filter \n"
+                "\n";
+
+        addCommand(std::string("getFilter"),
+             new
+             ::dynamicgraph::command::Getter <Filter,unsigned>
+                (*this, &Filter::getFilter, docstring));
+
+        outputSOUT_.setFunction(boost::bind(&Filter::getOutput, this, _1, _2));
+
         updateDistribution();
 
     }
@@ -99,7 +125,7 @@ namespace sotStateObservation
     {
         double mean=0;
         double stddev=std::sqrt((n-mean)*(n-mean)/4.6); // the first element of the window correspond to 10% of the last element.
-        distr_=gaussianDistribution(n,mean,stddev);
+        return gaussianDistribution(n,mean,stddev);
     }
 
     void Filter::updateDistribution()

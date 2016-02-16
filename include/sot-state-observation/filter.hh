@@ -71,18 +71,31 @@ namespace sotStateObservation
                     "Entity that filter an input";
             }
 
-            void setOn(const bool& b){
+            void setOn(const bool& b)
+            {
                 on_=b;
             }
 
-            void setWindowSize(const unsigned& n){
+            void setWindowSize(const unsigned & n){
                 n_=n;
                 updateDistribution();
+            }
+
+            unsigned getWindowSize() const
+            {
+                const unsigned & n(n_);
+                return n;
             }
 
             void setFilter(const unsigned int & t)
             {
                 filter_=t;
+            }
+
+            unsigned int getFilter() const
+            {
+                const unsigned int & filter(filter_);
+                return filter;
             }
 
             dynamicgraph::Vector& getOutput(dynamicgraph::Vector& output, const int& time);
