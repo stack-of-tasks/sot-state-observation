@@ -120,6 +120,7 @@ namespace sotStateObservation
             unsigned derivationNumberOfSamples_;
 
             stateObservation::Vector vec_;
+            stateObservation::Vector distr_;
         };
 
 } // namespace sotStateObservation

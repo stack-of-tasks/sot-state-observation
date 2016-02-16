@@ -30,6 +30,7 @@ namespace sotStateObservation
                 "PositionStateReconstructor("+inName+")::output(vector)::sout")
     {
         derivationNumberOfSamples_=1;
+        distr_.resize(derivationNumberOfSamples_);
 
         signalRegistration (inputSIN);
         signalRegistration (inputFormatSIN);
@@ -184,6 +185,10 @@ namespace sotStateObservation
 
         size_t outputIndex = 0;
         size_t outputSize = 0;
+
+        // Update distribution for filtered derivations
+        distr_.resize(derivationNumberOfSamples_);
+        distr_=gaussianDistribution(derivationNumberOfSamples_);
 
         /////////////////////
         //Linear position
