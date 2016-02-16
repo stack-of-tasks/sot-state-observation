@@ -100,6 +100,7 @@ namespace sotStateObservation
                 // Differents distribution for different filtering
             stateObservation::Vector averageDistribution(const unsigned n);
             stateObservation::Vector gaussianDistribution(const unsigned n, const double mean, const double stddev);
+            stateObservation::Vector updateGaussianDistribution(const unsigned n);
 
             /// Signals
             dynamicgraph::SignalPtr <Vector, int> inputSIN_;

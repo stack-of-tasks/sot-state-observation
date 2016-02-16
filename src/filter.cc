@@ -81,11 +81,16 @@ namespace sotStateObservation
         return vec_;
     }
 
-    void Filter::updateDistribution()
+    stateObservation::Vector Filter::updateGaussianDistribution(const unsigned n)
     {
         double mean=0;
-        double stddev=std::sqrt((u_.size()-mean)*(u_.size()-mean)/4.6); // the first element of the window correspond to 10% of the last element.
-        distr_=gaussianDistribution(u_.size(),mean,stddev); //averageDistribution(u_.size());//
+        double stddev=std::sqrt((n-mean)*(n-mean)/4.6); // the first element of the window correspond to 10% of the last element.
+        distr_=gaussianDistribution(n,mean,stddev);
+    }
+
+    void Filter::updateDistribution()
+    {
+        distr_=updateGaussianDistribution(u_.size()); //averageDistribution(u_.size());//
     }
 
     dynamicgraph::Vector& Filter::getOutput(dynamicgraph::Vector& output, const int& time)
