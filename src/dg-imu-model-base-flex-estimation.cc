@@ -429,6 +429,10 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double>
                     (*this, & DGIMUModelBaseFlexEstimation::setRobotMass ,docstring));
 
+        addCommand(std::string("getRobotMass"),
+                   new ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,double>
+                    (*this, & DGIMUModelBaseFlexEstimation::getRobotMass ,docstring));
+
         withComBias_=true;
         estimator_.setWithComBias(withComBias_);
 

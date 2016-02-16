@@ -166,7 +166,12 @@ namespace sotStateObservation
 
             void setRobotMass(const double & m)
             {
-                estimator_.setMass(m);
+                estimator_.setRobotMass(m);
+            }
+
+            double getRobotMass() const
+            {
+                return estimator_.getRobotMass();
             }
 
 
