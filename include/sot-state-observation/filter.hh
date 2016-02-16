@@ -80,6 +80,11 @@ namespace sotStateObservation
                 updateDistribution();
             }
 
+            void setFilter(const unsigned int & t)
+            {
+                filter_=t;
+            }
+
             dynamicgraph::Vector& getOutput(dynamicgraph::Vector& output, const int& time);
 
             /**
@@ -111,6 +116,7 @@ namespace sotStateObservation
 
             bool on_;
             unsigned int time_;
+            unsigned int filter_;
 
             unsigned int n_; // Size of the window
             std::list<stateObservation::Vector> u_; // list of maximum size n_ with vector of size ioSize_ as elements

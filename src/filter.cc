@@ -23,7 +23,7 @@ namespace sotStateObservation
         Entity(inName),
         inputSIN_ (NULL, "Filter("+inName+")::input(vector)::sin"),
         outputSOUT_ (NULL, "Filter("+inName+")::output(vector)::sout"),
-        on_(false), time_(0), n_(10), distr_(10)
+        on_(false), time_(0), n_(10), distr_(10), filter_(0)
     {
 
         signalRegistration (inputSIN_ << outputSOUT_);
@@ -49,6 +49,20 @@ namespace sotStateObservation
              new
              ::dynamicgraph::command::Setter <Filter,unsigned>
                 (*this, &Filter::setWindowSize, docstring));
+
+        outputSOUT_.setFunction(boost::bind(&Filter::getOutput, this, _1, _2));
+
+        docstring  =
+                "\n"
+                "    Set the filter type (0 by default)\n"
+                "    \t 0: Gaussian filter \n"
+                "    \t 1: Average filter \n"
+                "\n";
+
+        addCommand(std::string("setFilter"),
+             new
+             ::dynamicgraph::command::Setter <Filter,unsigned>
+                (*this, &Filter::setFilter, docstring));
 
         outputSOUT_.setFunction(boost::bind(&Filter::getOutput, this, _1, _2));
 
@@ -90,7 +104,13 @@ namespace sotStateObservation
 
     void Filter::updateDistribution()
     {
-        distr_=updateGaussianDistribution(u_.size()); //averageDistribution(u_.size());//
+        switch (filter_)
+        {
+            case 0: distr_=updateGaussianDistribution(u_.size());
+            break;
+            case 1: distr_=averageDistribution(u_.size());
+            break;
+        }
     }
 
     dynamicgraph::Vector& Filter::getOutput(dynamicgraph::Vector& output, const int& time)
