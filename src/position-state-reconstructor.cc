@@ -129,6 +129,30 @@ namespace sotStateObservation
     {
     }
 
+    stateObservation::Vector PositionStateReconstructor::averageDistribution(const unsigned n)
+    {
+        vec_.resize(n);
+        vec_.setOnes();
+        vec_=double(1./double(n))*vec_;
+        return vec_;
+    }
+
+    stateObservation::Vector PositionStateReconstructor::gaussianDistribution(const unsigned n)
+    {
+        double mean=0;
+        double stddev=std::sqrt((n-mean)*(n-mean)/4.6); // the first element of the window correspond to 10% of the last element.
+
+        vec_.resize(n);
+        double sum=0.;
+        for(int i=0; i<vec_.size();++i)
+        {
+            vec_[i]=(1./(stddev*std::sqrt(6.28)))*std::exp(-0.5*((i-mean)/stddev)*((i-mean)/stddev));
+            sum+=vec_[i];
+        }
+        vec_=(1./sum)*vec_;
+        return vec_;
+    }
+
     dynamicgraph::Vector& PositionStateReconstructor::computeOutput
                 (dynamicgraph::Vector & output, const int& inTime)
     {

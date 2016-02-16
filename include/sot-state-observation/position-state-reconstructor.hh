@@ -85,6 +85,9 @@ namespace sotStateObservation
             static const std::string CLASS_NAME;
 
         private:
+            stateObservation::Vector averageDistribution(const unsigned n);
+            stateObservation::Vector gaussianDistribution(const unsigned n);
+
             /**
             Compute the control law
             */
@@ -115,6 +118,8 @@ namespace sotStateObservation
             double dt_;
 
             unsigned derivationNumberOfSamples_;
+
+            stateObservation::Vector vec_;
         };
 
 } // namespace sotStateObservation
