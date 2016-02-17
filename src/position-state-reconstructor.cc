@@ -330,9 +330,16 @@ namespace sotStateObservation
                 while (linearVelocities_.size()>derivationNumberOfSamples_)
                     linearVelocities_.pop_front();
 
-                linearVelocity = 1.0 /linearVelocities_.size()*
-                    std::accumulate(linearVelocities_.begin(),
-                        linearVelocities_.end(),zero);
+//                linearVelocity = 1.0 /linearVelocities_.size()*
+//                    std::accumulate(linearVelocities_.begin(),
+//                        linearVelocities_.end(),zero);
+
+                int i=0; linearVelocity.setZero();
+                for (iterator=linearVelocities_.begin(); iterator != linearVelocities_.end(); ++iterator)
+                {
+                    linearVelocity+=distr_[i]*(*iterator);
+                    ++i;
+                }
             }
             else
             {
@@ -383,9 +390,16 @@ namespace sotStateObservation
                 while (angularVelocities_.size()>derivationNumberOfSamples_)
                     angularVelocities_.pop_front();
 
-                angularVelocity = 1.0 / angularVelocities_.size() *
-                    std::accumulate( angularVelocities_.begin(),
-                        angularVelocities_.end(),zero) ;
+//                angularVelocity = 1.0 / angularVelocities_.size() *
+//                    std::accumulate( angularVelocities_.begin(),
+//                        angularVelocities_.end(),zero) ;
+
+                int i=0; angularVelocity.setZero();
+                for (iterator=angularVelocities_.begin(); iterator != angularVelocities_.end(); ++iterator)
+                {
+                    angularVelocity+=distr_[i]*(*iterator);
+                    ++i;
+                }
             }
             else
             {
@@ -433,9 +447,16 @@ namespace sotStateObservation
                 while (linearAccelerations_.size()>derivationNumberOfSamples_)
                         linearAccelerations_.pop_front();
 
-                linearAcceleration = 1.0 / linearAccelerations_.size() *
-                    std::accumulate(linearAccelerations_.begin(),
-                        linearAccelerations_.end(), zero);
+//                linearAcceleration = 1.0 / linearAccelerations_.size() *
+//                    std::accumulate(linearAccelerations_.begin(),
+//                        linearAccelerations_.end(), zero);
+
+                int i=0; linearAcceleration.setZero();
+                for (iterator=linearAccelerations_.begin(); iterator != linearAccelerations_.end(); ++iterator)
+                {
+                    linearAcceleration+=distr_[i]*(*iterator);
+                    ++i;
+                }
             }
             else
             {
@@ -477,9 +498,16 @@ namespace sotStateObservation
                     while (angularAccelerations_.size()>derivationNumberOfSamples_)
                         angularAccelerations_.pop_front();
 
-                    angularAcceleration = 1.0 / angularAccelerations_.size() *
-                        std::accumulate( angularAccelerations_.begin(),
-                           angularAccelerations_.end(), zero);
+//                    angularAcceleration = 1.0 / angularAccelerations_.size() *
+//                        std::accumulate( angularAccelerations_.begin(),
+//                           angularAccelerations_.end(), zero);
+
+                    int i=0; angularAcceleration.setZero();
+                    for (iterator=angularAccelerations_.begin(); iterator != angularAccelerations_.end(); ++iterator)
+                    {
+                        angularAcceleration+=distr_[i]*(*iterator);
+                        ++i;
+                    }
             }
             else
             {

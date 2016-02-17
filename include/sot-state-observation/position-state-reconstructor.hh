@@ -121,6 +121,9 @@ namespace sotStateObservation
 
             stateObservation::Vector vec_;
             stateObservation::Vector distr_;
+
+            std::deque<dynamicgraph::Vector>::iterator iterator;
+
         };
 
 } // namespace sotStateObservation

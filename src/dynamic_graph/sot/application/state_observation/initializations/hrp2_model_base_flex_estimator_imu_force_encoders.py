@@ -29,8 +29,8 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 	self.setWithForceSensors(True)
 	self.setForceVariance(1e-4)
-	self.setWithComBias(False)
-	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6)))
+#	self.setWithComBias(False)
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(1.e-13,)*2)))
 	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3))) 
 
 	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
