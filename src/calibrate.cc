@@ -34,7 +34,7 @@ namespace sotStateObservation
         signalRegistration (imuSIN);
         imuSIN.setConstant(imuVector);
         signalRegistration (imuSOUT);
-        imuSOUT.setConstant(imuVector);
+//        imuSOUT.setConstant(imuVector);
         sumImuIn_.setZero();
         R_.setIdentity();
 
@@ -43,7 +43,7 @@ namespace sotStateObservation
         signalRegistration (contactsPositionSIN);
         contactsPositionSIN.setConstant(contactsPositionVector);
         signalRegistration (contactsPositionSOUT);
-        contactsPositionSOUT.setConstant(contactsPositionVector);
+//        contactsPositionSOUT.setConstant(contactsPositionVector);
         sumContactsPositionIn_.setZero();
         tc_.setZero();
 

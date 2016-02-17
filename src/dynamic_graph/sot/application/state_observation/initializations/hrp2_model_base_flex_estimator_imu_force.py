@@ -21,10 +21,6 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.setSamplingPeriod(0.005)  
         self.robot = robot
 	self.setContactModel(1)
-        self.robot.dynamic.inertia.recompute(1)					      
-        self.robot.dynamic.waist.recompute(1)	
-        self.robot.frames['leftFootForceSensor'].position.recompute(1)
-	self.robot.frames['rightFootForceSensor'].position.recompute(1)
 
 	self.setWithForceSensors(True)
 	self.setForceVariance(1e-4)
@@ -115,6 +111,8 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.IMUVector.inputFormat.value  = '001111'
         self.IMUVector.outputFormat.value = '011111'
         self.IMUVector.setFiniteDifferencesInterval(2)
+	self.inputPosVel.sout.recompute(0)
+	self.IMUVector.setLastVector(self.inputPosVel.sout.value+(0.,)*6)
 
         	# CoM and derivatives
         self.com=self.robot.dynamic.com
@@ -131,11 +129,21 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.comVector.inputFormat.value  = '000101'
         self.comVector.outputFormat.value = '010101'  
 	self.comVector.setFiniteDifferencesInterval(20)
+	self.DCom.sout.recompute(0)
+	self.comVector.setLastVector(self.com.value+(0.,)*15)#(0.,)*3+self.DCom.sout.value+(0.,)*9)
 
 		# Compute derivative of Angular Momentum
         self.angMomDerivator = Derivator_of_Vector('angMomDerivator')
         plug(self.robot.dynamic.angularmomentum,self.angMomDerivator.sin)
-        self.angMomDerivator.dt.value = self.robot.timeStep          
+        self.angMomDerivator.dt.value = self.robot.timeStep 
+
+#        self.angMomDerivator = PositionStateReconstructor (name+'angMomDerivator')
+#        plug(self.robot.dynamic.angularmomentum,self.angMomDerivator.sin)
+#        self.angMomDerivator.inputFormat.value  = '000001'
+#        self.angMomDerivator.outputFormat.value = '000100'  
+#	self.angMomDerivator.setFiniteDifferencesInterval(2)
+#	self.robot.dynamic.angularmomentum.recompute(0)
+#	self.angMomDerivator.setLastVector(self.robot.dynamic.angularmomentum.value+(0.,)*15)       
         
         	# Concatenate with InputReconstructor entity
         self.inputVector=InputReconstructor(name+'inputVector')
@@ -148,6 +156,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug(self.IMUVector.sout,self.inputVector.imuVector)
         plug(self.odometry.nbSupport,self.inputVector.nbContacts)
 	plug(self.contacts.sout,self.inputVector.contactsPosition)
+	self.inputVector.setLastInertia(self.robot.dynamic.inertia.value)
 
         self.inputVector.setSamplingPeriod(robot.timeStep)
         self.inputVector.setFDInertiaDot(True)     

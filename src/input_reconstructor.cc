@@ -33,7 +33,7 @@ namespace sotStateObservation
         nbContactsSIN(0x0 , "InputReconstructor("+inName+")::input(unsigned)::nbContacts"),
         contactsPositionSIN(0x0 , "InputReconstructor("+inName+")::input(vector)::contactsPosition"),
         inputSOUT("InputReconstructor("+inName+")::output(vector)::input"),
-        lastInertia_(6), config_(3)
+        lastInertia_(6), config_(3),derivateInertiaFD_(false)
     {
         bias_[0].resize(6);
         bias_[1].resize(6);
@@ -154,6 +154,16 @@ namespace sotStateObservation
              new
              ::dynamicgraph::command::Setter <InputReconstructor,dynamicgraph::Vector>
                 (*this, &InputReconstructor::setConfig, docstring));
+
+        docstring =
+                "\n"
+                "    Set lastInertia_\n"
+                "\n";
+
+        addCommand(std::string("setLastInertia"),
+             new
+             ::dynamicgraph::command::Setter <InputReconstructor,dynamicgraph::Matrix>
+                (*this, &InputReconstructor::setLastInertia, docstring));
 
 
 

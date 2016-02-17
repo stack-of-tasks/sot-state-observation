@@ -78,6 +78,13 @@ namespace sotStateObservation
                 }
             }
 
+            void setLastInertia(const dynamicgraph::Matrix & inert)
+            {
+                const dynamicgraph::Matrix& homoWaist=positionWaistSIN.access(currentTime);
+                const dynamicgraph::Vector& comVector=comVectorSIN.access(currentTime);
+                computeInert(inert,homoWaist,lastInertia_,comVector);
+            }
+
                     /**
             \name Parameters
             @{

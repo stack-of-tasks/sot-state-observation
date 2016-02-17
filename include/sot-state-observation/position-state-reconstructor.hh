@@ -74,6 +74,11 @@ namespace sotStateObservation
                 return derivationNumberOfSamples_;
             }
 
+            void setLastVector (const dynamicgraph::Vector & v)
+            {
+                lastVector_=v;
+            }
+
             /**
             \name Parameters
             @{

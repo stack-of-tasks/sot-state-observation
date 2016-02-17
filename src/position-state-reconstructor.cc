@@ -51,7 +51,7 @@ namespace sotStateObservation
         dynamicgraph::Vector ouput(size_t(0));
 
         inputSIN.setConstant(input);
-        outputSOUT.setConstant(ouput);
+//        outputSOUT.setConstant(ouput);
 
         outputSOUT.setFunction(boost::bind(&PositionStateReconstructor::computeOutput,
 				    this, _1, _2));
@@ -121,6 +121,17 @@ namespace sotStateObservation
 	     new
 	     dynamicgraph::command::Getter <PositionStateReconstructor,int>
             (*this, &PositionStateReconstructor::getFiniteDifferencesInterval, docstring));
+
+        //setLastVector
+        docstring =
+                "\n"
+                "    Sets lastVector_ \n"
+                "\n";
+
+        addCommand(std::string("setLastVector"),
+             new
+             dynamicgraph::command::Setter <PositionStateReconstructor,dynamicgraph::Vector>
+            (*this, &PositionStateReconstructor::setLastVector, docstring));
 
 
 
