@@ -552,17 +552,17 @@ namespace sotStateObservation
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
 
-        // Update the process noise covariance
-        if(recomputeQ_) {
-            estimator_.setProcessNoiseCovariance(Q_);
-            recomputeQ_=false;
-        }
-
         // Update of inputSize_ considering contactsNb
         if (contactNumber_!= contactNb)
         {
             contactNumber_ = contactNb;
             estimator_.setContactsNumber(contactNb);
+        }
+
+        // Update the process noise covariance
+        if(recomputeQ_) {
+            estimator_.setProcessNoiseCovariance(Q_);
+            recomputeQ_=false;
         }
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
