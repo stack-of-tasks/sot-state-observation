@@ -38,14 +38,7 @@ namespace sotStateObservation
 
             ~DGIMUModelBaseFlexEstimation();
 
-            /// Enable or disable the estimation
-            void setOn(const bool & b)
-            {
-                bool a;
-                a=b;
-                estimator_.setOn(a);
-                //std::cout << "\n\n\n\n Estimator is set to " << b << "\n\n\n" << std::endl;
-            }
+
 
             /// Each entity should provide the name of the class it belongs to
             virtual const std::string& getClassName (void) const
@@ -63,6 +56,15 @@ namespace sotStateObservation
             void setComBiasGuess (const ::dynamicgraph::Vector & x)
             {
                 estimator_.setComBiasGuess(convertVector<stateObservation::Vector>(x));
+			}
+			
+            /// Enable or disable the estimation
+            void setOn(const bool & b)
+            {
+                bool a;
+                a=b;
+                estimator_.setOn(a);
+                //std::cout << "\n\n\n\n Estimator is set to " << b << "\n\n\n" << std::endl;
             }
 
             void setFlexibilityGuess (const ::dynamicgraph::Vector & xh0)
@@ -166,6 +168,18 @@ namespace sotStateObservation
             {
                 estimator_.setMass(m);
             }
+
+
+            void setWithAbsolutePosition(const bool & b)
+            {
+              estimator_.setWithAbsolutePos(b);
+            }
+
+            void setAbsolutePosVariance(const double & d)
+            {
+                estimator_.setAbsolutePosVariance(d);
+            }
+
 
 
             /**

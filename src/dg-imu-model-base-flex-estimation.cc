@@ -387,8 +387,18 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool >
                     (*this, & DGIMUModelBaseFlexEstimation::setWithComBias,docstring));
 
+        docstring  =
+                "\n"
+                "    Sets if an absolute position sensor is used or not. "
+                " make sure the measurement vectors already contain the measurement signals. \n"
+                "\n";
 
-      docstring  =
+        addCommand(std::string("setAbsolutePosition"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool >
+                    (*this, & DGIMUModelBaseFlexEstimation::setWithAbsolutePosition,docstring));
+
+
+        docstring  =
                 "\n"
                 "    Sets the variance of the noise of force/torque sensors. "
                 "\n";
@@ -396,6 +406,15 @@ namespace sotStateObservation
         addCommand(std::string("setForceVariance"),
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double >
                     (*this, & DGIMUModelBaseFlexEstimation::setForceVariance,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the variance of the noise of absolute position sensors. "
+                "\n";
+
+        addCommand(std::string("setAbsolutePosVariance"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double >
+                    (*this, & DGIMUModelBaseFlexEstimation::setAbsolutePosVariance,docstring));
 
         addCommand(std::string("setVirtualBiasCom"),
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
@@ -539,7 +558,7 @@ namespace sotStateObservation
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
 
         stateObservation::Vector inputWBias = convertVector<stateObservation::Vector>(input);
-        inputWBias.block(0,0,2,1)=inputWBias.block(0,0,2,1)+bias_;
+        inputWBias.block(0,0,2,1)=inputWBias.block(0,0,2,1)+bias_;//for test purpose only
 
         estimator_.setMeasurementInput(inputWBias);
 
