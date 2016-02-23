@@ -1,6 +1,6 @@
-# Copyright 2010, Nicolas Mansard, LAAS-CNRS
+# Copyright 2010, Nicolas Mansard, Mehdi Benallegue, LAAS-CNRS
 #
-# This file is part of sot-dyninv.
+# This file is part of sot-state-observation.
 # sot-dyninv is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License
 # as published by the Free Software Foundation, either version 3 of
@@ -51,6 +51,7 @@ SET(${PROJECT_NAME}_HEADERS
     include/sot-state-observation/dg-imu-model-free-flex-estimation.hh
     include/sot-state-observation/dg-imu-model-base-flex-estimation.hh
     include/sot-state-observation/input_reconstructor.hh  
+    include/sot-state-observation/drift-from-mocap.hh
     include/sot-state-observation/calibrate.hh
     include/sot-state-observation/moving-frame-transformation.hh
     include/sot-state-observation/position-state-reconstructor.hh

@@ -44,6 +44,7 @@ ADD_LIBRARY(${LIBRARY_NAME}
   filter.cc
   moving-frame-transformation.cc
   position-state-reconstructor.cc
+  drift-from-mocap.cc
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
   )
 
