@@ -47,7 +47,7 @@ namespace sotStateObservation
             virtual std::string getDocString () const
             {
                 return
-                    "Entity that take signals input and concatenate them";
+                    "Entity that reconstructs the input signal for the state observation for HRP-2";
             }
 
             void setFootBias1 (const ::dynamicgraph::Vector & b)
