@@ -433,7 +433,7 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,double>
                     (*this, & DGIMUModelBaseFlexEstimation::getRobotMass ,docstring));
 
-        withComBias_=true;
+        withComBias_=false;
         estimator_.setWithComBias(withComBias_);
 
         bias_.resize(2); bias_.setZero();
@@ -524,9 +524,8 @@ namespace sotStateObservation
         dynamicgraph::Vector state(estimator_.getStateSize()+estimator_.getWithComBias()*2);
         state=computeState(state,0);
 
-//        Q_=estimator_.getProcessNoiseCovariance();
-
-
+        Q_=estimator_.getProcessNoiseCovariance();
+        recomputeQ_=false;
     }
 
     DGIMUModelBaseFlexEstimation::~DGIMUModelBaseFlexEstimation()
