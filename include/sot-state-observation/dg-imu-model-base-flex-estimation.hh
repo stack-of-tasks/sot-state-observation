@@ -177,7 +177,8 @@ namespace sotStateObservation
 
             void setRobotMass(const double & m)
             {
-                estimator_.setRobotMass(m);
+                setRobotMass_=true;
+                robotMass_=m;
             }
 
             double getRobotMass() const
@@ -478,6 +479,9 @@ namespace sotStateObservation
 
             bool setForceVariance_;
             double forceVariance_;
+
+            bool setRobotMass_;
+            double robotMass_;
 
         };
 

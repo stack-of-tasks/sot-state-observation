@@ -552,6 +552,9 @@ namespace sotStateObservation
 
         setForceVariance_=false;
         forceVariance_=1.e-4;
+
+        setRobotMass_=false;
+        robotMass_=stateObservation::hrp2::m;
     }
 
     DGIMUModelBaseFlexEstimation::~DGIMUModelBaseFlexEstimation()
@@ -590,6 +593,7 @@ namespace sotStateObservation
         if(setKtv_==true) setKtv_=false; estimator_.setKfe(Ktv_);
         if(withForcesMeasurements_!=estimator_.getWithForcesMeasurements()) estimator_.setWithForcesMeasurements(withForcesMeasurements_);
         if(setForceVariance_=true) setForceVariance_=false; estimator_.setForceVariance(forceVariance_);
+        if(setRobotMass_=true) setRobotMass_=false; estimator_.setRobotMass(robotMass_);
 
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
