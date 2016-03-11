@@ -87,7 +87,8 @@ namespace sotStateObservation
 
             void setSamplingPeriod(const double & dt)
             {
-                estimator_.setSamplingPeriod(dt);
+                setDt_=true;
+                dt_=dt;
             }
 
             void setContactModel(const unsigned & nb)
@@ -445,6 +446,9 @@ namespace sotStateObservation
 
             stateObservation::Matrix Q_;
             bool recomputeQ_;
+
+            double dt_;
+            bool setDt_;
 
         };
 
