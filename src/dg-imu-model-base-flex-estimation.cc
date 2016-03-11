@@ -542,6 +542,12 @@ namespace sotStateObservation
         contactModel_=0;
         setContactModel_=false;
 
+        measurementNoiseCovariance_.resize(estimator_.getMeasurementSize(),estimator_.getMeasurementSize());
+        setMeasurementNoiseCovariance_=false;
+
+        stateObservation::Matrix3 K; K.setIdentity();
+        Kfe_=K; Kfv_=K; Kte_=K; Ktv_=K;
+
     }
 
     DGIMUModelBaseFlexEstimation::~DGIMUModelBaseFlexEstimation()
@@ -573,6 +579,11 @@ namespace sotStateObservation
         if(setFlexibilityCovariance_==true) setFlexibilityCovariance_=false; estimator_.setFlexibilityCovariance(flexibilityCovariance_);
         if(setDt_==true) setDt_=false; estimator_.setSamplingPeriod(dt_);
         if(setContactModel_==true) setContactModel_=false; estimator_.setContactModel(contactModel_);
+        if(setMeasurementNoiseCovariance_==true) setMeasurementNoiseCovariance_=false; estimator_.setMeasurementNoiseCovariance(measurementNoiseCovariance_);
+        if(setKfe_==true) setKfe_=false; estimator_.setKfe(Kfe_);
+        if(setKfv_==true) setKfv_=false; estimator_.setKfe(Kfv_);
+        if(setKte_==true) setKte_=false; estimator_.setKfe(Kte_);
+        if(setKtv_==true) setKtv_=false; estimator_.setKfe(Ktv_);
 
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));

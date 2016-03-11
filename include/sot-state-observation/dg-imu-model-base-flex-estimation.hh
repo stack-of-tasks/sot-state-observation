@@ -110,7 +110,8 @@ namespace sotStateObservation
 
             void setMeasurementNoiseCovariance(const ::dynamicgraph::Matrix & r)
             {
-                estimator_.setMeasurementNoiseCovariance(convertMatrix<stateObservation::Matrix>(r));
+                setMeasurementNoiseCovariance_=true;
+                measurementNoiseCovariance_=convertMatrix<stateObservation::Matrix>(r);
             }
 
             ::dynamicgraph::Matrix getMeasurementNoiseCovariance() const
@@ -130,22 +131,26 @@ namespace sotStateObservation
 
             void setKfe(const dynamicgraph::Matrix & m)
             {
-                estimator_.setKfe(convertMatrix<stateObservation::Matrix3>(m));
+                setKfe_=true;
+                Kfe_=convertMatrix<stateObservation::Matrix3>(m);
             }
 
             void setKfv(const dynamicgraph::Matrix & m)
             {
-                estimator_.setKfv(convertMatrix<stateObservation::Matrix3>(m));
+                setKfv_=true;
+                Kfv_=convertMatrix<stateObservation::Matrix3>(m);
             }
 
             void setKte(const dynamicgraph::Matrix & m)
             {
-                estimator_.setKte(convertMatrix<stateObservation::Matrix3>(m));
+                setKte_=true;
+                Kte_=convertMatrix<stateObservation::Matrix3>(m);
             }
 
             void setKtv(const dynamicgraph::Matrix & m)
             {
-                estimator_.setKtv(convertMatrix<stateObservation::Matrix3>(m));
+                setKtv_=true;
+                Ktv_=convertMatrix<stateObservation::Matrix3>(m);
             }
 
 
@@ -454,7 +459,20 @@ namespace sotStateObservation
             bool setContactModel_;
             unsigned contactModel_;
 
+            bool setMeasurementNoiseCovariance_;
+            stateObservation::Matrix measurementNoiseCovariance_;
 
+            bool setKfe_;
+            stateObservation::Matrix3 Kfe_;
+
+            bool setKfv_;
+            stateObservation::Matrix3 Kfv_;
+
+            bool setKte_;
+            stateObservation::Matrix3 Kte_;
+
+            bool setKtv_;
+            stateObservation::Matrix3 Ktv_;
 
         };
 
