@@ -533,6 +533,9 @@ namespace sotStateObservation
         flexibilityGuess_.resize(estimator_.getStateSize()); flexibilityGuess_.setZero();
         setFlexibilityGuess_=false;
 
+        flexibilityCovariance_.resize(estimator_.getStateSize()); flexibilityCovariance_.setZero();
+        setFlexibilityCovariance_=false;
+
     }
 
     DGIMUModelBaseFlexEstimation::~DGIMUModelBaseFlexEstimation()
@@ -561,6 +564,7 @@ namespace sotStateObservation
         if(setComBiasGuess_==true)  setComBiasGuess_=false; estimator_.setComBiasGuess(comBiasGuess_);
         if(recomputeQ_) recomputeQ_=false; estimator_.setProcessNoiseCovariance(Q_);
         if(setFlexibilityGuess_==true) setFlexibilityGuess_=false; estimator_.setFlexibilityGuess(flexibilityGuess_);
+        if(setFlexibilityCovariance_==true) setFlexibilityCovariance_=false; estimator_.setFlexibilityCovariance(flexibilityCovariance_);
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
 

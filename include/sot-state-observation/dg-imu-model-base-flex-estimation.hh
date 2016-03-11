@@ -76,7 +76,8 @@ namespace sotStateObservation
 
             void setFlexibilityCovariance (const ::dynamicgraph::Matrix & p)
             {
-                estimator_.setFlexibilityCovariance(convertMatrix<stateObservation::Matrix>(p));
+                setFlexibilityCovariance_=true;
+                flexibilityCovariance_=convertMatrix<stateObservation::Matrix>(p);
             }
 
             ::dynamicgraph::Matrix  getFlexibilityCovariance () const
@@ -435,6 +436,9 @@ namespace sotStateObservation
 
             stateObservation::Vector flexibilityGuess_;
             bool setFlexibilityGuess_;
+
+            stateObservation::Vector flexibilityCovariance_;
+            bool setFlexibilityCovariance_;
 
             stateObservation::Vector comBiasGuess_;
             bool setComBiasGuess_;
