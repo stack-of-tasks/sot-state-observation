@@ -166,7 +166,8 @@ namespace sotStateObservation
 
             void setForceVariance(const double & d)
             {
-                estimator_.setForceVariance(d);
+                setForceVariance_=true;
+                forceVariance_=d;
             }
 
             void setBias(const dynamicgraph::Vector & bias)
@@ -474,6 +475,9 @@ namespace sotStateObservation
 
             bool setKtv_;
             stateObservation::Matrix3 Ktv_;
+
+            bool setForceVariance_;
+            double forceVariance_;
 
         };
 

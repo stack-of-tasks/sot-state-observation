@@ -550,6 +550,8 @@ namespace sotStateObservation
 
         withForcesMeasurements_=false;
 
+        setForceVariance_=false;
+        forceVariance_=1.e-4;
     }
 
     DGIMUModelBaseFlexEstimation::~DGIMUModelBaseFlexEstimation()
@@ -587,6 +589,7 @@ namespace sotStateObservation
         if(setKte_==true) setKte_=false; estimator_.setKfe(Kte_);
         if(setKtv_==true) setKtv_=false; estimator_.setKfe(Ktv_);
         if(withForcesMeasurements_!=estimator_.getWithForcesMeasurements()) estimator_.setWithForcesMeasurements(withForcesMeasurements_);
+        if(setForceVariance_=true) setForceVariance_=false; estimator_.setForceVariance(forceVariance_);
 
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
