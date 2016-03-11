@@ -529,6 +529,10 @@ namespace sotStateObservation
 
         comBiasGuess_.resize(3); comBiasGuess_.setZero();
         setComBiasGuess_=false;
+
+        flexibilityGuess_.resize(estimator_.getStateSize()); flexibilityGuess_.setZero();
+        setFlexibilityGuess_=false;
+
     }
 
     DGIMUModelBaseFlexEstimation::~DGIMUModelBaseFlexEstimation()
@@ -551,24 +555,12 @@ namespace sotStateObservation
         const dynamicgraph::Vector & input = inputSIN.access(inTime);
         const unsigned & contactNb = contactsNbrSIN.access(inTime);
 
-        // Update of the state size
+        // Updates
+        if (contactNumber_!= contactNb) contactNumber_ = contactNb; estimator_.setContactsNumber(contactNb);
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
-
-        // Update the guess on the com bias
-        if(setComBiasGuess_==true)  estimator_.setComBiasGuess(comBiasGuess_);
-
-        // Update of inputSize_ considering contactsNb
-        if (contactNumber_!= contactNb)
-        {
-            contactNumber_ = contactNb;
-            estimator_.setContactsNumber(contactNb);
-        }
-
-        // Update the process noise covariance
-        if(recomputeQ_) {
-            estimator_.setProcessNoiseCovariance(Q_);
-            recomputeQ_=false;
-        }
+        if(setComBiasGuess_==true)  setComBiasGuess_=false; estimator_.setComBiasGuess(comBiasGuess_);
+        if(recomputeQ_) recomputeQ_=false; estimator_.setProcessNoiseCovariance(Q_);
+        if(setFlexibilityGuess_==true) setFlexibilityGuess_=false; estimator_.setFlexibilityGuess(flexibilityGuess_);
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
 
