@@ -156,7 +156,7 @@ namespace sotStateObservation
 
             void setWithForce(const bool & b)
             {
-                estimator_.setWithForcesMeasurements(b);
+                withForcesMeasurements_=true;
             }
 
             void setWithComBias(const bool & b)
@@ -437,6 +437,7 @@ namespace sotStateObservation
             unsigned contactNumber_;
 
             bool withComBias_;
+            bool withForcesMeasurements_;
 
             stateObservation::Vector bias_;
             int currentTime_;
