@@ -55,8 +55,9 @@ namespace sotStateObservation
 
             void setComBiasGuess (const ::dynamicgraph::Vector & x)
             {
-                estimator_.setComBiasGuess(convertVector<stateObservation::Vector>(x));
-			}
+                setComBiasGuess_=true;
+                comBiasGuess_=convertVector<stateObservation::Vector>(x);
+            }
 			
             /// Enable or disable the estimation
             void setOn(const bool & b)
@@ -429,6 +430,8 @@ namespace sotStateObservation
             bool withComBias_;
 
             stateObservation::Vector bias_;
+            stateObservation::Vector comBiasGuess_;
+            bool setComBiasGuess_;
 
             int currentTime_;
 

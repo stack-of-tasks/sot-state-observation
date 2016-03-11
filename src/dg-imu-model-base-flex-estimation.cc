@@ -526,6 +526,9 @@ namespace sotStateObservation
 
         Q_=estimator_.getProcessNoiseCovariance();
         recomputeQ_=false;
+
+        comBiasGuess_.resize(3); comBiasGuess_.setZero();
+        setComBiasGuess_=false;
     }
 
     DGIMUModelBaseFlexEstimation::~DGIMUModelBaseFlexEstimation()
@@ -550,6 +553,9 @@ namespace sotStateObservation
 
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
+
+        // Update the guess on the com bias
+        if(setComBiasGuess_==true)  estimator_.setComBiasGuess(comBiasGuess_);
 
         // Update of inputSize_ considering contactsNb
         if (contactNumber_!= contactNb)
