@@ -93,7 +93,8 @@ namespace sotStateObservation
 
             void setContactModel(const unsigned & nb)
             {
-                estimator_.setContactModel(nb);
+                setContactModel_=true;
+                contactModel_=nb;
             }
 
             void setProcessNoiseCovariance(const ::dynamicgraph::Matrix & q)
@@ -449,6 +450,11 @@ namespace sotStateObservation
 
             double dt_;
             bool setDt_;
+
+            bool setContactModel_;
+            unsigned contactModel_;
+
+
 
         };
 
