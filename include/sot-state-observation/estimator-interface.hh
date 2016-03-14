@@ -134,13 +134,13 @@ namespace sotStateObservation
             double time_;
 
             stateObservation::Vector forceThresholds_;
+            stateObservation::Vector modeled_;
 
             std::list<int> stackOfContacts_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
-
 
         public:
           EIGEN_MAKE_ALIGNED_OPERATOR_NEW

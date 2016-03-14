@@ -97,11 +97,19 @@ namespace sotStateObservation
         contactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsNbr, this, _1, _2));
 
         /// Parameters
+
+        // ForceThresholds
         forceThresholds_.resize(contact::nbMax);
         forceThresholds_.setOnes();
         forceThresholds_*=0.02 * 56.8*stateObservation::cst::gravityConstant; // default value
         forceThresholds_[contact::lh]*=0.1;
         forceThresholds_[contact::rh]*=0.1;
+
+        // Modeled
+        modeled_.resize(contact::nbMax);
+        forceThresholds_.setZero(); // default value
+        forceThresholds_[contact::lf]=1;
+        forceThresholds_[contact::rf]=1;
     }
 
     EstimatorInterface::~EstimatorInterface()
