@@ -567,7 +567,6 @@ namespace sotStateObservation
                   (dynamicgraph::Vector & state, const int& inTime)
     {
 
-
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
         if (inTime!=currentTime_)
         {

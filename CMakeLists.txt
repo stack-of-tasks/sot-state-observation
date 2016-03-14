@@ -58,6 +58,7 @@ SET(${PROJECT_NAME}_HEADERS
     include/sot-state-observation/tools/definitions.hh
     include/sot-state-observation/stack-of-contacts.hh
     include/sot-state-observation/odometry.hh
+    include/sot-state-observation/estimator-interface.hh
     include/sot-state-observation/filter.hh
 )
 
