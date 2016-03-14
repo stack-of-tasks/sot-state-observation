@@ -43,14 +43,21 @@ namespace sotStateObservation
         inputSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::input"),
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
         contactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsNbr"),
-        positionLeftFootSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::position_lf"),
-        forceLeftFootSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_lf"),
-        positionRightFootSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::position_rf"),
-        forceRightFootSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_rf"),
-        positionLeftHandSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::position_lh"),
-        forceLeftHandSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_lh"),
-        positionRightHandSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::position_rh"),
-        forceRightHandSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_rh"),
+        positionLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_lf"),
+        forceLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lf"),
+        positionRightFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_rf"),
+        forceRightFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_rf"),
+        positionLeftHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_lh"),
+        forceLeftHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lh"),
+        positionRightHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_rh"),
+        forceRightHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_rh"),
+        comVectorSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::comVector"),
+        inertiaSIN(NULL , "EstimatorInterface("+inName+")::input(matrix)::inertia"),
+        dinertiaSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::dinertia"),
+        positionWaistSIN(NULL , "EstimatorInterface("+inName+")::input(matrix)::positionWaist"),
+        angMomentumSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::angMomentum"),
+        dangMomentumSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::dangMomentum"),
+        imuVectorSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::imuVector"),
         time_(0),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
@@ -86,6 +93,34 @@ namespace sotStateObservation
         forceRightHandSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
         forceRightHandSIN_.setTime (time_);
 
+        signalRegistration (comVectorSIN);
+        dynamicgraph::Vector comVector(3);
+        comVectorSIN.setConstant(comVector);
+
+        signalRegistration (inertiaSIN);
+        dynamicgraph::Matrix inertia(6);
+        inertiaSIN.setConstant(inertia);
+
+        signalRegistration (dinertiaSIN);
+        dynamicgraph::Vector dinertia(6);
+        dinertiaSIN.setConstant(dinertia);
+
+        signalRegistration (positionWaistSIN);
+        dynamicgraph::Matrix positionWaist;
+        positionWaistSIN.setConstant(positionWaist);
+
+        signalRegistration (angMomentumSIN);
+        dynamicgraph::Vector angMomentum(6);
+        angMomentumSIN.setConstant(angMomentum);
+
+        signalRegistration (dangMomentumSIN);
+        dynamicgraph::Vector dangMomentum(6);
+        dangMomentumSIN.setConstant(dangMomentum);
+
+        signalRegistration (imuVectorSIN);
+        dynamicgraph::Vector imuVector(15);
+        imuVectorSIN.setConstant(imuVector);
+
         // Output
         signalRegistration (inputSOUT_);
         inputSOUT_.setFunction(boost::bind(&EstimatorInterface::getInput, this, _1, _2));
@@ -110,6 +145,18 @@ namespace sotStateObservation
         forceThresholds_.setZero(); // default value
         forceThresholds_[contact::lf]=1;
         forceThresholds_[contact::rf]=1;
+
+        // From input reconstructor
+        bias_[0].resize(6);
+        bias_[1].resize(6);
+        bias_[0].setZero();
+        bias_[1].setZero();
+        lastInertia_.setZero();
+        currentTime = 0;
+        dt_=5e-3;
+        stateObservation::Vector3 True;
+        True.setOnes();
+        setConfig(convertVector<dynamicgraph::Vector>(True));
     }
 
     EstimatorInterface::~EstimatorInterface()
@@ -140,8 +187,205 @@ namespace sotStateObservation
         }
     }
 
+    void EstimatorInterface::computeInert(const dynamicgraph::Matrix & inertia, const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector& inert, const dynamicgraph::Vector& comVector)
+    {
+
+        double m=inertia(0,0); //<=== donne 56.8;
+        //std::cout << "Masse=" << m << std::endl;
+
+        dynamicgraph::Vector waist, com;
+        waist.resize(3);
+        com.resize(3);
+
+        waist.elementAt(0)=homoWaist(0,3);
+        waist.elementAt(1)=homoWaist(1,3);
+        waist.elementAt(2)=homoWaist(2,3);
+
+        com.elementAt(0)=comVector(0);
+        com.elementAt(1)=comVector(1);
+        com.elementAt(2)=comVector(2);
+
+        // Inertia expressed at waist
+        inert.elementAt(0)=inertia(3,3);
+        inert.elementAt(1)=inertia(4,4);
+        inert.elementAt(2)=inertia(5,5);
+        inert.elementAt(3)=inertia(3,4);
+        inert.elementAt(4)=inertia(3,5);
+        inert.elementAt(5)=inertia(4,5);
+
+        // From waist to com
+        inert.elementAt(0) += -m*((com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
+        inert.elementAt(1) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
+        inert.elementAt(2) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1)));
+        inert.elementAt(3) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(1)-waist.elementAt(1));
+        inert.elementAt(4) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(2)-waist.elementAt(2));
+        inert.elementAt(5) += m*(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(2)-waist.elementAt(2));
+
+        // From com to local frame
+        inert.elementAt(0) -= -m*((com.elementAt(1))*(com.elementAt(1))+(com.elementAt(2))*(com.elementAt(2)));
+        inert.elementAt(1) -= -m*((com.elementAt(0))*(com.elementAt(0))+(com.elementAt(2))*(com.elementAt(2)));
+        inert.elementAt(2) -= -m*((com.elementAt(0))*(com.elementAt(0))+(com.elementAt(1))*(com.elementAt(1)));
+        inert.elementAt(3) -= m*(com.elementAt(0))*(com.elementAt(1));
+        inert.elementAt(4) -= m*(com.elementAt(0))*(com.elementAt(2));
+        inert.elementAt(5) -= m*(com.elementAt(1))*(com.elementAt(2));
+
+    }
+
+    void EstimatorInterface::computeInertDot
+            (const dynamicgraph::Matrix & inertia, const dynamicgraph::Vector & dinertia,
+            const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector& dinert,
+            const dynamicgraph::Vector& comVector)
+    {
+      //FIXE : THIS FUNCTION IS WRONG
+        double m=inertia(0,0); //<=== donne 56.8;
+        //std::cout << "Masse=" << m << std::endl;
+
+        dynamicgraph::Vector waist, com, dcom;
+        waist.resize(3);
+        com.resize(3);
+        dcom.resize(3);
+
+        waist.elementAt(0)=homoWaist(0,3);
+        waist.elementAt(1)=homoWaist(1,3);
+        waist.elementAt(2)=homoWaist(2,3);
+
+        com.elementAt(0)=comVector(0);
+        com.elementAt(1)=comVector(1);
+        com.elementAt(2)=comVector(2);
+
+        dcom.elementAt(0)=comVector(3);
+        dcom.elementAt(1)=comVector(4);
+        dcom.elementAt(2)=comVector(5);
+
+        // Inertia expressed at waist
+        dinert = dinertia;
+   }
+
     Vector& EstimatorInterface::getInput(Vector& input, const int& time)
     {
+        if (currentTime==time)
+        {
+          input =  inputSOUT_.accessCopy();
+
+          return input;
+        }
+
+        currentTime = time;
+
+        const dynamicgraph::Matrix& inertia=inertiaSIN.access(time);
+        const dynamicgraph::Matrix& homoWaist=positionWaistSIN.access(time);
+        const dynamicgraph::Vector& comVector=comVectorSIN.access(time);
+        const dynamicgraph::Vector& dinertia=dinertiaSIN.access(time);
+        const dynamicgraph::Vector& angMomentum=angMomentumSIN.access(time);
+        const dynamicgraph::Vector& dangMomentum=dangMomentumSIN.access(time);
+        const dynamicgraph::Vector& imuVector=imuVectorSIN.access(time);
+        unsigned contactsNbr;
+        const unsigned& nbContacts=getContactsNbr(contactsNbr,time);
+        dynamicgraph::Vector contactsPosition; contactsPosition.setZero();
+
+        int i, u=0,k;
+
+        dynamicgraph::Vector inert,dinert;
+        inert.resize(6);
+
+
+        computeInert(inertia,homoWaist,inert,comVector);
+
+        if (derivateInertiaFD_)
+        {
+          if (lastInertia_.size()>0 && lastInertia_.norm()!=0)
+            dinert = (1/dt_)*(inert - lastInertia_);
+          else
+          {
+            dinert.resize(6);
+            dinert.setZero();
+          }
+        }
+        else
+          computeInertDot(inertia,dinertia,homoWaist,dinert,comVector);
+
+        lastInertia_ = inert;
+
+
+        input.resize(42+6*nbContacts,true);
+        input.setZero();
+
+        for(i=0;i<3;++i){
+            input.elementAt(u)=comVector(i);
+            u++;
+        }
+
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1]) input.elementAt(u)=comVector(i+3);
+            u++;
+        }
+
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=comVector(i+6);
+            u++;
+        }
+
+        for(i=0;i<6;++i){
+            input.elementAt(u)=inert(i);
+            u++;
+        }
+
+        for(i=0;i<6;++i){
+            if(config_[0] & config_[1]) input.elementAt(u)=dinert(i);
+            u++;
+        }
+
+        double m=inertia(0,0);
+
+        dynamicgraph::Vector angMomentumOut, dangMomentumOut;
+        dynamicgraph::Vector com, comdot, comddot;
+
+        com.resize(3);
+        comdot.resize(3);
+        comddot.resize(3);
+
+
+        for (i=0;i<3;++i)
+        {
+          com(i) = comVector(i);
+          comdot(i) = comVector(i+3);
+          comddot(i) = comVector(i+6);
+        }
+
+        angMomentumOut=angMomentum;
+        dangMomentumOut = m*crossProduct(com,comddot);
+
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1]) input.elementAt(u)=angMomentumOut(i);
+            u++;
+        }
+
+
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=dangMomentumOut(i);
+            u++;
+        }
+
+        for(i=0;i<6;++i){
+            input.elementAt(u)=imuVector(i);
+            u++;
+        }
+
+        for(i=0;i<6;++i){
+            if(config_[0] & config_[1]) input.elementAt(u)=imuVector(i+6);
+            u++;
+        }
+
+        for(i=0;i<3;++i){
+            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=imuVector(i+12);
+            u++;
+        }
+
+        for(i=0;i<6*nbContacts;++i){
+
+            input.elementAt(u)=contactsPosition(i)+bias_[i/6](i%6);
+            u++;
+        }
 
         return input;
     }

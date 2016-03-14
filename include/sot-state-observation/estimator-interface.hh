@@ -106,10 +106,23 @@ namespace sotStateObservation
             */
             static const std::string CLASS_NAME;
 
+            // From input reconstructor
+            void setConfig(const dynamicgraph::Vector& config)
+            {
+                for(int i=0;i<3;++i){
+                    if(config.elementAt(i)==1) config_[i]=true;
+                    if(config.elementAt(i)==0) config_[i]=false;
+                }
+            }
+
         private:
 
             /// Signals
             // Input signals
+
+            /**
+            \brief Positions and forces at contacts
+            */
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionLeftFootSIN_;
             dynamicgraph::SignalPtr <Vector, int> forceLeftFootSIN_;
 
@@ -122,6 +135,29 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionRightHandSIN_;
             dynamicgraph::SignalPtr <Vector, int> forceRightHandSIN_;
 
+            /**
+            \brief Com and derivatives
+            */
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> comVectorSIN;
+
+            /**
+            \brief Inertia and derivative
+            */
+            dynamicgraph::SignalPtr < ::dynamicgraph::Matrix, int> inertiaSIN;
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> dinertiaSIN;
+
+            /**
+            \brief Angular momentum and derivative
+            */
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> angMomentumSIN;
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> dangMomentumSIN;
+            dynamicgraph::SignalPtr < ::dynamicgraph::Matrix, int> positionWaistSIN;
+
+            /**
+            \brief IMU vector
+            */
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> imuVectorSIN;
+
             // Output signals
             dynamicgraph::SignalPtr <Vector, int> inputSOUT_;
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
@@ -129,6 +165,16 @@ namespace sotStateObservation
 
             /// Methods
             void computeStackOfContacts(const int& time);
+            void computeInput(const int& inTime);
+
+            // From input reconstructor
+            void computeInert
+                 (const dynamicgraph::Matrix & inertia, const dynamicgraph::Matrix & homoWaist,
+                 dynamicgraph::Vector&, const dynamicgraph::Vector&);
+
+           void computeInertDot
+                 (const dynamicgraph::Matrix & inertia, const dynamicgraph::Vector & dinertia,
+                 const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector&, const dynamicgraph::Vector&);
 
             /// Parameters
             double time_;
@@ -141,6 +187,14 @@ namespace sotStateObservation
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
+
+            // From input reconstructor
+            ::dynamicgraph::Vector bias_[2];
+            bool derivateInertiaFD_;
+            ::dynamicgraph::Vector lastInertia_;
+            std::vector<bool> config_;
+            int currentTime;
+            double dt_;
 
         public:
           EIGEN_MAKE_ALIGNED_OPERATOR_NEW
