@@ -100,6 +100,8 @@ namespace sotStateObservation
             MatrixHomogeneous& getHomoSupportPos2(MatrixHomogeneous& , const int& time);
             dynamicgraph::Vector& getForceSupport2(dynamicgraph::Vector& , const int& time);
 
+            dynamicgraph::Vector& getForceSupportStack(dynamicgraph::Vector& , const int& time);
+
             Vector& getRobotStateOut(Vector& robotState, const int& time);
             Vector& getPivotPositionOut(Vector& pivotPositionOut, const int& time);
 
@@ -147,23 +149,25 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> homoSupportPos2SOUT_;
             dynamicgraph::SignalPtr <Vector, int> forceSupport2SOUT_;
 
+            dynamicgraph::SignalPtr <Vector, int> forceSupportStackSOUT_;
+
             dynamicgraph::SignalPtr <Vector, int> pivotPositionSOUT_;
 
             /// Parameters
             double forceThreshold_, time_;
 
             std::list<int> stackOfSupports_;
-            std::list<int>::iterator iterator;
+            std::list<int>::iterator iterator_;
 
-            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
-            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
-            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > referenceHomoPosition_;
-            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > referencePosition_;
-            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
+            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator<Matrix4> > inputHomoPosition_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator<Vector6> > inputPosition_;
+            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator<Matrix4> > referenceHomoPosition_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator<Vector6> > referencePosition_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator<Vector6> > inputForces_;
 
             int pivotSupport_;
 
-            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > odometryHomoPosition_;
+            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator<Matrix4> > odometryHomoPosition_;
             stateObservation::Matrix4 odometryFreeFlyer_;
 
             stateObservation::Vector alpha_;

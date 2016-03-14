@@ -6,7 +6,7 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose
-from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, Odometry
+from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, Odometry, DriftFromMocap
 
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
@@ -16,8 +16,8 @@ from dynamic_graph.sot.application.state_observation import Calibrate
 
 class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
     def __init__(self, robot, name='flextimator2'):
+
         DGIMUModelBaseFlexEstimation.__init__(self,name)
-        
         self.setSamplingPeriod(0.005)  
         self.robot = robot
 	self.setContactModel(1)
@@ -28,9 +28,10 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
 	self.setWithForceSensors(True)
 	self.setForceVariance(1e-4)
-
-	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(1.e-13,)*2)))
-	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3))) 
+	self.setWithComBias(False)
+        
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(1.e-13,)*2+(1e-8,)*3)))
+	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3)))
 
 	# Odometry
         self.odometry=Odometry ('Odometry')
@@ -61,13 +62,19 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.sensorStackimu.selec1 (0, 3)
         self.sensorStackimu.selec2 (0, 3)
 
-		# Forces
-        self.sensorStackforce = Stack_of_vector (name+'SensorsFORCE')
-        self.sensorStackforce.selec1 (0, 6)
-        self.sensorStackforce.selec2 (0, 6)
-        plug(self.odometry.forceSupport1,self.sensorStackforce.sin1)
-        plug(self.odometry.forceSupport2,self.sensorStackforce.sin2)
-        self.contactForces = self.sensorStackforce.sout
+
+                # Drift
+        self.drift = DriftFromMocap(name+'Drift')
+        
+
+	# Optional measurenents Stack (forces + drift)
+        self.sensorStackOptional = Stack_of_vector (name+'SensorsOPT')
+        self.sensorStackOptional.selec1toEnd (0)
+        self.sensorStackOptional.selec2toEnd (0)
+        plug(self.odometry.forceSupportStack,self.sensorStackOptional.sin1)
+        plug(self.drift.driftVector,self.sensorStackOptional.sin2)
+        
+        self.contactForces = self.odometry.forceSupportStack
 
 		# Calibration
 	self.calibration= Calibrate('calibration')
@@ -79,7 +86,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 		# Concatenating
         self.sensorStack = Stack_of_vector (name+'Sensors')
         plug(self.sensorStackimu.sout,self.sensorStack.sin1)
-        plug(self.sensorStackforce.sout,self.sensorStack.sin2)
+        plug(self.sensorStackOptional.sout,self.sensorStack.sin2)
         self.sensorStack.selec1 (0, 6)
         self.sensorStack.selec2 (0, 12)
 	plug(self.sensorStack.sout,self.measurement);

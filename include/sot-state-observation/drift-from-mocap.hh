@@ -7,6 +7,7 @@
 #include <dynamic-graph/signal-time-dependent.h>
 
 #include <sot/core/matrix-homogeneous.hh>
+#include <sot/core/vector-utheta.hh>
 
 #include <sot-state-observation/tools/definitions.hh>
 
@@ -53,8 +54,11 @@ namespace sotStateObservation
 
             void init();
 
-            ::dynamicgraph::sot::MatrixHomogeneous& computedrift
+            ::dynamicgraph::sot::MatrixHomogeneous& computeDrift
               (::dynamicgraph::sot::MatrixHomogeneous & drift, const int& inTime);
+
+            ::dynamicgraph::Vector& computeDriftVector
+              (::dynamicgraph::Vector & drift, const int& inTime);
 
             /**
               \brief limb to global frame position
@@ -70,7 +74,13 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::sot::MatrixHomogeneous, int> driftSOUT;
 
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> driftVectorSOUT;
+
             dynamicgraph::sot::MatrixHomogeneous init_;
+
+            dynamicgraph::sot::MatrixHomogeneous lastDrift_;
+
+            bool initialized_;
 
         };
 }

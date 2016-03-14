@@ -17,13 +17,19 @@ namespace sotStateObservation
     limbGlobalSIN(0x0 , "DriftFromMocap("+inName+")::input(MatrixHomogeneous)::limbGlobal"),
     limbLocalSIN(0x0 , "DriftFromMocap("+inName+")::input(MatrixHomogeneous)::limbLocal"),
     driftSOUT( limbGlobalSIN<<limbLocalSIN,
-             "DriftFromMocap("+inName+")::output(MatrixHomogeneous)::drift")
+             "DriftFromMocap("+inName+")::output(MatrixHomogeneous)::drift"),
+    driftVectorSOUT( limbGlobalSIN<<limbLocalSIN,
+             "DriftFromMocap("+inName+")::output(Vector)::driftVector")
   {
     signalRegistration (limbGlobalSIN);
     signalRegistration (limbLocalSIN);
     signalRegistration (driftSOUT);
+    signalRegistration (driftVectorSOUT);
 
-    driftSOUT.setFunction(boost::bind(&DriftFromMocap::computedrift,
+    driftSOUT.setFunction(boost::bind(&DriftFromMocap::computeDrift,
+                                    this, _1, _2));
+
+    driftVectorSOUT.setFunction(boost::bind(&DriftFromMocap::computeDriftVector,
                                     this, _1, _2));
 
     std::string docstring;
@@ -32,6 +38,9 @@ namespace sotStateObservation
                 makeCommandVoid0 (*this, &DriftFromMocap::init,
                                   docCommandVoid0 ("reset the drift to zero")));
     init_.setIdentity();
+    lastDrift_.setIdentity();
+
+    initialized_ = false;
 
   }
 
@@ -46,19 +55,48 @@ namespace sotStateObservation
 
     init_ = limbLocal * limbGlobal.inverse();
 
+    initialized_ = true;
+
 
   }
 
-  ::dynamicgraph::sot::MatrixHomogeneous& DriftFromMocap::computedrift
+  ::dynamicgraph::sot::MatrixHomogeneous& DriftFromMocap::computeDrift
               (::dynamicgraph::sot::MatrixHomogeneous & drift, const int& inTime)
   {
-    const ::dynamicgraph::sot::MatrixHomogeneous & limbGlobal = limbGlobalSIN(inTime);
-    const ::dynamicgraph::sot::MatrixHomogeneous & limbLocal = limbLocalSIN(inTime);
+    if (initialized_)
+    {
+      const ::dynamicgraph::sot::MatrixHomogeneous & limbGlobal = limbGlobalSIN(inTime);
+      const ::dynamicgraph::sot::MatrixHomogeneous & limbLocal = limbLocalSIN(inTime);
 
-    drift = init_ * limbGlobal * limbLocal.inverse();
+      drift = lastDrift_ = init_ * limbGlobal * limbLocal.inverse();
+    }
+    else
+    {
+      drift.setIdentity();
+      lastDrift_.setIdentity();
+    }
 
     return drift;
   }
+
+  ::dynamicgraph::Vector& DriftFromMocap::computeDriftVector
+              (::dynamicgraph::Vector & drift, const int& inTime)
+  {
+    const ::dynamicgraph::sot::MatrixHomogeneous & driftMatrix = driftSOUT(inTime);
+
+    ::dynamicgraph::sot::MatrixRotation R;
+    ::dynamicgraph::sot::VectorUTheta ut;
+    ::dynamicgraph::Vector t(3);
+    driftMatrix.extract(R);
+    driftMatrix.extract(t);
+    ut.fromMatrix(R);
+    drift.resize(6);
+    setSubvector(drift,0,t);
+    setSubvector(drift,3,static_cast<dynamicgraph::Vector>(ut));
+
+    return drift;
+  }
+
 
 
 }

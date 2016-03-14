@@ -511,11 +511,14 @@ namespace sotStateObservation
         contactsNbrSIN.setConstant(0);
 
         currentTime_=-1;
+
+        recomputeQ_=false;
+
         dynamicgraph::Vector flexibility(estimator_.getStateSize()+estimator_.getWithComBias()*2);
         flexibility=computeFlexibility(flexibility,0);
 
 //        Q_=estimator_.getProcessNoiseCovariance();
-        recomputeQ_=false;
+
 
     }
 

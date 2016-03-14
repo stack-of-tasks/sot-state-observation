@@ -55,7 +55,8 @@ namespace sotStateObservation
         homoSupportPos2SOUT_(NULL, "Odometry("+inName+")::output(HomoMatrix)::homoSupportPos2"),
         forceSupport1SOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupport1"),
         forceSupport2SOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupport2"),
-        pivotPositionSOUT_ (NULL, "Odometry("+inName+")::output(Vector)::pivotPosition"),
+        forceSupportStackSOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupportStack"),
+        pivotPositionSOUT_ (NULL, "Odometry("+inName+")::output(vector)::pivotPosition"),
         forceThreshold_ (.02 * 56.8*stateObservation::cst::gravityConstant), time_(0),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax), inputHomoPosition_(contact::nbMax),
@@ -75,6 +76,7 @@ namespace sotStateObservation
         signalRegistration (nbSupportSOUT_);
         signalRegistration (supportPos1SOUT_ << homoSupportPos1SOUT_ << forceSupport1SOUT_);
         signalRegistration (supportPos2SOUT_ << homoSupportPos2SOUT_ << forceSupport2SOUT_);
+        signalRegistration (forceSupportStackSOUT_);
 
         signalRegistration (pivotPositionSOUT_);
 
@@ -105,6 +107,8 @@ namespace sotStateObservation
         supportPos2SOUT_.setFunction(boost::bind(&Odometry::getSupportPos2, this, _1, _2));
         homoSupportPos2SOUT_.setFunction(boost::bind(&Odometry::getHomoSupportPos2, this, _1, _2));
         forceSupport2SOUT_.setFunction(boost::bind(&Odometry::getForceSupport2, this, _1, _2));
+
+        forceSupportStackSOUT_.setFunction(boost::bind(&Odometry::getForceSupportStack, this, _1, _2));
 
         robotStateOutSOUT_.setFunction(boost::bind(&Odometry::getRobotStateOut, this, _1, _2));
         pivotPositionSOUT_.setFunction(boost::bind(&Odometry::getPivotPositionOut, this, _1, _2));
@@ -218,8 +222,8 @@ namespace sotStateObservation
 
         supportPos1.resize(6);
         if (stackOfSupports_.size()>=1) {
-            iterator = stackOfSupports_.begin();
-            supportPos1=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[*iterator]));
+            iterator_ = stackOfSupports_.begin();
+            supportPos1=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[*iterator_]));
         } else {
             supportPos1.setZero();
         }
@@ -227,11 +231,11 @@ namespace sotStateObservation
     }
 
     MatrixHomogeneous& Odometry::getHomoSupportPos1(MatrixHomogeneous& homoSupportPos1, const int& time)
-    {      
-        if(time!=time_) computeOdometry(time);     
+    {
+        if(time!=time_) computeOdometry(time);
         if (stackOfSupports_.size()>=1) {
-            iterator = stackOfSupports_.begin();
-            homoSupportPos1=convertMatrix<MatrixHomogeneous>(odometryHomoPosition_[*iterator]);
+            iterator_ = stackOfSupports_.begin();
+            homoSupportPos1=convertMatrix<MatrixHomogeneous>(odometryHomoPosition_[*iterator_]);
         } else {
             homoSupportPos1.setIdentity();
         }
@@ -244,12 +248,29 @@ namespace sotStateObservation
 
         forceSupport1.resize(6);
         if (stackOfSupports_.size()>=1) {
-            iterator = stackOfSupports_.begin();
-            forceSupport1=convertVector<dynamicgraph::Vector>(inputForces_[*iterator]);
+            iterator_ = stackOfSupports_.begin();
+            forceSupport1=convertVector<dynamicgraph::Vector>(inputForces_[*iterator_]);
         } else {
                         forceSupport1.setZero();
         }
         return forceSupport1;
+    }
+
+    Vector& Odometry::getForceSupportStack(Vector& forceSupportStack, const int& time)
+    {
+      if(time!=time_) computeOdometry(time);
+      forceSupportStack.resize(stackOfSupports_.size()*6);
+
+      int i = 0 ;
+      for (iterator_=stackOfSupports_.begin();
+            iterator_!=stackOfSupports_.end();
+              ++iterator_)
+      {
+        setSubvector(forceSupportStack,i*6,convertVector<dynamicgraph::Vector>(inputForces_[*iterator_]));
+      }
+      return forceSupportStack;
+      ++i;
+
     }
 
     Vector& Odometry::getSupportPos2(Vector& supportPos2, const int& time)
@@ -258,9 +279,9 @@ namespace sotStateObservation
 
         supportPos2.resize(6);
         if (stackOfSupports_.size()>=2) {
-            iterator = stackOfSupports_.begin();
-            for(int i=1; i<2; ++i) ++iterator ;
-            supportPos2=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[*iterator]));
+            iterator_ = stackOfSupports_.begin();
+            for(int i=1; i<2; ++i) ++iterator_ ;
+            supportPos2=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[*iterator_]));
         } else {
             supportPos2.setZero();
         }
@@ -271,9 +292,9 @@ namespace sotStateObservation
     {
         if(time!=time_) computeOdometry(time);
         if (stackOfSupports_.size()>=2) {
-            iterator = stackOfSupports_.begin();
-            for(int i=1; i<2; ++i) ++iterator ;
-            homoSupportPos2=convertMatrix<MatrixHomogeneous>(odometryHomoPosition_[*iterator]);
+            iterator_ = stackOfSupports_.begin();
+            for(int i=1; i<2; ++i) ++iterator_ ;
+            homoSupportPos2=convertMatrix<MatrixHomogeneous>(odometryHomoPosition_[*iterator_]);
         } else {
             homoSupportPos2.setIdentity();
         }
@@ -286,9 +307,9 @@ namespace sotStateObservation
 
         forceSupport2.resize(6);
         if (stackOfSupports_.size()>=2) {
-            iterator = stackOfSupports_.begin();
-            for(int i=1; i<2; ++i) ++iterator ;
-            forceSupport2=convertVector<dynamicgraph::Vector>(inputForces_[*iterator]);
+            iterator_ = stackOfSupports_.begin();
+            for(int i=1; i<2; ++i) ++iterator_ ;
+            forceSupport2=convertVector<dynamicgraph::Vector>(inputForces_[*iterator_]);
         } else {
                         forceSupport2.setZero();
         }
@@ -355,7 +376,7 @@ namespace sotStateObservation
             found = (std::find(stackOfSupports_.begin(), stackOfSupports_.end(), i) != stackOfSupports_.end());
 
             if(fz>forceThreshold_) {
-                if (!found) stackOfSupports_.push_back(i);              
+                if (!found) stackOfSupports_.push_back(i);
             } else {
                 if(found) stackOfSupports_.remove(i);
             }
@@ -392,10 +413,10 @@ namespace sotStateObservation
         alpha_.setZero();
         double sum=0;
         double f=0;
-        for (iterator=stackOfSupports_.begin(); iterator != stackOfSupports_.end(); ++iterator)
+        for (iterator_=stackOfSupports_.begin(); iterator_ != stackOfSupports_.end(); ++iterator_)
         {
-            f=inputForces_[*iterator].segment(0,3).norm();
-            alpha_[*iterator]=f;
+            f=inputForces_[*iterator_].segment(0,3).norm();
+            alpha_[*iterator_]=f;
             sum+=f;
         }
         alpha_=(1/sum)*alpha_;
