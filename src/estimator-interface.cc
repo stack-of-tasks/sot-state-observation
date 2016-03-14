@@ -39,16 +39,43 @@ namespace sotStateObservation
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( EstimatorInterface, "EstimatorInterface" );
 
     EstimatorInterface::EstimatorInterface( const std::string & inName):
-        Entity(inName)
+        Entity(inName),
+        inputSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::input"),
+        measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
+        contactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsNbr")
     {
+        signalRegistration (inputSOUT_);
+        inputSOUT_.setFunction(boost::bind(&EstimatorInterface::getInput, this, _1, _2));
 
+        signalRegistration (measurementSOUT_);
+        measurementSOUT_.setFunction(boost::bind(&EstimatorInterface::getMeasurement, this, _1, _2));
 
-   }
+        signalRegistration (contactsNbrSOUT_);
+        contactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsNbr, this, _1, _2));
+
+    }
 
     EstimatorInterface::~EstimatorInterface()
     {
     }
 
+    Vector& EstimatorInterface::getInput(Vector& input, const int& time)
+    {
+
+        return input;
+    }
+
+    Vector& EstimatorInterface::getMeasurement(Vector& measurement, const int& time)
+    {
+
+        return measurement;
+    }
+
+    unsigned& EstimatorInterface::getContactsNbr(unsigned& contactNbr, const int& time)
+    {
+
+        return contactNbr;
+    }
 
 }
 

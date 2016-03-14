@@ -82,6 +82,10 @@ namespace sotStateObservation
                     "Entity that compute the input and measurment vectors for the estimator plus the number of contacts";
             }
 
+            Vector& getInput(Vector& input, const int& time);
+            Vector& getMeasurement(Vector& measurement, const int& time);
+            unsigned& getContactsNbr(unsigned& contactsNbr, const int& time);
+
             /**
             \name Parameters
             @{
@@ -94,6 +98,9 @@ namespace sotStateObservation
 
         private:
 
+            dynamicgraph::SignalPtr <Vector, int> inputSOUT_;
+            dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
+            dynamicgraph::SignalPtr <unsigned, int> contactsNbrSOUT_;
 
         public:
           EIGEN_MAKE_ALIGNED_OPERATOR_NEW
