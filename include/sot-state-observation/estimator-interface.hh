@@ -98,9 +98,28 @@ namespace sotStateObservation
 
         private:
 
+            /// Signals
+            // Input signals
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionLeftFootSIN_;
+            dynamicgraph::SignalPtr <Vector, int> forceLeftFootSIN_;
+
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionRightFootSIN_;
+            dynamicgraph::SignalPtr <Vector, int> forceRightFootSIN_;
+
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionLeftHandSIN_;
+            dynamicgraph::SignalPtr <Vector, int> forceLeftHandSIN_;
+
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionRightHandSIN_;
+            dynamicgraph::SignalPtr <Vector, int> forceRightHandSIN_;
+
+            // Output signals
             dynamicgraph::SignalPtr <Vector, int> inputSOUT_;
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsNbrSOUT_;
+
+            /// Prameters
+            double time_;
+
 
         public:
           EIGEN_MAKE_ALIGNED_OPERATOR_NEW

@@ -42,8 +42,47 @@ namespace sotStateObservation
         Entity(inName),
         inputSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::input"),
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
-        contactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsNbr")
+        contactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsNbr"),
+        positionLeftFootSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::position_lf"),
+        forceLeftFootSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_lf"),
+        positionRightFootSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::position_rf"),
+        forceRightFootSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_rf"),
+        positionLeftHandSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::position_lh"),
+        forceLeftHandSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_lh"),
+        positionRightHandSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::position_rh"),
+        forceRightHandSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_rh"),
+        time_(0)
     {
+
+        /// Inputs
+        MatrixHomogeneous pos;
+        stateObservation::Vector6 force;
+
+        signalRegistration (positionLeftFootSIN_ << forceLeftFootSIN_);
+        positionLeftFootSIN_.setConstant(pos);
+        positionLeftFootSIN_.setTime (time_);
+        forceLeftFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
+        forceLeftFootSIN_.setTime (time_);
+
+        signalRegistration (positionRightFootSIN_ << forceRightFootSIN_);
+        positionRightFootSIN_.setConstant(pos);
+        positionRightFootSIN_.setTime (time_);
+        forceRightFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
+        forceRightFootSIN_.setTime (time_);
+
+        signalRegistration (positionLeftHandSIN_ << forceLeftHandSIN_);
+        positionLeftHandSIN_.setConstant(pos);
+        positionLeftHandSIN_.setTime (time_);
+        forceLeftHandSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
+        forceLeftHandSIN_.setTime (time_);
+
+        signalRegistration (positionRightHandSIN_ << forceRightHandSIN_);
+        positionRightHandSIN_.setConstant(pos);
+        positionRightHandSIN_.setTime (time_);
+        forceRightHandSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
+        forceRightHandSIN_.setTime (time_);
+
+        /// Outputs
         signalRegistration (inputSOUT_);
         inputSOUT_.setFunction(boost::bind(&EstimatorInterface::getInput, this, _1, _2));
 
@@ -52,7 +91,6 @@ namespace sotStateObservation
 
         signalRegistration (contactsNbrSOUT_);
         contactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsNbr, this, _1, _2));
-
     }
 
     EstimatorInterface::~EstimatorInterface()
