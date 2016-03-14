@@ -533,7 +533,7 @@ namespace sotStateObservation
         flexibilityGuess_.resize(estimator_.getStateSize()); flexibilityGuess_.setZero();
         setFlexibilityGuess_=false;
 
-        flexibilityCovariance_.resize(estimator_.getStateSize()); flexibilityCovariance_.setZero();
+        flexibilityCovariance_.resize(estimator_.getStateSize(),estimator_.getStateSize()); flexibilityCovariance_.setZero();
         setFlexibilityCovariance_=false;
 
         dt_=0.005;
@@ -548,7 +548,7 @@ namespace sotStateObservation
         stateObservation::Matrix3 K; K.setIdentity();
         Kfe_=K; Kfv_=K; Kte_=K; Ktv_=K;
 
-        withForcesMeasurements_=false;
+        withForcesMeasurements_=true;
 
         setForceVariance_=false;
         forceVariance_=1.e-4;
@@ -580,20 +580,20 @@ namespace sotStateObservation
         // Updates
         if (contactNumber_!= contactNb) contactNumber_ = contactNb; estimator_.setContactsNumber(contactNb);
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
-        if(setComBiasGuess_==true)  setComBiasGuess_=false; estimator_.setComBiasGuess(comBiasGuess_);
-        if(recomputeQ_) recomputeQ_=false; estimator_.setProcessNoiseCovariance(Q_);
-        if(setFlexibilityGuess_==true) setFlexibilityGuess_=false; estimator_.setFlexibilityGuess(flexibilityGuess_);
-        if(setFlexibilityCovariance_==true) setFlexibilityCovariance_=false; estimator_.setFlexibilityCovariance(flexibilityCovariance_);
-        if(setDt_==true) setDt_=false; estimator_.setSamplingPeriod(dt_);
-        if(setContactModel_==true) setContactModel_=false; estimator_.setContactModel(contactModel_);
-        if(setMeasurementNoiseCovariance_==true) setMeasurementNoiseCovariance_=false; estimator_.setMeasurementNoiseCovariance(measurementNoiseCovariance_);
-        if(setKfe_==true) setKfe_=false; estimator_.setKfe(Kfe_);
-        if(setKfv_==true) setKfv_=false; estimator_.setKfe(Kfv_);
-        if(setKte_==true) setKte_=false; estimator_.setKfe(Kte_);
-        if(setKtv_==true) setKtv_=false; estimator_.setKfe(Ktv_);
-        if(withForcesMeasurements_!=estimator_.getWithForcesMeasurements()) estimator_.setWithForcesMeasurements(withForcesMeasurements_);
-        if(setForceVariance_=true) setForceVariance_=false; estimator_.setForceVariance(forceVariance_);
-        if(setRobotMass_=true) setRobotMass_=false; estimator_.setRobotMass(robotMass_);
+        if(setComBiasGuess_==true) { setComBiasGuess_=false; estimator_.setComBiasGuess(comBiasGuess_);}
+        if(recomputeQ_) { recomputeQ_=false; estimator_.setProcessNoiseCovariance(Q_); }
+        if(setFlexibilityGuess_==true) { setFlexibilityGuess_=false; estimator_.setFlexibilityGuess(flexibilityGuess_); }
+        if(setFlexibilityCovariance_==true) { setFlexibilityCovariance_=false; estimator_.setFlexibilityCovariance(flexibilityCovariance_); }
+        if(setDt_==true) { setDt_=false; estimator_.setSamplingPeriod(dt_); }
+        if(setContactModel_==true) { setContactModel_=false; estimator_.setContactModel(contactModel_); }
+        if(setMeasurementNoiseCovariance_==true) { setMeasurementNoiseCovariance_=false; estimator_.setMeasurementNoiseCovariance(measurementNoiseCovariance_); }
+        if(setKfe_==true) { setKfe_=false; estimator_.setKfe(Kfe_); }
+        if(setKfv_==true) { setKfv_=false; estimator_.setKfe(Kfv_); }
+        if(setKte_==true) { setKte_=false; estimator_.setKfe(Kte_); }
+        if(setKtv_==true) { setKtv_=false; estimator_.setKfe(Ktv_); }
+        if(setForceVariance_=true) { setForceVariance_=false; estimator_.setForceVariance(forceVariance_); }
+        if(withForcesMeasurements_!=estimator_.getWithForcesMeasurements()) { estimator_.setWithForcesMeasurements(withForcesMeasurements_); }
+        if(setRobotMass_=true) { setRobotMass_=false; estimator_.setRobotMass(robotMass_); }
 
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));

@@ -447,7 +447,7 @@ namespace sotStateObservation
             stateObservation::Vector flexibilityGuess_;
             bool setFlexibilityGuess_;
 
-            stateObservation::Vector flexibilityCovariance_;
+            stateObservation::Matrix flexibilityCovariance_;
             bool setFlexibilityCovariance_;
 
             stateObservation::Vector comBiasGuess_;
