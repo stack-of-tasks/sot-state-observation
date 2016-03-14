@@ -51,10 +51,14 @@ namespace sotStateObservation
         forceLeftHandSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_lh"),
         positionRightHandSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::position_rh"),
         forceRightHandSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_rh"),
-        time_(0)
+        time_(0),
+        inputForces_(contact::nbMax),
+        inputPosition_(contact::nbMax),
+        inputHomoPosition_(contact::nbMax)
     {
 
-        /// Inputs
+        /// Signals
+        // Input
         MatrixHomogeneous pos;
         stateObservation::Vector6 force;
 
@@ -82,7 +86,7 @@ namespace sotStateObservation
         forceRightHandSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
         forceRightHandSIN_.setTime (time_);
 
-        /// Outputs
+        // Output
         signalRegistration (inputSOUT_);
         inputSOUT_.setFunction(boost::bind(&EstimatorInterface::getInput, this, _1, _2));
 
@@ -91,10 +95,41 @@ namespace sotStateObservation
 
         signalRegistration (contactsNbrSOUT_);
         contactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsNbr, this, _1, _2));
+
+        /// Parameters
+        forceThresholds_.resize(contact::nbMax);
+        forceThresholds_.setOnes();
+        forceThresholds_*=0.02 * 56.8*stateObservation::cst::gravityConstant; // default value
+        forceThresholds_[contact::lh]*=0.1;
+        forceThresholds_[contact::rh]*=0.1;
     }
 
     EstimatorInterface::~EstimatorInterface()
     {
+    }
+
+    void EstimatorInterface::computeStackOfContacts(const int& time)
+    {
+
+        inputForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
+        inputHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightFootSIN_.access (time)));
+
+        inputForces_[contact::lf] = convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
+        inputHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftFootSIN_.access (time)));
+
+        bool found;
+
+        for (int i=0; i<contact::nbMax;++i){
+            inputPosition_[i]=kine::homogeneousMatrixToVector6(inputHomoPosition_[i]);
+
+            found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
+
+            if(inputForces_[i].norm()>forceThresholds_[i]) {
+                if (!found) stackOfContacts_.push_back(i);
+            } else {
+                if(found) stackOfContacts_.remove(i);
+            }
+        }
     }
 
     Vector& EstimatorInterface::getInput(Vector& input, const int& time)
@@ -109,10 +144,11 @@ namespace sotStateObservation
         return measurement;
     }
 
-    unsigned& EstimatorInterface::getContactsNbr(unsigned& contactNbr, const int& time)
+    unsigned& EstimatorInterface::getContactsNbr(unsigned& contactsNbr, const int& time)
     {
-
-        return contactNbr;
+        if(time!=time_) computeStackOfContacts(time);
+        contactsNbr = stackOfContacts_.size();
+        return contactsNbr;
     }
 
 }
