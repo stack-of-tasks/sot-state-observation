@@ -111,8 +111,9 @@ namespace sotStateObservation
 
             Vector& getMeasurement(Vector& measurement, const int& time)
             {
-
-                 return measurement;
+                if(time!=timeMeasurement_) computeMeasurement(time);
+                measurement=convertVector<dynamicgraph::Vector>(measurement_);
+                return measurement;
             }
 
             unsigned& getContactsNbr(unsigned& contactsNbr, const int& time)
@@ -204,6 +205,12 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> imuVectorSIN;
 
+            /**
+            \brief IMU sensors
+            */
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> accelerometerSIN;
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> gyrometerSIN;
+
             // Output signals
             dynamicgraph::SignalPtr <Vector, int> inputSOUT_;
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
@@ -213,6 +220,7 @@ namespace sotStateObservation
             /// Methods
             void computeStackOfContacts(const int& time);
             void computeInput(const int& inTime);
+            void computeMeasurement(const int& time);
 
             // From input reconstructor
             void computeInert
@@ -220,7 +228,7 @@ namespace sotStateObservation
                   const stateObservation::Vector&, stateObservation::Vector&);
 
             /// Parameters
-            double timeStackOfContacts_, timeInput_;
+            double timeStackOfContacts_, timeInput_, timeMeasurement_;
 
             stateObservation::Vector forceThresholds_;
             std::vector<bool> modeled_;
@@ -235,6 +243,7 @@ namespace sotStateObservation
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
 
             stateObservation::Vector input_;
+            stateObservation::Vector measurement_;
 
             // From input reconstructor
             std::vector<stateObservation::Vector> bias_;

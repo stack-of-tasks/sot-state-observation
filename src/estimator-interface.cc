@@ -59,7 +59,9 @@ namespace sotStateObservation
         angMomentumSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::angMomentum"),
         dangMomentumSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::dangMomentum"),
         imuVectorSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::imuVector"),
-        timeStackOfContacts_(0), timeInput_(0),
+        accelerometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::accelerometer"),
+        gyrometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::gyrometer"),
+        timeStackOfContacts_(0), timeInput_(0), timeMeasurement_(0),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
@@ -123,6 +125,14 @@ namespace sotStateObservation
         signalRegistration (imuVectorSIN);
         dynamicgraph::Vector imuVector(15);
         imuVectorSIN.setConstant(imuVector);
+
+        signalRegistration (accelerometerSIN);
+        dynamicgraph::Vector accelerometer(3);
+        accelerometerSIN.setConstant(accelerometer);
+
+        signalRegistration (gyrometerSIN);
+        dynamicgraph::Vector gyrometer(3);
+        gyrometerSIN.setConstant(gyrometer);
 
         // Output
         signalRegistration (inputSOUT_);
@@ -316,6 +326,7 @@ namespace sotStateObservation
    void EstimatorInterface::computeInput(const int& time)
    {
        timeInput_=time;
+       if(time!=timeStackOfContacts_) computeStackOfContacts(time);
 
        const stateObservation::Matrix& inertia=convertMatrix<stateObservation::Matrix>(inertiaSIN.access(time));
        const stateObservation::Matrix& homoWaist=convertMatrix<stateObservation::Matrix>(positionWaistSIN.access(time));
@@ -381,5 +392,30 @@ namespace sotStateObservation
        input_.segment(42,6*nbModeledContacts)=contactPosition+bias;
 
    }
+
+   void EstimatorInterface::computeMeasurement(const int& time)
+   {
+       timeMeasurement_=time;
+       if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+
+       const stateObservation::Vector& accelerometer=convertVector<stateObservation::Vector>(accelerometerSIN.access(time));
+       const stateObservation::Vector& gyrometer=convertVector<stateObservation::Vector>(gyrometerSIN.access(time));
+
+       unsigned contactsNbr;
+       const unsigned& nbModeledContacts=getModeledContactsNbr(contactsNbr,time);
+       const unsigned& nbUnmodeledContacts=getContactsNbr(contactsNbr,time)-getModeledContactsNbr(contactsNbr,time);
+
+       measurement_.resize(6+nbModeledContacts*6+6); measurement_.setZero();
+       measurement_.segment(0,3)=accelerometer;
+       measurement_.segment(3,3)=gyrometer;
+       int i=0;
+       for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
+       {
+           measurement_.segment(6+i*6,6)=inputForces_[*iterator];
+           ++i;
+       }
+
+   }
+
 }
 
