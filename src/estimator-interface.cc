@@ -249,13 +249,8 @@ namespace sotStateObservation
         double m=inertia(0,0); //<=== donne 56.8;
         //std::cout << "Masse=" << m << std::endl;
 
-        dynamicgraph::Vector waist, com;
-        waist.resize(3);
-        com.resize(3);
-
-        stateObservation::Vector waistHomo=homoWaist.block(0,3,3,1);
-        waist=convertVector<dynamicgraph::Vector>(waistHomo);
-        com=convertVector<dynamicgraph::Vector>(comVector);
+        stateObservation::Vector waist=homoWaist.block(0,3,3,1);
+        stateObservation::Vector com=comVector.segment(0,3);
 
         // Inertia expressed at waist
         inert(0)=inertia(3,3);
@@ -266,20 +261,20 @@ namespace sotStateObservation
         inert(5)=inertia(4,5);
 
         // From waist to com
-        inert(0) += -m*((com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
-        inert(1) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
-        inert(2) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1)));
-        inert(3) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(1)-waist.elementAt(1));
-        inert(4) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(2)-waist.elementAt(2));
-        inert(5) += m*(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(2)-waist.elementAt(2));
+        inert(0) += -m*((com(1)-waist(1))*(com(1)-waist(1))+(com(2)-waist(2))*(com(2)-waist(2)));
+        inert(1) += -m*((com(0)-waist(0))*(com(0)-waist(0))+(com(2)-waist(2))*(com(2)-waist(2)));
+        inert(2) += -m*((com(0)-waist(0))*(com(0)-waist(0))+(com(1)-waist(1))*(com(1)-waist(1)));
+        inert(3) += m*(com(0)-waist(0))*(com(1)-waist(1));
+        inert(4) += m*(com(0)-waist(0))*(com(2)-waist(2));
+        inert(5) += m*(com(1)-waist(1))*(com(2)-waist(2));
 
         // From com to local frame
-        inert(0) -= -m*((com.elementAt(1))*(com.elementAt(1))+(com.elementAt(2))*(com.elementAt(2)));
-        inert(1) -= -m*((com.elementAt(0))*(com.elementAt(0))+(com.elementAt(2))*(com.elementAt(2)));
-        inert(2) -= -m*((com.elementAt(0))*(com.elementAt(0))+(com.elementAt(1))*(com.elementAt(1)));
-        inert(3) -= m*(com.elementAt(0))*(com.elementAt(1));
-        inert(4) -= m*(com.elementAt(0))*(com.elementAt(2));
-        inert(5) -= m*(com.elementAt(1))*(com.elementAt(2));
+        inert(0) -= -m*((com(1))*(com(1))+(com(2))*(com(2)));
+        inert(1) -= -m*((com(0))*(com(0))+(com(2))*(com(2)));
+        inert(2) -= -m*((com(0))*(com(0))+(com(1))*(com(1)));
+        inert(3) -= m*(com(0))*(com(1));
+        inert(4) -= m*(com(0))*(com(2));
+        inert(5) -= m*(com(1))*(com(2));
 
     }
 
@@ -294,6 +289,7 @@ namespace sotStateObservation
        const stateObservation::Vector& angMomentum=convertVector<stateObservation::Vector>(angMomentumSIN.access(time));
        const stateObservation::Vector& dangMomentum=convertVector<stateObservation::Vector>(dangMomentumSIN.access(time));
        const stateObservation::Vector& imuVector=convertVector<stateObservation::Vector>(imuVectorSIN.access(time));
+
        unsigned contactsNbr;
        const unsigned& nbContacts=getModeledContactsNbr(contactsNbr,time);
 
@@ -301,14 +297,13 @@ namespace sotStateObservation
 
        // Modeled contacts position
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
-       stateObservation::Vector contactPos; contactPos.resize(nbContacts*6); contactPos.setZero();
+       stateObservation::Vector contactPosition; contactPosition.resize(nbContacts*6); contactPosition.setZero();
        i=0;
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
        {
-           contactPos.segment(i*6,6)=inputPosition_[*iterator];
+           contactPosition.segment(i*6,6)=inputPosition_[*iterator];
            ++i;
-       } i=0;
-       dynamicgraph::Vector contactsPosition=convertVector<dynamicgraph::Vector>(contactPos);
+       }
 
        // Inertia and derivative
        stateObservation::Vector inert,dinert;
@@ -336,71 +331,18 @@ namespace sotStateObservation
        comddot=comVector.segment(6,3);
 
        // Angular momentum and derivative
-       dynamicgraph::Vector dangMomentumOut;
-       dangMomentumOut = convertVector<dynamicgraph::Vector>(m*kine::skewSymmetric(com)*comddot);
+       stateObservation::Vector dangMomentumOut = m*kine::skewSymmetric(com)*comddot;
 
        // Concatenate input
-       dynamicgraph::Vector input;
-       input.resize(42+6*nbContacts,true);
-       input.setZero();
+       input_.resize(42+6*nbContacts);
+       input_.segment(0,9)=comVector;
+       input_.segment(9,6)=inert;
+       input_.segment(15,6)=dinert;
+       input_.segment(21,3)=angMomentum;
+       input_.segment(24,3)=dangMomentumOut;
+       input_.segment(27,15)=imuVector;
+       input_.segment(42,6*nbContacts)=contactPosition;
 
-       for(i=0;i<3;++i){
-           input.elementAt(u)=comVector(i);
-           u++;
-       }
-
-       for(i=0;i<3;++i){
-           input.elementAt(u)=comVector(i+3);
-           u++;
-       }
-
-       for(i=0;i<3;++i){
-           input.elementAt(u)=comVector(i+6);
-           u++;
-       }
-
-       for(i=0;i<6;++i){
-           input.elementAt(u)=inert(i);
-           u++;
-       }
-
-       for(i=0;i<6;++i){
-           input.elementAt(u)=dinert(i);
-           u++;
-       }
-
-       for(i=0;i<3;++i){
-           input.elementAt(u)=angMomentum(i);
-           u++;
-       }
-
-       for(i=0;i<3;++i){
-           input.elementAt(u)=dangMomentumOut(i);
-           u++;
-       }
-
-       for(i=0;i<6;++i){
-           input.elementAt(u)=imuVector(i);
-           u++;
-       }
-
-       for(i=0;i<6;++i){
-           input.elementAt(u)=imuVector(i+6);
-           u++;
-       }
-
-       for(i=0;i<3;++i){
-           input.elementAt(u)=imuVector(i+12);
-           u++;
-       }
-
-       for(i=0;i<6*nbContacts;++i){
-
-           input.elementAt(u)=contactsPosition(i)+bias_[i/6](i%6);
-           u++;
-       }
-
-       input_=convertVector<stateObservation::Vector>(input);
    }
 }
 
