@@ -331,15 +331,14 @@ namespace sotStateObservation
        double m=inertia(0,0);
 
        // Com
-       dynamicgraph::Vector com, comdot, comddot;
-       com=convertVector<dynamicgraph::Vector>(comVector.segment(0,3));
-       comdot=convertVector<dynamicgraph::Vector>(comVector.segment(3,3));
-       comddot=convertVector<dynamicgraph::Vector>(comVector.segment(6,3));
+       stateObservation::Vector com, comddot;
+       com=comVector.segment(0,3);
+       comddot=comVector.segment(6,3);
 
        // Angular momentum and derivative
        dynamicgraph::Vector angMomentumOut, dangMomentumOut;
        angMomentumOut=angMomentum;
-       dangMomentumOut = m*crossProduct(com,comddot);
+       dangMomentumOut = convertVector<dynamicgraph::Vector>(m*kine::skewSymmetric(com)*comddot);
 
        // Concatenate input
        dynamicgraph::Vector input;
