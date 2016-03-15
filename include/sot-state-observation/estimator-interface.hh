@@ -95,6 +95,7 @@ namespace sotStateObservation
             Vector& getInput(Vector& input, const int& time);
             Vector& getMeasurement(Vector& measurement, const int& time);
             unsigned& getContactsNbr(unsigned& contactsNbr, const int& time);
+            unsigned& getModeledContactsNbr(unsigned& modeledContactsNbr, const int& time);
 
             /**
             \name Parameters
@@ -153,6 +154,7 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <Vector, int> inputSOUT_;
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsNbrSOUT_;
+            dynamicgraph::SignalPtr <unsigned, int> modeledContactsNbrSOUT_;
 
             /// Methods
             void computeStackOfContacts(const int& time);
@@ -181,9 +183,11 @@ namespace sotStateObservation
             double time_;
 
             stateObservation::Vector forceThresholds_;
-            stateObservation::Vector modeled_;
+            std::vector<bool> modeled_;
 
             std::list<int> stackOfContacts_;
+            std::list<int> stackOfModeledContacts_;
+            std::list<int> stackOfUnmodeledContacts_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;

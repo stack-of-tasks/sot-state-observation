@@ -43,6 +43,7 @@ namespace sotStateObservation
         inputSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::input"),
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
         contactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsNbr"),
+        modeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::modeledContactsNbr"),
         positionLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_lf"),
         forceLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lf"),
         positionRightFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_rf"),
@@ -132,6 +133,9 @@ namespace sotStateObservation
         signalRegistration (contactsNbrSOUT_);
         contactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsNbr, this, _1, _2));
 
+        signalRegistration (modeledContactsNbrSOUT_);
+        modeledContactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getModeledContactsNbr, this, _1, _2));
+
         /// Commands
 
         std::string docstring;
@@ -166,9 +170,10 @@ namespace sotStateObservation
 
         // Modeled
         modeled_.resize(contact::nbMax);
-        modeled_.setZero(); // default value
-        modeled_[contact::lf]=1;
-        modeled_[contact::rf]=1;
+        modeled_[contact::lf]=true;
+        modeled_[contact::rf]=true;
+        modeled_[contact::lh]=false;
+        modeled_[contact::rh]=false;
 
         // From input reconstructor
         bias_[0].resize(6);
@@ -209,10 +214,25 @@ namespace sotStateObservation
 
             if(inputForces_[i].norm()>forceThresholds_[i])
             {
-                if (!found) stackOfContacts_.push_back(i);
-            } else
+                if (!found)
+                {
+                    stackOfContacts_.push_back(i);
+                    if(modeled_[i]) {
+                        std::cout << "i=" << i << std::endl;
+                        stackOfModeledContacts_.push_back(i); }
+                    if(!modeled_[i]) { stackOfUnmodeledContacts_.push_back(i); }
+                }
+            }
+            else
             {
-                if(found) stackOfContacts_.remove(i);
+                if(found)
+                {
+                    stackOfContacts_.remove(i);
+                    if(modeled_[i]) {
+                        std::cout << "iUnmodeld=" << i << std::endl;
+                        stackOfModeledContacts_.remove(i); }
+                    if(!modeled_[i]) { stackOfUnmodeledContacts_.remove(i); }
+                }
             }
         }
     }
@@ -431,6 +451,13 @@ namespace sotStateObservation
         if(time!=time_) computeStackOfContacts(time);
         contactsNbr = stackOfContacts_.size();
         return contactsNbr;
+    }
+
+    unsigned& EstimatorInterface::getModeledContactsNbr(unsigned& modeledContactsNbr, const int& time)
+    {
+        if(time!=time_) computeStackOfContacts(time);
+        modeledContactsNbr = stackOfModeledContacts_.size();
+        return modeledContactsNbr;
     }
 
 }
