@@ -161,8 +161,8 @@ namespace sotStateObservation
         forceThresholds_.resize(contact::nbMax);
         forceThresholds_.setOnes();
         forceThresholds_*=0.02 * 56.8*stateObservation::cst::gravityConstant; // default value
-        forceThresholds_[contact::lh]*=0.1;
-        forceThresholds_[contact::rh]*=0.1;
+        forceThresholds_[contact::lh]=15;
+        forceThresholds_[contact::rh]=15;
 
         // Modeled
         modeled_.resize(contact::nbMax);
@@ -192,6 +192,12 @@ namespace sotStateObservation
 
         inputForces_[contact::lf] = convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
         inputHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftFootSIN_.access (time)));
+
+        inputForces_[contact::rh] = convertVector<stateObservation::Vector>(forceRightHandSIN_.access (time));
+        inputHomoPosition_[contact::rh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightHandSIN_.access (time)));
+
+        inputForces_[contact::lh] = convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
+        inputHomoPosition_[contact::lh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftHandSIN_.access (time)));
 
         bool found;
 
