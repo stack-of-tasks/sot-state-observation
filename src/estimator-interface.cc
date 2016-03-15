@@ -330,17 +330,25 @@ namespace sotStateObservation
         const dynamicgraph::Vector& dangMomentum=dangMomentumSIN.access(time);
         const dynamicgraph::Vector& imuVector=imuVectorSIN.access(time);
         unsigned contactsNbr;
-        const unsigned& nbContacts=getContactsNbr(contactsNbr,time);
-        dynamicgraph::Vector contactsPosition; contactsPosition.setZero();
+        const unsigned& nbContacts=getModeledContactsNbr(contactsNbr,time);
 
-        int i, u=0,k;
+        int i, u=0;
 
+        // Modeled contacts position
+        if(time!=time_) computeStackOfContacts(time);
+        stateObservation::Vector contactPos; contactPos.resize(nbContacts*6); contactPos.setZero();
+        i=0;
+        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
+        {
+            contactPos.segment(i*6,6)=inputPosition_[*iterator];
+            ++i;
+        } i=0;
+        dynamicgraph::Vector contactsPosition=convertVector<dynamicgraph::Vector>(contactPos);
+
+        // Inertia and derivative
         dynamicgraph::Vector inert,dinert;
         inert.resize(6);
-
-
         computeInert(inertia,homoWaist,inert,comVector);
-
         if (derivateInertiaFD_)
         {
           if (lastInertia_.size()>0 && lastInertia_.norm()!=0)
@@ -353,9 +361,26 @@ namespace sotStateObservation
         }
         else
           computeInertDot(inertia,dinertia,homoWaist,dinert,comVector);
-
         lastInertia_ = inert;
 
+        double m=inertia(0,0);
+
+        // Com
+        dynamicgraph::Vector com, comdot, comddot;
+        com.resize(3);
+        comdot.resize(3);
+        comddot.resize(3);
+        for (i=0;i<3;++i)
+        {
+          com(i) = comVector(i);
+          comdot(i) = comVector(i+3);
+          comddot(i) = comVector(i+6);
+        }
+
+        // Angular momentum and derivative
+        dynamicgraph::Vector angMomentumOut, dangMomentumOut;
+        angMomentumOut=angMomentum;
+        dangMomentumOut = m*crossProduct(com,comddot);
 
         input.resize(42+6*nbContacts,true);
         input.setZero();
@@ -385,31 +410,10 @@ namespace sotStateObservation
             u++;
         }
 
-        double m=inertia(0,0);
-
-        dynamicgraph::Vector angMomentumOut, dangMomentumOut;
-        dynamicgraph::Vector com, comdot, comddot;
-
-        com.resize(3);
-        comdot.resize(3);
-        comddot.resize(3);
-
-
-        for (i=0;i<3;++i)
-        {
-          com(i) = comVector(i);
-          comdot(i) = comVector(i+3);
-          comddot(i) = comVector(i+6);
-        }
-
-        angMomentumOut=angMomentum;
-        dangMomentumOut = m*crossProduct(com,comddot);
-
         for(i=0;i<3;++i){
             input.elementAt(u)=angMomentumOut(i);
             u++;
         }
-
 
         for(i=0;i<3;++i){
             input.elementAt(u)=dangMomentumOut(i);
