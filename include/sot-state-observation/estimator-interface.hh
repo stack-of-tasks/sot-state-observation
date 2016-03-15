@@ -92,6 +92,16 @@ namespace sotStateObservation
                     "Entity that compute the input and measurment vectors for the estimator plus the number of contacts";
             }
 
+            void setForceThresholds(const Vector& forceThresholds)
+            {
+                forceThresholds_=convertVector<stateObservation::Vector>(forceThresholds);
+            }
+
+            dynamicgraph::Vector getForceThresholds() const
+            {
+                return convertVector<dynamicgraph::Vector>(forceThresholds_);
+            }
+
             Vector& getInput(Vector& input, const int& time);
             Vector& getMeasurement(Vector& measurement, const int& time);
             unsigned& getContactsNbr(unsigned& contactsNbr, const int& time);
@@ -169,18 +179,8 @@ namespace sotStateObservation
                  (const dynamicgraph::Matrix & inertia, const dynamicgraph::Vector & dinertia,
                  const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector&, const dynamicgraph::Vector&);
 
-           void setForceThresholds(const Vector& forceThresholds)
-           {
-               forceThresholds_=convertVector<stateObservation::Vector>(forceThresholds);
-           }
-
-           dynamicgraph::Vector getForceThresholds() const
-           {
-               return convertVector<dynamicgraph::Vector>(forceThresholds_);
-           }
-
             /// Parameters
-            double time_;
+            double timeStackOfContacts_, timeInput_;
 
             stateObservation::Vector forceThresholds_;
             std::vector<bool> modeled_;
@@ -194,11 +194,12 @@ namespace sotStateObservation
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
 
+            stateObservation::Vector input_;
+
             // From input reconstructor
             ::dynamicgraph::Vector bias_[2];
             bool derivateInertiaFD_;
             ::dynamicgraph::Vector lastInertia_;
-            int currentTime;
             double dt_;
 
         public:

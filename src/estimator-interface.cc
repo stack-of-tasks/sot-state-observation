@@ -59,7 +59,7 @@ namespace sotStateObservation
         angMomentumSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::angMomentum"),
         dangMomentumSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::dangMomentum"),
         imuVectorSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::imuVector"),
-        time_(0),
+        timeStackOfContacts_(0), timeInput_(0),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax)
@@ -73,27 +73,27 @@ namespace sotStateObservation
 
         signalRegistration (positionLeftFootSIN_ << forceLeftFootSIN_);
         positionLeftFootSIN_.setConstant(pos);
-        positionLeftFootSIN_.setTime (time_);
+        positionLeftFootSIN_.setTime (timeStackOfContacts_);
         forceLeftFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
-        forceLeftFootSIN_.setTime (time_);
+        forceLeftFootSIN_.setTime (timeStackOfContacts_);
 
         signalRegistration (positionRightFootSIN_ << forceRightFootSIN_);
         positionRightFootSIN_.setConstant(pos);
-        positionRightFootSIN_.setTime (time_);
+        positionRightFootSIN_.setTime (timeStackOfContacts_);
         forceRightFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
-        forceRightFootSIN_.setTime (time_);
+        forceRightFootSIN_.setTime (timeStackOfContacts_);
 
         signalRegistration (positionLeftHandSIN_ << forceLeftHandSIN_);
         positionLeftHandSIN_.setConstant(pos);
-        positionLeftHandSIN_.setTime (time_);
+        positionLeftHandSIN_.setTime (timeStackOfContacts_);
         forceLeftHandSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
-        forceLeftHandSIN_.setTime (time_);
+        forceLeftHandSIN_.setTime (timeStackOfContacts_);
 
         signalRegistration (positionRightHandSIN_ << forceRightHandSIN_);
         positionRightHandSIN_.setConstant(pos);
-        positionRightHandSIN_.setTime (time_);
+        positionRightHandSIN_.setTime (timeStackOfContacts_);
         forceRightHandSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
-        forceRightHandSIN_.setTime (time_);
+        forceRightHandSIN_.setTime (timeStackOfContacts_);
 
         signalRegistration (comVectorSIN);
         dynamicgraph::Vector comVector(3);
@@ -175,13 +175,15 @@ namespace sotStateObservation
         modeled_[contact::lh]=false;
         modeled_[contact::rh]=false;
 
+        // Outputs
+        input_.resize(42);
+
         // From input reconstructor
         bias_[0].resize(6);
         bias_[1].resize(6);
         bias_[0].setZero();
         bias_[1].setZero();
         lastInertia_.setZero();
-        currentTime = 0;
         dt_=5e-3;
     }
 
@@ -191,6 +193,7 @@ namespace sotStateObservation
 
     void EstimatorInterface::computeStackOfContacts(const int& time)
     {
+        timeStackOfContacts_=time;
 
         inputForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
         inputHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightFootSIN_.access (time)));
@@ -311,158 +314,160 @@ namespace sotStateObservation
         dinert = dinertia;
    }
 
-    Vector& EstimatorInterface::getInput(Vector& input, const int& time)
-    {
-        if (currentTime==time)
-        {
-          input =  inputSOUT_.accessCopy();
+   void EstimatorInterface::computeInput(const int& time)
+   {
+       timeInput_=time;
 
-          return input;
-        }
+       const dynamicgraph::Matrix& inertia=inertiaSIN.access(time);
+       const dynamicgraph::Matrix& homoWaist=positionWaistSIN.access(time);
+       const dynamicgraph::Vector& comVector=comVectorSIN.access(time);
+       const dynamicgraph::Vector& dinertia=dinertiaSIN.access(time);
+       const dynamicgraph::Vector& angMomentum=angMomentumSIN.access(time);
+       const dynamicgraph::Vector& dangMomentum=dangMomentumSIN.access(time);
+       const dynamicgraph::Vector& imuVector=imuVectorSIN.access(time);
+       unsigned contactsNbr;
+       const unsigned& nbContacts=getModeledContactsNbr(contactsNbr,time);
 
-        currentTime = time;
+       int i, u=0;
 
-        const dynamicgraph::Matrix& inertia=inertiaSIN.access(time);
-        const dynamicgraph::Matrix& homoWaist=positionWaistSIN.access(time);
-        const dynamicgraph::Vector& comVector=comVectorSIN.access(time);
-        const dynamicgraph::Vector& dinertia=dinertiaSIN.access(time);
-        const dynamicgraph::Vector& angMomentum=angMomentumSIN.access(time);
-        const dynamicgraph::Vector& dangMomentum=dangMomentumSIN.access(time);
-        const dynamicgraph::Vector& imuVector=imuVectorSIN.access(time);
-        unsigned contactsNbr;
-        const unsigned& nbContacts=getModeledContactsNbr(contactsNbr,time);
+       // Modeled contacts position
+       if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+       stateObservation::Vector contactPos; contactPos.resize(nbContacts*6); contactPos.setZero();
+       i=0;
+       for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
+       {
+           contactPos.segment(i*6,6)=inputPosition_[*iterator];
+           ++i;
+       } i=0;
+       dynamicgraph::Vector contactsPosition=convertVector<dynamicgraph::Vector>(contactPos);
 
-        int i, u=0;
+       // Inertia and derivative
+       dynamicgraph::Vector inert,dinert;
+       inert.resize(6);
+       computeInert(inertia,homoWaist,inert,comVector);
+       if (derivateInertiaFD_)
+       {
+         if (lastInertia_.size()>0 && lastInertia_.norm()!=0)
+           dinert = (1/dt_)*(inert - lastInertia_);
+         else
+         {
+           dinert.resize(6);
+           dinert.setZero();
+         }
+       }
+       else
+         computeInertDot(inertia,dinertia,homoWaist,dinert,comVector);
+       lastInertia_ = inert;
 
-        // Modeled contacts position
-        if(time!=time_) computeStackOfContacts(time);
-        stateObservation::Vector contactPos; contactPos.resize(nbContacts*6); contactPos.setZero();
-        i=0;
-        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
-        {
-            contactPos.segment(i*6,6)=inputPosition_[*iterator];
-            ++i;
-        } i=0;
-        dynamicgraph::Vector contactsPosition=convertVector<dynamicgraph::Vector>(contactPos);
+       double m=inertia(0,0);
 
-        // Inertia and derivative
-        dynamicgraph::Vector inert,dinert;
-        inert.resize(6);
-        computeInert(inertia,homoWaist,inert,comVector);
-        if (derivateInertiaFD_)
-        {
-          if (lastInertia_.size()>0 && lastInertia_.norm()!=0)
-            dinert = (1/dt_)*(inert - lastInertia_);
-          else
-          {
-            dinert.resize(6);
-            dinert.setZero();
-          }
-        }
-        else
-          computeInertDot(inertia,dinertia,homoWaist,dinert,comVector);
-        lastInertia_ = inert;
+       // Com
+       dynamicgraph::Vector com, comdot, comddot;
+       com.resize(3);
+       comdot.resize(3);
+       comddot.resize(3);
+       for (i=0;i<3;++i)
+       {
+         com(i) = comVector(i);
+         comdot(i) = comVector(i+3);
+         comddot(i) = comVector(i+6);
+       }
 
-        double m=inertia(0,0);
+       // Angular momentum and derivative
+       dynamicgraph::Vector angMomentumOut, dangMomentumOut;
+       angMomentumOut=angMomentum;
+       dangMomentumOut = m*crossProduct(com,comddot);
 
-        // Com
-        dynamicgraph::Vector com, comdot, comddot;
-        com.resize(3);
-        comdot.resize(3);
-        comddot.resize(3);
-        for (i=0;i<3;++i)
-        {
-          com(i) = comVector(i);
-          comdot(i) = comVector(i+3);
-          comddot(i) = comVector(i+6);
-        }
+       // Concatenate input
+       dynamicgraph::Vector input;
+       input.resize(42+6*nbContacts,true);
+       input.setZero();
 
-        // Angular momentum and derivative
-        dynamicgraph::Vector angMomentumOut, dangMomentumOut;
-        angMomentumOut=angMomentum;
-        dangMomentumOut = m*crossProduct(com,comddot);
+       for(i=0;i<3;++i){
+           input.elementAt(u)=comVector(i);
+           u++;
+       }
 
-        input.resize(42+6*nbContacts,true);
-        input.setZero();
+       for(i=0;i<3;++i){
+           input.elementAt(u)=comVector(i+3);
+           u++;
+       }
 
-        for(i=0;i<3;++i){
-            input.elementAt(u)=comVector(i);
-            u++;
-        }
+       for(i=0;i<3;++i){
+           input.elementAt(u)=comVector(i+6);
+           u++;
+       }
 
-        for(i=0;i<3;++i){
-            input.elementAt(u)=comVector(i+3);
-            u++;
-        }
+       for(i=0;i<6;++i){
+           input.elementAt(u)=inert(i);
+           u++;
+       }
 
-        for(i=0;i<3;++i){
-            input.elementAt(u)=comVector(i+6);
-            u++;
-        }
+       for(i=0;i<6;++i){
+           input.elementAt(u)=dinert(i);
+           u++;
+       }
 
-        for(i=0;i<6;++i){
-            input.elementAt(u)=inert(i);
-            u++;
-        }
+       for(i=0;i<3;++i){
+           input.elementAt(u)=angMomentumOut(i);
+           u++;
+       }
 
-        for(i=0;i<6;++i){
-            input.elementAt(u)=dinert(i);
-            u++;
-        }
+       for(i=0;i<3;++i){
+           input.elementAt(u)=dangMomentumOut(i);
+           u++;
+       }
 
-        for(i=0;i<3;++i){
-            input.elementAt(u)=angMomentumOut(i);
-            u++;
-        }
+       for(i=0;i<6;++i){
+           input.elementAt(u)=imuVector(i);
+           u++;
+       }
 
-        for(i=0;i<3;++i){
-            input.elementAt(u)=dangMomentumOut(i);
-            u++;
-        }
+       for(i=0;i<6;++i){
+           input.elementAt(u)=imuVector(i+6);
+           u++;
+       }
 
-        for(i=0;i<6;++i){
-            input.elementAt(u)=imuVector(i);
-            u++;
-        }
+       for(i=0;i<3;++i){
+           input.elementAt(u)=imuVector(i+12);
+           u++;
+       }
 
-        for(i=0;i<6;++i){
-            input.elementAt(u)=imuVector(i+6);
-            u++;
-        }
+       for(i=0;i<6*nbContacts;++i){
 
-        for(i=0;i<3;++i){
-            input.elementAt(u)=imuVector(i+12);
-            u++;
-        }
+           input.elementAt(u)=contactsPosition(i)+bias_[i/6](i%6);
+           u++;
+       }
 
-        for(i=0;i<6*nbContacts;++i){
+       input_=convertVector<stateObservation::Vector>(input);
+   }
 
-            input.elementAt(u)=contactsPosition(i)+bias_[i/6](i%6);
-            u++;
-        }
-
+   Vector& EstimatorInterface::getInput(Vector& input, const int& time)
+   {
+        if(time!=timeInput_) computeInput(time);
+        input=convertVector<dynamicgraph::Vector>(input_);
         return input;
-    }
+   }
 
-    Vector& EstimatorInterface::getMeasurement(Vector& measurement, const int& time)
-    {
+   Vector& EstimatorInterface::getMeasurement(Vector& measurement, const int& time)
+   {
 
         return measurement;
-    }
+   }
 
-    unsigned& EstimatorInterface::getContactsNbr(unsigned& contactsNbr, const int& time)
-    {
-        if(time!=time_) computeStackOfContacts(time);
+   unsigned& EstimatorInterface::getContactsNbr(unsigned& contactsNbr, const int& time)
+   {
+        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
         contactsNbr = stackOfContacts_.size();
         return contactsNbr;
-    }
+   }
 
-    unsigned& EstimatorInterface::getModeledContactsNbr(unsigned& modeledContactsNbr, const int& time)
-    {
-        if(time!=time_) computeStackOfContacts(time);
+   unsigned& EstimatorInterface::getModeledContactsNbr(unsigned& modeledContactsNbr, const int& time)
+   {
+        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
         modeledContactsNbr = stackOfModeledContacts_.size();
         return modeledContactsNbr;
-    }
+   }
 
 }
 
