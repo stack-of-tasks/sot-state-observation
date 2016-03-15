@@ -195,7 +195,7 @@ namespace sotStateObservation
             // From input reconstructor
             void computeInert
                  (const dynamicgraph::Matrix & inertia, const stateObservation::Matrix & homoWaist,
-                  const stateObservation::Vector&, dynamicgraph::Vector&);
+                  const stateObservation::Vector&, stateObservation::Vector&);
 
             /// Parameters
             double timeStackOfContacts_, timeInput_;
@@ -217,7 +217,7 @@ namespace sotStateObservation
             // From input reconstructor
             ::dynamicgraph::Vector bias_[2];
             bool derivateInertiaFD_;
-            ::dynamicgraph::Vector lastInertia_;
+            stateObservation::Vector lastInertia_;
             double dt_;
 
         public:

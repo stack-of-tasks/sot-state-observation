@@ -243,7 +243,7 @@ namespace sotStateObservation
     void EstimatorInterface::computeInert(const dynamicgraph::Matrix & inertia,
                                           const stateObservation::Matrix & homoWaist,
                                           const stateObservation::Vector& comVector,
-                                          dynamicgraph::Vector& inert)
+                                          stateObservation::Vector& inert)
     {
 
         double m=inertia(0,0); //<=== donne 56.8;
@@ -258,28 +258,28 @@ namespace sotStateObservation
         com=convertVector<dynamicgraph::Vector>(comVector);
 
         // Inertia expressed at waist
-        inert.elementAt(0)=inertia(3,3);
-        inert.elementAt(1)=inertia(4,4);
-        inert.elementAt(2)=inertia(5,5);
-        inert.elementAt(3)=inertia(3,4);
-        inert.elementAt(4)=inertia(3,5);
-        inert.elementAt(5)=inertia(4,5);
+        inert(0)=inertia(3,3);
+        inert(1)=inertia(4,4);
+        inert(2)=inertia(5,5);
+        inert(3)=inertia(3,4);
+        inert(4)=inertia(3,5);
+        inert(5)=inertia(4,5);
 
         // From waist to com
-        inert.elementAt(0) += -m*((com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
-        inert.elementAt(1) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
-        inert.elementAt(2) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1)));
-        inert.elementAt(3) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(1)-waist.elementAt(1));
-        inert.elementAt(4) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(2)-waist.elementAt(2));
-        inert.elementAt(5) += m*(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(2)-waist.elementAt(2));
+        inert(0) += -m*((com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
+        inert(1) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(2)-waist.elementAt(2))*(com.elementAt(2)-waist.elementAt(2)));
+        inert(2) += -m*((com.elementAt(0)-waist.elementAt(0))*(com.elementAt(0)-waist.elementAt(0))+(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(1)-waist.elementAt(1)));
+        inert(3) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(1)-waist.elementAt(1));
+        inert(4) += m*(com.elementAt(0)-waist.elementAt(0))*(com.elementAt(2)-waist.elementAt(2));
+        inert(5) += m*(com.elementAt(1)-waist.elementAt(1))*(com.elementAt(2)-waist.elementAt(2));
 
         // From com to local frame
-        inert.elementAt(0) -= -m*((com.elementAt(1))*(com.elementAt(1))+(com.elementAt(2))*(com.elementAt(2)));
-        inert.elementAt(1) -= -m*((com.elementAt(0))*(com.elementAt(0))+(com.elementAt(2))*(com.elementAt(2)));
-        inert.elementAt(2) -= -m*((com.elementAt(0))*(com.elementAt(0))+(com.elementAt(1))*(com.elementAt(1)));
-        inert.elementAt(3) -= m*(com.elementAt(0))*(com.elementAt(1));
-        inert.elementAt(4) -= m*(com.elementAt(0))*(com.elementAt(2));
-        inert.elementAt(5) -= m*(com.elementAt(1))*(com.elementAt(2));
+        inert(0) -= -m*((com.elementAt(1))*(com.elementAt(1))+(com.elementAt(2))*(com.elementAt(2)));
+        inert(1) -= -m*((com.elementAt(0))*(com.elementAt(0))+(com.elementAt(2))*(com.elementAt(2)));
+        inert(2) -= -m*((com.elementAt(0))*(com.elementAt(0))+(com.elementAt(1))*(com.elementAt(1)));
+        inert(3) -= m*(com.elementAt(0))*(com.elementAt(1));
+        inert(4) -= m*(com.elementAt(0))*(com.elementAt(2));
+        inert(5) -= m*(com.elementAt(1))*(com.elementAt(2));
 
     }
 
@@ -290,7 +290,7 @@ namespace sotStateObservation
        const dynamicgraph::Matrix& inertia=inertiaSIN.access(time);
        const stateObservation::Matrix& homoWaist=convertMatrix<stateObservation::Matrix>(positionWaistSIN.access(time));
        const stateObservation::Vector& comVector=convertVector<stateObservation::Vector>(comVectorSIN.access(time));
-       const dynamicgraph::Vector& dinertia=dinertiaSIN.access(time);
+       const stateObservation::Vector& dinertia=convertVector<stateObservation::Vector>(dinertiaSIN.access(time));
        const dynamicgraph::Vector& angMomentum=angMomentumSIN.access(time);
        const dynamicgraph::Vector& dangMomentum=dangMomentumSIN.access(time);
        const dynamicgraph::Vector& imuVector=imuVectorSIN.access(time);
@@ -311,7 +311,7 @@ namespace sotStateObservation
        dynamicgraph::Vector contactsPosition=convertVector<dynamicgraph::Vector>(contactPos);
 
        // Inertia and derivative
-       dynamicgraph::Vector inert,dinert;
+       stateObservation::Vector inert,dinert;
        inert.resize(6);
        computeInert(inertia,homoWaist,comVector,inert);
        if (derivateInertiaFD_)
