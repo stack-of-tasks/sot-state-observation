@@ -283,32 +283,6 @@ namespace sotStateObservation
 
     }
 
-    void EstimatorInterface::computeInertDot
-            (const dynamicgraph::Matrix & inertia, const dynamicgraph::Vector & dinertia,
-             const stateObservation::Matrix & homoWaist, dynamicgraph::Vector& dinert,
-            const stateObservation::Vector& comVector)
-    {
-      //FIXE : THIS FUNCTION IS WRONG
-        double m=inertia(0,0); //<=== donne 56.8;
-        //std::cout << "Masse=" << m << std::endl;
-
-        dynamicgraph::Vector waist, com, dcom;
-        waist.resize(3);
-        com.resize(3);
-        dcom.resize(3);
-
-        stateObservation::Vector waistHomo=homoWaist.block(0,3,3,1);
-        waist=convertVector<dynamicgraph::Vector>(waistHomo);
-        com=convertVector<dynamicgraph::Vector>(comVector);
-
-        dcom.elementAt(0)=comVector(3);
-        dcom.elementAt(1)=comVector(4);
-        dcom.elementAt(2)=comVector(5);
-
-        // Inertia expressed at waist
-        dinert = dinertia;
-   }
-
    void EstimatorInterface::computeInput(const int& time)
    {
        timeInput_=time;
@@ -351,7 +325,7 @@ namespace sotStateObservation
          }
        }
        else
-         computeInertDot(inertia,dinertia,homoWaist,dinert,comVector);
+         dinert=dinertia;
        lastInertia_ = inert;
 
        double m=inertia(0,0);
