@@ -62,7 +62,8 @@ namespace sotStateObservation
         timeStackOfContacts_(0), timeInput_(0),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
-        inputHomoPosition_(contact::nbMax)
+        inputHomoPosition_(contact::nbMax),
+        bias_(contact::nbMax)
     {
 
         /// Signals
@@ -171,23 +172,23 @@ namespace sotStateObservation
 
         docstring =
                 "\n"
-                "    Set bias1"
+                "    Set bias for left foot"
                 "\n";
 
-        addCommand(std::string("setFootBias1"),
+        addCommand(std::string("setLeftFootBias"),
              new
              ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Vector>
-                (*this, &EstimatorInterface::setFootBias1, docstring));
+                (*this, &EstimatorInterface::setLeftFootBias, docstring));
 
         docstring =
                 "\n"
-                "    Set bias2"
+                "    Set bias for right foot"
                 "\n";
 
-        addCommand(std::string("setFootBias2"),
+        addCommand(std::string("setRightFootBias"),
              new
              ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Vector>
-                (*this, &EstimatorInterface::setFootBias2, docstring));
+                (*this, &EstimatorInterface::setRightFootBias, docstring));
 
         docstring =
                 "\n"
@@ -216,10 +217,7 @@ namespace sotStateObservation
         modeled_[contact::rh]=false;
 
         // From input reconstructor
-        bias_[0].resize(6);
-        bias_[1].resize(6);
-        bias_[0].setZero();
-        bias_[1].setZero();
+        for (int i=0; i<contact::nbMax;++i) { bias_[i].resize(6); bias_[i].setZero(); }
         lastInertia_.setZero();
         dt_=5e-3;
     }
@@ -328,17 +326,19 @@ namespace sotStateObservation
        const stateObservation::Vector& imuVector=convertVector<stateObservation::Vector>(imuVectorSIN.access(time));
 
        unsigned contactsNbr;
-       const unsigned& nbContacts=getModeledContactsNbr(contactsNbr,time);
+       const unsigned& nbModeledContacts=getModeledContactsNbr(contactsNbr,time);
 
        int i, u=0;
 
        // Modeled contacts position
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
-       stateObservation::Vector contactPosition; contactPosition.resize(nbContacts*6); contactPosition.setZero();
+       stateObservation::Vector contactPosition; contactPosition.resize(nbModeledContacts*6); contactPosition.setZero();
+       stateObservation::Vector bias; bias.resize(6*nbModeledContacts); bias.setZero();
        i=0;
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
        {
            contactPosition.segment(i*6,6)=inputPosition_[*iterator];
+           bias.segment(i*6,6)=bias_[*iterator];
            ++i;
        }
 
@@ -371,14 +371,14 @@ namespace sotStateObservation
        stateObservation::Vector dangMomentumOut = m*kine::skewSymmetric(com)*comddot;
 
        // Concatenate input
-       input_.resize(42+6*nbContacts);
+       input_.resize(42+6*nbModeledContacts);
        input_.segment(0,9)=comVector;
        input_.segment(9,6)=inert;
        input_.segment(15,6)=dinert;
        input_.segment(21,3)=angMomentum;
        input_.segment(24,3)=dangMomentumOut;
        input_.segment(27,15)=imuVector;
-       input_.segment(42,6*nbContacts)=contactPosition;
+       input_.segment(42,6*nbModeledContacts)=contactPosition+bias;
 
    }
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015,
+// Copyright (c) 2016,
 // Alexis Mifsud
 //
 // CNRS
@@ -129,14 +129,14 @@ namespace sotStateObservation
                  return modeledContactsNbr;
             }
 
-            void setFootBias1 (const ::dynamicgraph::Vector & b)
+            void setLeftFootBias (const ::dynamicgraph::Vector & b)
             {
-              bias_[0]=b;
+                bias_[0]=convertVector<stateObservation::Vector>(b);
             }
 
-            void setFootBias2 (const ::dynamicgraph::Vector & b)
+            void setRightFootBias (const ::dynamicgraph::Vector & b)
             {
-              bias_[1]=b;
+              bias_[1]=convertVector<stateObservation::Vector>(b);
             }
 
             void setFDInertiaDot(const bool& b)
@@ -237,7 +237,7 @@ namespace sotStateObservation
             stateObservation::Vector input_;
 
             // From input reconstructor
-            ::dynamicgraph::Vector bias_[2];
+            std::vector<stateObservation::Vector> bias_;
             bool derivateInertiaFD_;
             stateObservation::Vector lastInertia_;
             double dt_;
