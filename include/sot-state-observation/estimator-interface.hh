@@ -129,6 +129,28 @@ namespace sotStateObservation
                  return modeledContactsNbr;
             }
 
+            void setFootBias1 (const ::dynamicgraph::Vector & b)
+            {
+              bias_[0]=b;
+            }
+
+            void setFootBias2 (const ::dynamicgraph::Vector & b)
+            {
+              bias_[1]=b;
+            }
+
+            void setFDInertiaDot(const bool& b)
+            {
+              derivateInertiaFD_=b;
+            }
+
+            void setLastInertia(const dynamicgraph::Matrix & inert)
+            {
+                const stateObservation::Matrix& homoWaist=convertMatrix<stateObservation::Matrix>(positionWaistSIN.access(timeInput_));
+                const stateObservation::Vector& comVector=convertVector<stateObservation::Vector>(comVectorSIN.access(timeInput_));
+                computeInert(convertMatrix<stateObservation::Matrix>(inert),homoWaist,comVector,lastInertia_);
+            }
+
             /**
             \name Parameters
             @{

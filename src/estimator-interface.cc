@@ -159,6 +159,46 @@ namespace sotStateObservation
              ::dynamicgraph::command::Getter <EstimatorInterface,dynamicgraph::Vector>
                 (*this, &EstimatorInterface::getForceThresholds, docstring));
 
+        docstring =
+                "\n"
+                "    Set if the derivative of inertia matrix is computed using finite differences"
+                "\n";
+
+        addCommand(std::string("setFDInertiaDot"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,bool>
+                (*this, &EstimatorInterface::setFDInertiaDot, docstring));
+
+        docstring =
+                "\n"
+                "    Set bias1"
+                "\n";
+
+        addCommand(std::string("setFootBias1"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Vector>
+                (*this, &EstimatorInterface::setFootBias1, docstring));
+
+        docstring =
+                "\n"
+                "    Set bias2"
+                "\n";
+
+        addCommand(std::string("setFootBias2"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Vector>
+                (*this, &EstimatorInterface::setFootBias2, docstring));
+
+        docstring =
+                "\n"
+                "    Set lastInertia_\n"
+                "\n";
+
+        addCommand(std::string("setLastInertia"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Matrix>
+                (*this, &EstimatorInterface::setLastInertia, docstring));
+
         /// Parameters
 
         // ForceThresholds
@@ -174,9 +214,6 @@ namespace sotStateObservation
         modeled_[contact::rf]=true;
         modeled_[contact::lh]=false;
         modeled_[contact::rh]=false;
-
-        // Outputs
-        input_.resize(42);
 
         // From input reconstructor
         bias_[0].resize(6);
