@@ -441,33 +441,5 @@ namespace sotStateObservation
 
        input_=convertVector<stateObservation::Vector>(input);
    }
-
-   Vector& EstimatorInterface::getInput(Vector& input, const int& time)
-   {
-        if(time!=timeInput_) computeInput(time);
-        input=convertVector<dynamicgraph::Vector>(input_);
-        return input;
-   }
-
-   Vector& EstimatorInterface::getMeasurement(Vector& measurement, const int& time)
-   {
-
-        return measurement;
-   }
-
-   unsigned& EstimatorInterface::getContactsNbr(unsigned& contactsNbr, const int& time)
-   {
-        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
-        contactsNbr = stackOfContacts_.size();
-        return contactsNbr;
-   }
-
-   unsigned& EstimatorInterface::getModeledContactsNbr(unsigned& modeledContactsNbr, const int& time)
-   {
-        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
-        modeledContactsNbr = stackOfModeledContacts_.size();
-        return modeledContactsNbr;
-   }
-
 }
 

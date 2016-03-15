@@ -102,10 +102,32 @@ namespace sotStateObservation
                 return convertVector<dynamicgraph::Vector>(forceThresholds_);
             }
 
-            Vector& getInput(Vector& input, const int& time);
-            Vector& getMeasurement(Vector& measurement, const int& time);
-            unsigned& getContactsNbr(unsigned& contactsNbr, const int& time);
-            unsigned& getModeledContactsNbr(unsigned& modeledContactsNbr, const int& time);
+            Vector& getInput(Vector& input, const int& time)
+            {
+                 if(time!=timeInput_) computeInput(time);
+                 input=convertVector<dynamicgraph::Vector>(input_);
+                 return input;
+            }
+
+            Vector& getMeasurement(Vector& measurement, const int& time)
+            {
+
+                 return measurement;
+            }
+
+            unsigned& getContactsNbr(unsigned& contactsNbr, const int& time)
+            {
+                 if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+                 contactsNbr = stackOfContacts_.size();
+                 return contactsNbr;
+            }
+
+            unsigned& getModeledContactsNbr(unsigned& modeledContactsNbr, const int& time)
+            {
+                 if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+                 modeledContactsNbr = stackOfModeledContacts_.size();
+                 return modeledContactsNbr;
+            }
 
             /**
             \name Parameters
