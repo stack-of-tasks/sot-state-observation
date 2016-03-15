@@ -291,9 +291,9 @@ namespace sotStateObservation
        const stateObservation::Matrix& homoWaist=convertMatrix<stateObservation::Matrix>(positionWaistSIN.access(time));
        const stateObservation::Vector& comVector=convertVector<stateObservation::Vector>(comVectorSIN.access(time));
        const stateObservation::Vector& dinertia=convertVector<stateObservation::Vector>(dinertiaSIN.access(time));
-       const dynamicgraph::Vector& angMomentum=angMomentumSIN.access(time);
-       const dynamicgraph::Vector& dangMomentum=dangMomentumSIN.access(time);
-       const dynamicgraph::Vector& imuVector=imuVectorSIN.access(time);
+       const stateObservation::Vector& angMomentum=convertVector<stateObservation::Vector>(angMomentumSIN.access(time));
+       const stateObservation::Vector& dangMomentum=convertVector<stateObservation::Vector>(dangMomentumSIN.access(time));
+       const stateObservation::Vector& imuVector=convertVector<stateObservation::Vector>(imuVectorSIN.access(time));
        unsigned contactsNbr;
        const unsigned& nbContacts=getModeledContactsNbr(contactsNbr,time);
 
@@ -336,8 +336,7 @@ namespace sotStateObservation
        comddot=comVector.segment(6,3);
 
        // Angular momentum and derivative
-       dynamicgraph::Vector angMomentumOut, dangMomentumOut;
-       angMomentumOut=angMomentum;
+       dynamicgraph::Vector dangMomentumOut;
        dangMomentumOut = convertVector<dynamicgraph::Vector>(m*kine::skewSymmetric(com)*comddot);
 
        // Concatenate input
@@ -371,7 +370,7 @@ namespace sotStateObservation
        }
 
        for(i=0;i<3;++i){
-           input.elementAt(u)=angMomentumOut(i);
+           input.elementAt(u)=angMomentum(i);
            u++;
        }
 
