@@ -240,7 +240,7 @@ namespace sotStateObservation
         }
     }
 
-    void EstimatorInterface::computeInert(const dynamicgraph::Matrix & inertia,
+    void EstimatorInterface::computeInert(const stateObservation::Matrix & inertia,
                                           const stateObservation::Matrix & homoWaist,
                                           const stateObservation::Vector& comVector,
                                           stateObservation::Vector& inert)
@@ -287,7 +287,7 @@ namespace sotStateObservation
    {
        timeInput_=time;
 
-       const dynamicgraph::Matrix& inertia=inertiaSIN.access(time);
+       const stateObservation::Matrix& inertia=convertMatrix<stateObservation::Matrix>(inertiaSIN.access(time));
        const stateObservation::Matrix& homoWaist=convertMatrix<stateObservation::Matrix>(positionWaistSIN.access(time));
        const stateObservation::Vector& comVector=convertVector<stateObservation::Vector>(comVectorSIN.access(time));
        const stateObservation::Vector& dinertia=convertVector<stateObservation::Vector>(dinertiaSIN.access(time));

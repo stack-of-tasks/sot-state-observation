@@ -194,7 +194,7 @@ namespace sotStateObservation
 
             // From input reconstructor
             void computeInert
-                 (const dynamicgraph::Matrix & inertia, const stateObservation::Matrix & homoWaist,
+                 (const stateObservation::Matrix & inertia, const stateObservation::Matrix & homoWaist,
                   const stateObservation::Vector&, stateObservation::Vector&);
 
             /// Parameters
