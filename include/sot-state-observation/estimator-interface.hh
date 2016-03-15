@@ -195,11 +195,11 @@ namespace sotStateObservation
             // From input reconstructor
             void computeInert
                  (const dynamicgraph::Matrix & inertia, const dynamicgraph::Matrix & homoWaist,
-                 dynamicgraph::Vector&, const dynamicgraph::Vector&);
+                  const stateObservation::Vector&, dynamicgraph::Vector&);
 
            void computeInertDot
                  (const dynamicgraph::Matrix & inertia, const dynamicgraph::Vector & dinertia,
-                 const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector&, const dynamicgraph::Vector&);
+                 const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector&, const stateObservation::Vector&);
 
             /// Parameters
             double timeStackOfContacts_, timeInput_;

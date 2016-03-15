@@ -240,7 +240,10 @@ namespace sotStateObservation
         }
     }
 
-    void EstimatorInterface::computeInert(const dynamicgraph::Matrix & inertia, const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector& inert, const dynamicgraph::Vector& comVector)
+    void EstimatorInterface::computeInert(const dynamicgraph::Matrix & inertia,
+                                          const dynamicgraph::Matrix & homoWaist,
+                                          const stateObservation::Vector& comVector,
+                                          dynamicgraph::Vector& inert)
     {
 
         double m=inertia(0,0); //<=== donne 56.8;
@@ -254,9 +257,7 @@ namespace sotStateObservation
         waist.elementAt(1)=homoWaist(1,3);
         waist.elementAt(2)=homoWaist(2,3);
 
-        com.elementAt(0)=comVector(0);
-        com.elementAt(1)=comVector(1);
-        com.elementAt(2)=comVector(2);
+        com=convertVector<dynamicgraph::Vector>(comVector);
 
         // Inertia expressed at waist
         inert.elementAt(0)=inertia(3,3);
@@ -287,7 +288,7 @@ namespace sotStateObservation
     void EstimatorInterface::computeInertDot
             (const dynamicgraph::Matrix & inertia, const dynamicgraph::Vector & dinertia,
             const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector& dinert,
-            const dynamicgraph::Vector& comVector)
+            const stateObservation::Vector& comVector)
     {
       //FIXE : THIS FUNCTION IS WRONG
         double m=inertia(0,0); //<=== donne 56.8;
@@ -320,7 +321,7 @@ namespace sotStateObservation
 
        const dynamicgraph::Matrix& inertia=inertiaSIN.access(time);
        const dynamicgraph::Matrix& homoWaist=positionWaistSIN.access(time);
-       const dynamicgraph::Vector& comVector=comVectorSIN.access(time);
+       const stateObservation::Vector& comVector=convertVector<stateObservation::Vector>(comVectorSIN.access(time));
        const dynamicgraph::Vector& dinertia=dinertiaSIN.access(time);
        const dynamicgraph::Vector& angMomentum=angMomentumSIN.access(time);
        const dynamicgraph::Vector& dangMomentum=dangMomentumSIN.access(time);
@@ -344,7 +345,7 @@ namespace sotStateObservation
        // Inertia and derivative
        dynamicgraph::Vector inert,dinert;
        inert.resize(6);
-       computeInert(inertia,homoWaist,inert,comVector);
+       computeInert(inertia,homoWaist,comVector,inert);
        if (derivateInertiaFD_)
        {
          if (lastInertia_.size()>0 && lastInertia_.norm()!=0)
@@ -363,15 +364,9 @@ namespace sotStateObservation
 
        // Com
        dynamicgraph::Vector com, comdot, comddot;
-       com.resize(3);
-       comdot.resize(3);
-       comddot.resize(3);
-       for (i=0;i<3;++i)
-       {
-         com(i) = comVector(i);
-         comdot(i) = comVector(i+3);
-         comddot(i) = comVector(i+6);
-       }
+       com=convertVector<dynamicgraph::Vector>(comVector.segment(0,3));
+       comdot=convertVector<dynamicgraph::Vector>(comVector.segment(3,3));
+       comddot=convertVector<dynamicgraph::Vector>(comVector.segment(6,3));
 
        // Angular momentum and derivative
        dynamicgraph::Vector angMomentumOut, dangMomentumOut;
