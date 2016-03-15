@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015,
+// Copyright (c) 2016,
 // Alexis Mifsud
 //
 // CNRS
@@ -44,6 +44,7 @@ namespace sotStateObservation
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
         contactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsNbr"),
         modeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::modeledContactsNbr"),
+        unmodeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::unmodeledContactsNbr"),
         positionLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_lf"),
         forceLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lf"),
         positionRightFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_rf"),
@@ -146,6 +147,9 @@ namespace sotStateObservation
 
         signalRegistration (modeledContactsNbrSOUT_);
         modeledContactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getModeledContactsNbr, this, _1, _2));
+
+        signalRegistration (unmodeledContactsNbrSOUT_);
+        unmodeledContactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getUnmodeledContactsNbr, this, _1, _2));
 
         /// Commands
 
@@ -276,12 +280,15 @@ namespace sotStateObservation
                 if(found)
                 {
                     stackOfContacts_.remove(i);
-                    if(modeled_[i]) {
-                        std::cout << "iUnmodeld=" << i << std::endl;
-                        stackOfModeledContacts_.remove(i); }
+                    if(modeled_[i]) { stackOfModeledContacts_.remove(i); }
                     if(!modeled_[i]) { stackOfUnmodeledContacts_.remove(i); }
                 }
             }
+
+            // Update all contacts numbers.
+            contactsNbr_=stackOfContacts_.size();
+            modeledContactsNbr_=stackOfModeledContacts_.size();
+            unmodeledContactsNbr_=stackOfUnmodeledContacts_.size();
         }
     }
 

@@ -119,15 +119,22 @@ namespace sotStateObservation
             unsigned& getContactsNbr(unsigned& contactsNbr, const int& time)
             {
                  if(time!=timeStackOfContacts_) computeStackOfContacts(time);
-                 contactsNbr = stackOfContacts_.size();
+                 contactsNbr = contactsNbr_;
                  return contactsNbr;
             }
 
             unsigned& getModeledContactsNbr(unsigned& modeledContactsNbr, const int& time)
             {
                  if(time!=timeStackOfContacts_) computeStackOfContacts(time);
-                 modeledContactsNbr = stackOfModeledContacts_.size();
+                 modeledContactsNbr = modeledContactsNbr_;
                  return modeledContactsNbr;
+            }
+
+            unsigned& getUnmodeledContactsNbr(unsigned& unmodeledContactsNbr, const int& time)
+            {
+                 if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+                 unmodeledContactsNbr = unmodeledContactsNbr_;
+                 return unmodeledContactsNbr;
             }
 
             void setLeftFootBias (const ::dynamicgraph::Vector & b)
@@ -216,6 +223,7 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> modeledContactsNbrSOUT_;
+            dynamicgraph::SignalPtr <unsigned, int> unmodeledContactsNbrSOUT_;
 
             /// Methods
             void computeStackOfContacts(const int& time);
@@ -237,6 +245,8 @@ namespace sotStateObservation
             std::list<int> stackOfModeledContacts_;
             std::list<int> stackOfUnmodeledContacts_;
             std::list<int>::iterator iterator;
+
+            unsigned contactsNbr_, modeledContactsNbr_, unmodeledContactsNbr_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
