@@ -154,9 +154,6 @@ namespace sotStateObservation
         lastInertia_.setZero();
         currentTime = 0;
         dt_=5e-3;
-        stateObservation::Vector3 True;
-        True.setOnes();
-        setConfig(convertVector<dynamicgraph::Vector>(True));
     }
 
     EstimatorInterface::~EstimatorInterface()
@@ -316,12 +313,12 @@ namespace sotStateObservation
         }
 
         for(i=0;i<3;++i){
-            if(config_[0] & config_[1]) input.elementAt(u)=comVector(i+3);
+            input.elementAt(u)=comVector(i+3);
             u++;
         }
 
         for(i=0;i<3;++i){
-            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=comVector(i+6);
+            input.elementAt(u)=comVector(i+6);
             u++;
         }
 
@@ -331,7 +328,7 @@ namespace sotStateObservation
         }
 
         for(i=0;i<6;++i){
-            if(config_[0] & config_[1]) input.elementAt(u)=dinert(i);
+            input.elementAt(u)=dinert(i);
             u++;
         }
 
@@ -356,13 +353,13 @@ namespace sotStateObservation
         dangMomentumOut = m*crossProduct(com,comddot);
 
         for(i=0;i<3;++i){
-            if(config_[0] & config_[1]) input.elementAt(u)=angMomentumOut(i);
+            input.elementAt(u)=angMomentumOut(i);
             u++;
         }
 
 
         for(i=0;i<3;++i){
-            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=dangMomentumOut(i);
+            input.elementAt(u)=dangMomentumOut(i);
             u++;
         }
 
@@ -372,12 +369,12 @@ namespace sotStateObservation
         }
 
         for(i=0;i<6;++i){
-            if(config_[0] & config_[1]) input.elementAt(u)=imuVector(i+6);
+            input.elementAt(u)=imuVector(i+6);
             u++;
         }
 
         for(i=0;i<3;++i){
-            if(config_[0] & config_[1] & config_[2]) input.elementAt(u)=imuVector(i+12);
+            input.elementAt(u)=imuVector(i+12);
             u++;
         }
 

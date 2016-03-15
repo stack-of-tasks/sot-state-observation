@@ -106,15 +106,6 @@ namespace sotStateObservation
             */
             static const std::string CLASS_NAME;
 
-            // From input reconstructor
-            void setConfig(const dynamicgraph::Vector& config)
-            {
-                for(int i=0;i<3;++i){
-                    if(config.elementAt(i)==1) config_[i]=true;
-                    if(config.elementAt(i)==0) config_[i]=false;
-                }
-            }
-
         private:
 
             /// Signals
@@ -192,7 +183,6 @@ namespace sotStateObservation
             ::dynamicgraph::Vector bias_[2];
             bool derivateInertiaFD_;
             ::dynamicgraph::Vector lastInertia_;
-            std::vector<bool> config_;
             int currentTime;
             double dt_;
 
