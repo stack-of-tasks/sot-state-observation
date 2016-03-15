@@ -65,6 +65,7 @@ namespace sotStateObservation
     {
 
         /// Signals
+
         // Input
         MatrixHomogeneous pos;
         stateObservation::Vector6 force;
@@ -131,6 +132,29 @@ namespace sotStateObservation
         signalRegistration (contactsNbrSOUT_);
         contactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsNbr, this, _1, _2));
 
+        /// Commands
+
+        std::string docstring;
+
+        docstring  =
+                "\n"
+                "    Set the force thresholds \n"
+                "\n";
+
+        addCommand(std::string("setForceThresholds"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Vector>
+                (*this, &EstimatorInterface::setForceThresholds, docstring));
+        docstring =
+                "\n"
+                "    Get the force thresholds \n"
+                "\n";
+
+        addCommand(std::string("getForceThresholds"),
+             new
+             ::dynamicgraph::command::Getter <EstimatorInterface,dynamicgraph::Vector>
+                (*this, &EstimatorInterface::getForceThresholds, docstring));
+
         /// Parameters
 
         // ForceThresholds
@@ -142,9 +166,9 @@ namespace sotStateObservation
 
         // Modeled
         modeled_.resize(contact::nbMax);
-        forceThresholds_.setZero(); // default value
-        forceThresholds_[contact::lf]=1;
-        forceThresholds_[contact::rf]=1;
+        modeled_.setZero(); // default value
+        modeled_[contact::lf]=1;
+        modeled_[contact::rf]=1;
 
         // From input reconstructor
         bias_[0].resize(6);
@@ -171,14 +195,17 @@ namespace sotStateObservation
 
         bool found;
 
-        for (int i=0; i<contact::nbMax;++i){
+        for (int i=0; i<contact::nbMax;++i)
+        {
             inputPosition_[i]=kine::homogeneousMatrixToVector6(inputHomoPosition_[i]);
 
             found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
 
-            if(inputForces_[i].norm()>forceThresholds_[i]) {
+            if(inputForces_[i].norm()>forceThresholds_[i])
+            {
                 if (!found) stackOfContacts_.push_back(i);
-            } else {
+            } else
+            {
                 if(found) stackOfContacts_.remove(i);
             }
         }

@@ -167,6 +167,16 @@ namespace sotStateObservation
                  (const dynamicgraph::Matrix & inertia, const dynamicgraph::Vector & dinertia,
                  const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector&, const dynamicgraph::Vector&);
 
+           void setForceThresholds(const Vector& forceThresholds)
+           {
+               forceThresholds_=convertVector<stateObservation::Vector>(forceThresholds);
+           }
+
+           dynamicgraph::Vector getForceThresholds() const
+           {
+               return convertVector<dynamicgraph::Vector>(forceThresholds_);
+           }
+
             /// Parameters
             double time_;
 
