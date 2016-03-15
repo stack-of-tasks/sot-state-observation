@@ -241,7 +241,7 @@ namespace sotStateObservation
     }
 
     void EstimatorInterface::computeInert(const dynamicgraph::Matrix & inertia,
-                                          const dynamicgraph::Matrix & homoWaist,
+                                          const stateObservation::Matrix & homoWaist,
                                           const stateObservation::Vector& comVector,
                                           dynamicgraph::Vector& inert)
     {
@@ -253,10 +253,8 @@ namespace sotStateObservation
         waist.resize(3);
         com.resize(3);
 
-        waist.elementAt(0)=homoWaist(0,3);
-        waist.elementAt(1)=homoWaist(1,3);
-        waist.elementAt(2)=homoWaist(2,3);
-
+        stateObservation::Vector waistHomo=homoWaist.block(0,3,3,1);
+        waist=convertVector<dynamicgraph::Vector>(waistHomo);
         com=convertVector<dynamicgraph::Vector>(comVector);
 
         // Inertia expressed at waist
@@ -287,7 +285,7 @@ namespace sotStateObservation
 
     void EstimatorInterface::computeInertDot
             (const dynamicgraph::Matrix & inertia, const dynamicgraph::Vector & dinertia,
-            const dynamicgraph::Matrix & homoWaist, dynamicgraph::Vector& dinert,
+             const stateObservation::Matrix & homoWaist, dynamicgraph::Vector& dinert,
             const stateObservation::Vector& comVector)
     {
       //FIXE : THIS FUNCTION IS WRONG
@@ -299,13 +297,9 @@ namespace sotStateObservation
         com.resize(3);
         dcom.resize(3);
 
-        waist.elementAt(0)=homoWaist(0,3);
-        waist.elementAt(1)=homoWaist(1,3);
-        waist.elementAt(2)=homoWaist(2,3);
-
-        com.elementAt(0)=comVector(0);
-        com.elementAt(1)=comVector(1);
-        com.elementAt(2)=comVector(2);
+        stateObservation::Vector waistHomo=homoWaist.block(0,3,3,1);
+        waist=convertVector<dynamicgraph::Vector>(waistHomo);
+        com=convertVector<dynamicgraph::Vector>(comVector);
 
         dcom.elementAt(0)=comVector(3);
         dcom.elementAt(1)=comVector(4);
@@ -320,7 +314,7 @@ namespace sotStateObservation
        timeInput_=time;
 
        const dynamicgraph::Matrix& inertia=inertiaSIN.access(time);
-       const dynamicgraph::Matrix& homoWaist=positionWaistSIN.access(time);
+       const stateObservation::Matrix& homoWaist=convertMatrix<stateObservation::Matrix>(positionWaistSIN.access(time));
        const stateObservation::Vector& comVector=convertVector<stateObservation::Vector>(comVectorSIN.access(time));
        const dynamicgraph::Vector& dinertia=dinertiaSIN.access(time);
        const dynamicgraph::Vector& angMomentum=angMomentumSIN.access(time);
