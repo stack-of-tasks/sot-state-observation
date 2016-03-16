@@ -66,6 +66,7 @@ namespace sotStateObservation
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
+        forceSensorsTransformation_(contact::nbMax),
         bias_(contact::nbMax)
     {
 
@@ -214,6 +215,46 @@ namespace sotStateObservation
              ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Matrix>
                 (*this, &EstimatorInterface::setLastInertia, docstring));
 
+        docstring =
+                "\n"
+                "    Set left hand force sensor transformation\n"
+                "\n";
+
+        addCommand(std::string("setLeftHandSensorTransformation"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Matrix>
+                (*this, &EstimatorInterface::setLeftHandSensorTransformation, docstring));
+
+        docstring =
+                "\n"
+                "    Get left hand force sensor transformation\n"
+                "\n";
+
+        addCommand(std::string("getLeftHandSensorTransformation"),
+                   new
+                   ::dynamicgraph::command::Getter <EstimatorInterface,dynamicgraph::Matrix>
+                      (*this, &EstimatorInterface::getLeftHandSensorTransformation, docstring));
+
+        docstring =
+                "\n"
+                "    Set right hand force sensor transformation\n"
+                "\n";
+
+        addCommand(std::string("setRightHandSensorTransformation"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Matrix>
+                (*this, &EstimatorInterface::setRightHandSensorTransformation, docstring));
+
+        docstring =
+                "\n"
+                "    Get right hand force sensor transformation\n"
+                "\n";
+
+        addCommand(std::string("getRightHandSensorTransformation"),
+                   new
+                   ::dynamicgraph::command::Getter <EstimatorInterface,dynamicgraph::Matrix>
+                      (*this, &EstimatorInterface::getRightHandSensorTransformation, docstring));
+
         /// Parameters
 
         // ForceThresholds
@@ -231,7 +272,12 @@ namespace sotStateObservation
         modeled_[contact::rh]=false;
 
         // From input reconstructor
-        for (int i=0; i<contact::nbMax;++i) { bias_[i].resize(6); bias_[i].setZero(); }
+        for (int i=0; i<contact::nbMax;++i)
+        {
+            bias_[i].resize(6); bias_[i].setZero();
+            forceSensorsTransformation_[i].resize(6,6);
+            forceSensorsTransformation_[i].setIdentity();
+        }
         lastInertia_.setZero();
         dt_=5e-3;
     }
@@ -244,16 +290,16 @@ namespace sotStateObservation
     {
         timeStackOfContacts_=time;
 
-        inputForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
+        inputForces_[contact::rf] = forceSensorsTransformation_[contact::rf]*convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
         inputHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightFootSIN_.access (time)));
 
-        inputForces_[contact::lf] = convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
+        inputForces_[contact::lf] = forceSensorsTransformation_[contact::lf]*convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
         inputHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftFootSIN_.access (time)));
 
-        inputForces_[contact::rh] = convertVector<stateObservation::Vector>(forceRightHandSIN_.access (time));
+        inputForces_[contact::rh] = forceSensorsTransformation_[contact::rh]*convertVector<stateObservation::Vector>(forceRightHandSIN_.access (time));
         inputHomoPosition_[contact::rh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightHandSIN_.access (time)));
 
-        inputForces_[contact::lh] = convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
+        inputForces_[contact::lh] = forceSensorsTransformation_[contact::lh]*convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
         inputHomoPosition_[contact::lh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftHandSIN_.access (time)));
 
         bool found;

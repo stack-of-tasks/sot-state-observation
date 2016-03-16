@@ -159,6 +159,28 @@ namespace sotStateObservation
                 computeInert(convertMatrix<stateObservation::Matrix>(inert),homoWaist,comVector,lastInertia_);
             }
 
+            void setLeftHandSensorTransformation(const dynamicgraph::Matrix & R)
+            {
+                forceSensorsTransformation_[contact::lh].block(0,0,3,3)=convertMatrix<stateObservation::Matrix>(R);
+                forceSensorsTransformation_[contact::lh].block(3,3,3,3)=convertMatrix<stateObservation::Matrix>(R);
+            }
+
+            dynamicgraph::Matrix getLeftHandSensorTransformation() const
+            {
+                return convertMatrix<dynamicgraph::Matrix>(forceSensorsTransformation_[contact::lh]);
+            }
+
+            void setRightHandSensorTransformation(const dynamicgraph::Matrix & R)
+            {
+                forceSensorsTransformation_[contact::rh].block(0,0,3,3)=convertMatrix<stateObservation::Matrix>(R);
+                forceSensorsTransformation_[contact::rh].block(3,3,3,3)=convertMatrix<stateObservation::Matrix>(R);
+            }
+
+            dynamicgraph::Matrix getRightHandSensorTransformation() const
+            {
+                return convertMatrix<dynamicgraph::Matrix>(forceSensorsTransformation_[contact::rh]);
+            }
+
             /**
             \name Parameters
             @{
@@ -251,6 +273,8 @@ namespace sotStateObservation
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
+
+            std::vector<stateObservation::Matrix,Eigen::aligned_allocator_indirection<stateObservation::Matrix> > forceSensorsTransformation_;
 
             stateObservation::Vector input_;
             stateObservation::Vector measurement_;
