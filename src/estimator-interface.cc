@@ -456,18 +456,31 @@ namespace sotStateObservation
 
        unsigned contactsNbr;
        const unsigned& nbModeledContacts=getModeledContactsNbr(contactsNbr,time);
-       const unsigned& nbUnmodeledContacts=getContactsNbr(contactsNbr,time)-getModeledContactsNbr(contactsNbr,time);
 
        measurement_.resize(6+nbModeledContacts*6+6); measurement_.setZero();
        measurement_.segment(0,3)=accelerometer;
        measurement_.segment(3,3)=gyrometer;
        int i=0;
+
+       stateObservation::Matrix3 Rct;
+       stateObservation::Vector3 pc;
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
        {
-           measurement_.segment(6+i*6,6)=inputForces_[*iterator];
+           Rct=inputHomoPosition_[*iterator].block(0,0,3,3).transpose();
+
+           measurement_.segment(6+i*6,3)=Rct*inputForces_[*iterator].head(3);
+           measurement_.segment(6+i*6+3,3)=Rct*inputForces_[*iterator].tail(3);
            ++i;
        }
+       for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
+       {
+           Rct=inputHomoPosition_[*iterator].block(0,0,3,3).transpose();
+           pc=inputHomoPosition_[*iterator].block(0,3,3,1);
 
+           measurement_.segment(6+modeledContactsNbr_*6,3)+=Rct*inputForces_[*iterator].head(3);
+           measurement_.tail(3)+=Rct*inputForces_[*iterator].tail(3)+kine::skewSymmetric(pc)*Rct*inputForces_[*iterator].head(3);
+           ++i;
+       }
    }
 
 }
