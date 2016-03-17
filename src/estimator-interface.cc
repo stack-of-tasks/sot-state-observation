@@ -315,9 +315,7 @@ namespace sotStateObservation
                 if (!found)
                 {
                     stackOfContacts_.push_back(i);
-                    if(modeled_[i]) {
-                        std::cout << "i=" << i << std::endl;
-                        stackOfModeledContacts_.push_back(i); }
+                    if(modeled_[i]) { stackOfModeledContacts_.push_back(i); }
                     if(!modeled_[i]) { stackOfUnmodeledContacts_.push_back(i); }
                 }
             }
