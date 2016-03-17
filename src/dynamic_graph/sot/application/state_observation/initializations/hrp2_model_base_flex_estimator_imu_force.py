@@ -6,7 +6,7 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose
-from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, Odometry, DriftFromMocap
+from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, EstimatorInterface, DriftFromMocap
 
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
@@ -25,68 +25,39 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	self.setWithForceSensors(True)
 	self.setForceVariance(1e-4)
 	self.setWithComBias(False)
-        
-	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(1.e-13,)*2+(1e-8,)*3+(0.e-0,)*6)))
-	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3)))
 
-	# Odometry
-        self.odometry=Odometry ('Odometry')
-	plug (self.robot.device.state,self.odometry.robotStateIn)
-#	self.odometry.setLeftFootPosition(self.robot.frames['leftFootForceSensor'].position.value)
-#	self.odometry.setRightFootPosition(self.robot.frames['rightFootForceSensor'].position.value)
-	plug(self.robot.frames['leftFootForceSensor'].position,self.odometry.leftFootPositionRef)
-	plug(self.robot.frames['rightFootForceSensor'].position,self.odometry.rightFootPositionRef)
-	plug (self.robot.device.forceLLEG,self.odometry.force_lf)
-        plug (self.robot.device.forceRLEG,self.odometry.force_rf)
-        plug (self.robot.frames['rightFootForceSensor'].position,self.odometry.rightFootPosition)
-        plug (self.robot.frames['leftFootForceSensor'].position,self.odometry.leftFootPosition)
-	plug (self.odometry.nbSupport,self.contactNbr)
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(1.e-13,)*2+(1.e-10,)*6)))
+	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3))) 
 
-	# Contacts definition
-	self.contacts = Stack_of_vector ('contacts')
-        plug(self.odometry.supportPos1,self.contacts.sin1)
-        plug(self.odometry.supportPos2,self.contacts.sin2)
-	self.contacts.selec1 (0, 6)
-	self.contacts.selec2 (0, 6)
+        self.setKfe(matrixToTuple(np.diag((40000,40000,40000))))
+        self.setKfv(matrixToTuple(np.diag((600,600,600))))
+        self.setKte(matrixToTuple(np.diag((600,600,600))))
+        self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
-        # Sensors stack
+	#Estimator interface
+	self.interface=EstimatorInterface("EstimatorInterface")
+	self.interface.setLeftHandSensorTransformation(matrixToTuple(np.diag((-1,-1,1))))
+        self.interface.setFDInertiaDot(True)  
 
-		# IMU
-        self.sensorStackimu = Stack_of_vector (name+'SensorsIMU')
-        plug(self.robot.device.accelerometer,self.sensorStackimu.sin1)
-        plug(self.robot.device.gyrometer,self.sensorStackimu.sin2)
-        self.sensorStackimu.selec1 (0, 3)
-        self.sensorStackimu.selec2 (0, 3)
+	# Contacts forces anf positions
+	plug (self.robot.device.forceLLEG,self.interface.force_lf)
+	plug (self.robot.device.forceRLEG,self.interface.force_rf)
+	plug (self.robot.frames['leftFootForceSensor'].position,self.interface.position_lf)
+	plug (self.robot.frames['rightFootForceSensor'].position,self.interface.position_rf)
+	plug (self.robot.device.forceLARM,self.interface.force_lh)
+	plug (self.robot.device.forceRARM,self.interface.force_rh)
+	plug (self.robot.dynamic.signal('right-wrist'),self.interface.position_lh)
+	plug (self.robot.dynamic.signal('left-wrist'),self.interface.position_rh)
 
-
-                # Drift
+        # Drift
         self.drift = DriftFromMocap(name+'Drift')
-        
 
-	# Optional measurenents Stack (forces + drift)
-        self.sensorStackOptional = Stack_of_vector (name+'SensorsOPT')
-        self.sensorStackOptional.selec1toEnd (0)
-        self.sensorStackOptional.selec2toEnd (0)
-        plug(self.odometry.forceSupportStack,self.sensorStackOptional.sin1)
-        plug(self.drift.driftVector,self.sensorStackOptional.sin2)
-        
-        self.contactForces = self.odometry.forceSupportStack
-
-		# Calibration
-	self.calibration= Calibrate('calibration')
-	plug(self.odometry.nbSupport,self.calibration.contactsNbr)
-	plug(self.robot.dynamic.com,self.calibration.comIn)
-	plug(self.contacts.sout,self.calibration.contactsPositionIn)
-	plug(self.sensorStackimu.sout,self.calibration.imuIn)	
-
-		# Concatenating
-        self.sensorStack = Stack_of_vector (name+'Sensors')
-        plug(self.sensorStackimu.sout,self.sensorStack.sin1)
-        plug(self.sensorStackOptional.sout,self.sensorStack.sin2)
-        self.sensorStack.selec1 (0, 6)
-        self.sensorStack.selec2toEnd (0)
-	plug(self.sensorStack.sout,self.measurement);
-     
+	# Meausrement reconstruction
+	plug(self.robot.device.accelerometer,self.interface.accelerometer)
+	plug(self.robot.device.gyrometer,self.interface.gyrometer)
+	# plug(self.drift,)
+	plug(self.interface.measurement,self.measurement);
+   
         # Input reconstruction
 
 		# IMU Vector
@@ -141,31 +112,22 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 #        plug(self.robot.dynamic.angularmomentum,self.angMomDerivator.sin)
 #        self.angMomDerivator.inputFormat.value  = '000001'
 #        self.angMomDerivator.outputFormat.value = '000100'  
-#	self.angMomDerivator.setFiniteDifferencesInterval(2)
-#	self.robot.dynamic.angularmomentum.recompute(0)
-#	self.angMomDerivator.setLastVector(self.robot.dynamic.angularmomentum.value+(0.,)*15)       
+#	 self.angMomDerivator.setFiniteDifferencesInterval(2)
+#	 self.robot.dynamic.angularmomentum.recompute(0)
+#	 self.angMomDerivator.setLastVector(self.robot.dynamic.angularmomentum.value+(0.,)*15)       
         
-        	# Concatenate with InputReconstructor entity
-        self.inputVector=InputReconstructor(name+'inputVector')
-        plug(self.comVector.sout,self.inputVector.comVector)
-        plug(self.robot.dynamic.inertia,self.inputVector.inertia)
-        self.inputVector.dinertia.value=(0,0,0,0,0,0)
-	plug(self.robot.dynamic.angularmomentum,self.inputVector.angMomentum)
-	plug(self.angMomDerivator.sout,self.inputVector.dangMomentum)
-        plug(self.robot.dynamic.waist,self.inputVector.positionWaist)
-        plug(self.IMUVector.sout,self.inputVector.imuVector)
-        plug(self.odometry.nbSupport,self.inputVector.nbContacts)
-	plug(self.contacts.sout,self.inputVector.contactsPosition)
-	self.inputVector.setLastInertia(self.robot.dynamic.inertia.value)
+        	# Concatenate with interface estimator
+	plug(self.comVector.sout,self.interface.comVector)
+	plug(self.robot.dynamic.inertia,self.interface.inertia)
+	self.interface.dinertia.value=(0,0,0,0,0,0)
+	plug(self.robot.dynamic.angularmomentum,self.interface.angMomentum)
+	plug(self.angMomDerivator.sout,self.interface.dangMomentum)
+	plug(self.robot.dynamic.waist,self.interface.positionWaist)
+	plug(self.IMUVector.sout,self.interface.imuVector)
+ 
+        plug(self.interface.input,self.input)
+	plug (self.interface.modeledContactsNbr,self.contactNbr)
 
-        self.inputVector.setSamplingPeriod(robot.timeStep)
-        self.inputVector.setFDInertiaDot(True)     
-        plug(self.inputVector.input,self.input)
         self.robot.flextimator = self
-
-        self.setKfe(matrixToTuple(np.diag((40000,40000,40000))))
-        self.setKfv(matrixToTuple(np.diag((600,600,600))))
-        self.setKte(matrixToTuple(np.diag((600,600,600))))
-        self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
 
