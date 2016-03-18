@@ -497,24 +497,6 @@ namespace sotStateObservation
         inputSIN.setConstant(convertVector<dynamicgraph::Vector>(input));
 
         stateObservation::Vector measure(measurementSize);
-        measure << -0.0330502,
-                   -0.169031,
-                   9.91812,
-                   0.0137655,
-                   0.0797922,
-                   0.000778988;
-//                   6.15302,
-//                   -8.44315,
-//                   245.826,
-//                   0.749795,
-//                   2.59329,
-//                   0.140388,
-//                   5.59534,
-//                   7.49882,
-//                   227.461,
-//                   0.24084,
-//                   2.74922,
-//                   -0.120347;
         measurementSIN.setConstant(convertVector<dynamicgraph::Vector>(measure));
 
         contactsNbrSIN.setConstant(0);

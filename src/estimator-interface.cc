@@ -62,7 +62,7 @@ namespace sotStateObservation
         imuVectorSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::imuVector"),
         accelerometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::accelerometer"),
         gyrometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::gyrometer"),
-        timeStackOfContacts_(0), timeInput_(0), timeMeasurement_(0),
+        timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
@@ -280,6 +280,8 @@ namespace sotStateObservation
         }
         lastInertia_.setZero();
         dt_=5e-3;
+
+        measurement_.resize(12); measurement_.setZero();
     }
 
     EstimatorInterface::~EstimatorInterface()
@@ -333,6 +335,7 @@ namespace sotStateObservation
             contactsNbr_=stackOfContacts_.size();
             modeledContactsNbr_=stackOfModeledContacts_.size();
             unmodeledContactsNbr_=stackOfUnmodeledContacts_.size();
+
         }
     }
 
@@ -455,30 +458,34 @@ namespace sotStateObservation
        unsigned contactsNbr;
        const unsigned& nbModeledContacts=getModeledContactsNbr(contactsNbr,time);
 
-       measurement_.resize(6+nbModeledContacts*6+6); measurement_.setZero();
+       measurement_.resize(12+nbModeledContacts*6); measurement_.setZero();
        measurement_.segment(0,3)=accelerometer;
        measurement_.segment(3,3)=gyrometer;
-       int i=0;
 
        stateObservation::Matrix3 Rct;
        stateObservation::Vector3 pc;
-       for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
-       {
-           Rct=inputHomoPosition_[*iterator].block(0,0,3,3).transpose();
 
-           measurement_.segment(6+i*6,3)=Rct*inputForces_[*iterator].head(3);
-           measurement_.segment(6+i*6+3,3)=Rct*inputForces_[*iterator].tail(3);
-           ++i;
-       }
+       int i=0;
        for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
        {
            Rct=inputHomoPosition_[*iterator].block(0,0,3,3).transpose();
            pc=inputHomoPosition_[*iterator].block(0,3,3,1);
 
-           measurement_.segment(6+modeledContactsNbr_*6,3)+=Rct*inputForces_[*iterator].head(3);
-           measurement_.tail(3)+=Rct*inputForces_[*iterator].tail(3)+kine::skewSymmetric(pc)*Rct*inputForces_[*iterator].head(3);
+           measurement_.segment(6,3)+=Rct*inputForces_[*iterator].head(3);
+           measurement_.segment(9,3)+=Rct*inputForces_[*iterator].tail(3)+kine::skewSymmetric(pc)*Rct*inputForces_[*iterator].head(3);
            ++i;
        }
+
+       i=0;
+       for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
+       {
+           Rct=inputHomoPosition_[*iterator].block(0,0,3,3).transpose();
+
+           measurement_.segment(12+i*6,3)=Rct*inputForces_[*iterator].head(3);
+           measurement_.segment(12+i*6+3,3)=Rct*inputForces_[*iterator].tail(3);
+           ++i;
+       }
+
    }
 
 }
