@@ -284,6 +284,20 @@ namespace sotStateObservation
             stateObservation::Vector lastInertia_;
             double dt_;
 
+            struct Optimization
+            {
+                // Compute stack of contacts
+                bool found;
+
+                // Get forces in control frame
+                stateObservation::Vector6 forceResidusVector;
+                stateObservation::Matrix3 Rct, Rc;
+                stateObservation::Vector3 pc;
+                stateObservation::Vector3 weight;
+                stateObservation::Vector6 force;
+
+            } op_;
+
         public:
           EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

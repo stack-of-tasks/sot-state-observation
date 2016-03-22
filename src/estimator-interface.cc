@@ -307,52 +307,46 @@ namespace sotStateObservation
         inputForces_[contact::rh] = convertVector<stateObservation::Vector>(forceRightHandSIN_.access (time));
         inputForces_[contact::lh] = convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
 
-        stateObservation::Vector6 forceResidusVector;
-        stateObservation::Matrix3 Rct, Rc;
-        stateObservation::Vector3 pc;
-        stateObservation::Vector3 weight;
-        stateObservation::Vector6 force;
-
         for (int i=0; i<contact::nbMax;++i)
         {
             std::cout << "\t" << std::endl;
             
             // force sensor position
-            Rc=inputHomoPosition_[i].block(0,0,3,3);
-            Rct=Rc.transpose();
-            pc=inputHomoPosition_[i].block(0,3,3,1);
+            op_.Rc=inputHomoPosition_[i].block(0,0,3,3);
+            op_.Rct=op_.Rc.transpose();
+            op_.pc=inputHomoPosition_[i].block(0,3,3,1);
 
             // For unmodeled contacts
             if(!modeled_[i])
             {
                 // Reorientation of frames
                 double v;
-                force=inputForces_[i];
+                op_.force=inputForces_[i];
                 for(int u=0;u<3;++u)
                 {
                     v=forceSensorsTransformation_[i][u];
 
-                    inputForces_[i][u]=(int)(v/std::abs(v))*force[(int)(std::abs(v)-1)];
-                    inputForces_[i][u+3]=(int)(v/std::abs(v))*force[(int)(std::abs(v)+2)];
+                    inputForces_[i][u]=(int)(v/std::abs(v))*op_.force[(int)(std::abs(v)-1)];
+                    inputForces_[i][u+3]=(int)(v/std::abs(v))*op_.force[(int)(std::abs(v)+2)];
                 }
 
                 // To debug
                 std::cout << "inputForces_[" << i << "]=" << inputForces_[i].transpose() << std::endl;
 
                 // Computation in the local frame of the weight action of theend-effector on the sensor
-                weight << 0,
+                op_.weight << 0,
                           0,
                           -forceResidus_[i];
 
-                forceResidusVector << Rct*weight,
+                op_.forceResidusVector << op_.Rct*op_.weight,
                                       0,
                                       0,
                                       0;
 
-                std::cout << "forceResidusVector=" << forceResidusVector.transpose() << std::endl;
+                std::cout << "forceResidusVector=" << op_.forceResidusVector.transpose() << std::endl;
 
                 // Substract the weight action from input forces
-                inputForces_[i]-=forceResidusVector;
+                inputForces_[i]-=op_.forceResidusVector;
 
                 // To debug
                 std::cout << "inputForcesSubstract_[" << i << "]=" << inputForces_[i].transpose() << std::endl;
@@ -361,8 +355,8 @@ namespace sotStateObservation
 
             // Express forces in the local frame
             inputForces_[i]
-                << Rc*inputForces_[i].head(3),
-                   Rc*inputForces_[i].tail(3)-kine::skewSymmetric(pc)*inputForces_[i].head(3);
+                << op_.Rc*inputForces_[i].head(3),
+                   op_.Rc*inputForces_[i].tail(3)-kine::skewSymmetric(op_.pc)*inputForces_[i].head(3);
 
 
             // To debug
@@ -390,19 +384,16 @@ namespace sotStateObservation
     void EstimatorInterface::computeStackOfContacts(const int& time)
     {
         timeStackOfContacts_=time;
-
         if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
         if(time!=timeForces_) getForcesInControlFrame(time);
 
-        bool found;
-
         for (int i=0; i<contact::nbMax;++i)
         {
-            found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
+            op_.found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
 
             if(inputForces_[i].norm()>forceThresholds_[i])
             {
-                if (!found)
+                if (!op_.found)
                 {
                     stackOfContacts_.push_back(i);
                     if(modeled_[i]) { stackOfModeledContacts_.push_back(i); }
@@ -411,7 +402,7 @@ namespace sotStateObservation
             }
             else
             {
-                if(found)
+                if(op_.found)
                 {
                     stackOfContacts_.remove(i);
                     if(modeled_[i]) { stackOfModeledContacts_.remove(i); }
