@@ -34,6 +34,8 @@
 
 #include <sot-state-observation/estimator-interface.hh>
 
+#include <iostream>
+
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( EstimatorInterface, "EstimatorInterface" );
@@ -222,7 +224,7 @@ namespace sotStateObservation
 
         addCommand(std::string("setLeftHandSensorTransformation"),
              new
-             ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Matrix>
+             ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Vector>
                 (*this, &EstimatorInterface::setLeftHandSensorTransformation, docstring));
 
         docstring =
@@ -232,7 +234,7 @@ namespace sotStateObservation
 
         addCommand(std::string("getLeftHandSensorTransformation"),
                    new
-                   ::dynamicgraph::command::Getter <EstimatorInterface,dynamicgraph::Matrix>
+                   ::dynamicgraph::command::Getter <EstimatorInterface,dynamicgraph::Vector>
                       (*this, &EstimatorInterface::getLeftHandSensorTransformation, docstring));
 
         docstring =
@@ -242,7 +244,7 @@ namespace sotStateObservation
 
         addCommand(std::string("setRightHandSensorTransformation"),
              new
-             ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Matrix>
+             ::dynamicgraph::command::Setter <EstimatorInterface,dynamicgraph::Vector>
                 (*this, &EstimatorInterface::setRightHandSensorTransformation, docstring));
 
         docstring =
@@ -252,7 +254,7 @@ namespace sotStateObservation
 
         addCommand(std::string("getRightHandSensorTransformation"),
                    new
-                   ::dynamicgraph::command::Getter <EstimatorInterface,dynamicgraph::Matrix>
+                   ::dynamicgraph::command::Getter <EstimatorInterface,dynamicgraph::Vector>
                       (*this, &EstimatorInterface::getRightHandSensorTransformation, docstring));
 
         /// Parameters
@@ -263,6 +265,13 @@ namespace sotStateObservation
         forceThresholds_*=0.02 * 56.8*stateObservation::cst::gravityConstant; // default value
         forceThresholds_[contact::lh]=15;
         forceThresholds_[contact::rh]=15;
+
+        // ForceResidus
+        forceResidus_.resize(contact::nbMax);
+        forceResidus_[contact::lf]=7.8;
+        forceResidus_[contact::lf]=7.8;
+        forceResidus_[contact::lh]=11;
+        forceResidus_[contact::rh]=11;
 
         // Modeled
         modeled_.resize(contact::nbMax);
@@ -275,8 +284,8 @@ namespace sotStateObservation
         for (int i=0; i<contact::nbMax;++i)
         {
             bias_[i].resize(6); bias_[i].setZero();
-            forceSensorsTransformation_[i].resize(6,6);
-            forceSensorsTransformation_[i].setIdentity();
+            forceSensorsTransformation_[i].resize(3);
+            forceSensorsTransformation_[i].setZero();
         }
         lastInertia_.setZero();
         dt_=5e-3;
@@ -288,21 +297,89 @@ namespace sotStateObservation
     {
     }
 
+    void EstimatorInterface::getForcesInControlFrame(const int& time)
+    {
+//            std::cout << "\t----------\t" << std::endl;
+
+        inputForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
+        inputForces_[contact::lf] = convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
+        inputForces_[contact::rh] = convertVector<stateObservation::Vector>(forceRightHandSIN_.access (time));
+        inputForces_[contact::lh] = convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
+
+        stateObservation::Vector6 forceResidusVector;
+        stateObservation::Matrix3 Rct, Rc;
+        stateObservation::Vector3 pc;
+        stateObservation::Vector3 weight;
+        stateObservation::Vector6 force;
+
+        for (int i=0; i<contact::nbMax;++i)
+        {
+            std::cout << "\t" << std::endl;
+            
+            // force sensor position
+            Rc=inputHomoPosition_[i].block(0,0,3,3);
+            Rct=Rc.transpose();
+            pc=inputHomoPosition_[i].block(0,3,3,1);
+
+            // For unmodeled contacts
+            if(!modeled_[i])
+            {
+                // Reorientation of frames
+                double v;
+                force=inputForces_[i];
+                for(int u=0;u<3;++u)
+                {
+                    v=forceSensorsTransformation_[i][u];
+
+                    inputForces_[i][u]=(int)(v/std::abs(v))*force[(int)(std::abs(v)-1)];
+                    inputForces_[i][u+3]=(int)(v/std::abs(v))*force[(int)(std::abs(v)+2)];
+                }
+
+                // To debug
+                std::cout << "inputForces_[" << i << "]=" << inputForces_[i].transpose() << std::endl;
+
+                // Computation in the local frame of the weight action of theend-effector on the sensor
+                weight << 0,
+                          0,
+                          -forceResidus_[i];
+
+                forceResidusVector << Rct*weight,
+                                      0,
+                                      0,
+                                      0;
+
+                std::cout << "forceResidusVector=" << forceResidusVector.transpose() << std::endl;
+
+                // Substract the weight action from input forces
+                inputForces_[i]-=forceResidusVector;
+
+                // To debug
+                std::cout << "inputForcesSubstract_[" << i << "]=" << inputForces_[i].transpose() << std::endl;
+
+            }
+
+            // Express forces in the local frame
+            inputForces_[i]
+                << Rc*inputForces_[i].head(3),
+                   Rc*inputForces_[i].tail(3)-kine::skewSymmetric(pc)*inputForces_[i].head(3);
+
+
+            // To debug
+            std::cout << "inputForcesLocal_[" << i << "]=" << inputForces_[i].transpose() << std::endl;
+
+        }
+    }
+
     void EstimatorInterface::computeStackOfContacts(const int& time)
     {
         timeStackOfContacts_=time;
 
-        inputForces_[contact::rf] = forceSensorsTransformation_[contact::rf]*convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
         inputHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightFootSIN_.access (time)));
-
-        inputForces_[contact::lf] = forceSensorsTransformation_[contact::lf]*convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
         inputHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftFootSIN_.access (time)));
-
-        inputForces_[contact::rh] = forceSensorsTransformation_[contact::rh]*convertVector<stateObservation::Vector>(forceRightHandSIN_.access (time));
         inputHomoPosition_[contact::rh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightHandSIN_.access (time)));
-
-        inputForces_[contact::lh] = forceSensorsTransformation_[contact::lh]*convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
         inputHomoPosition_[contact::lh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftHandSIN_.access (time)));
+
+        getForcesInControlFrame(time);
 
         bool found;
 
@@ -462,27 +539,23 @@ namespace sotStateObservation
        measurement_.segment(0,3)=accelerometer;
        measurement_.segment(3,3)=gyrometer;
 
-       stateObservation::Matrix3 Rct;
        stateObservation::Vector3 pc;
 
        int i=0;
        for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
        {
-           Rct=inputHomoPosition_[*iterator].block(0,0,3,3).transpose();
            pc=inputHomoPosition_[*iterator].block(0,3,3,1);
 
-           measurement_.segment(6,3)+=Rct*inputForces_[*iterator].head(3);
-           measurement_.segment(9,3)+=Rct*inputForces_[*iterator].tail(3)+kine::skewSymmetric(pc)*Rct*inputForces_[*iterator].head(3);
+           measurement_.segment(6,3)+=inputForces_[*iterator].head(3);
+           measurement_.segment(9,3)+=inputForces_[*iterator].tail(3)+kine::skewSymmetric(pc)*inputForces_[*iterator].head(3);
            ++i;
        }
 
        i=0;
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
        {
-           Rct=inputHomoPosition_[*iterator].block(0,0,3,3).transpose();
-
-           measurement_.segment(12+i*6,3)=Rct*inputForces_[*iterator].head(3);
-           measurement_.segment(12+i*6+3,3)=Rct*inputForces_[*iterator].tail(3);
+           measurement_.segment(12+i*6,3)=inputForces_[*iterator].head(3);
+           measurement_.segment(12+i*6+3,3)=inputForces_[*iterator].tail(3);
            ++i;
        }
 

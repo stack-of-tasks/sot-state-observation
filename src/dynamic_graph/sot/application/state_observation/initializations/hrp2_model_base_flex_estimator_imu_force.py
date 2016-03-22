@@ -36,7 +36,8 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
 	#Estimator interface
 	self.interface=EstimatorInterface("EstimatorInterface")
-	self.interface.setLeftHandSensorTransformation(matrixToTuple(np.diag((-1,-1,1))))
+	self.interface.setLeftHandSensorTransformation((-2.,1.,3.))
+	self.interface.setRightHandSensorTransformation((-2.,1.,3.))
         self.interface.setFDInertiaDot(True)  
 
 	# Contacts forces anf positions
