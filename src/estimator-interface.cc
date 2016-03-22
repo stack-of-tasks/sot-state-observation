@@ -64,7 +64,8 @@ namespace sotStateObservation
         imuVectorSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::imuVector"),
         accelerometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::accelerometer"),
         gyrometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::gyrometer"),
-        timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1), timeSensorsPositions_(-1), timeForces_(-1),
+        timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1),
+        timeSensorsPositions_(-1), timeForces_(-1), timeContactsNbrs_(-1),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
@@ -300,6 +301,7 @@ namespace sotStateObservation
     void EstimatorInterface::getForcesInControlFrame(const int& time)
     {
         timeForces_=time;
+        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
 //            std::cout << "\t----------\t" << std::endl;
 
         inputForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
@@ -409,13 +411,18 @@ namespace sotStateObservation
                     if(!modeled_[i]) { stackOfUnmodeledContacts_.remove(i); }
                 }
             }
-
-            // Update all contacts numbers.
-            contactsNbr_=stackOfContacts_.size();
-            modeledContactsNbr_=stackOfModeledContacts_.size();
-            unmodeledContactsNbr_=stackOfUnmodeledContacts_.size();
-
         }
+    }
+
+    void EstimatorInterface::computeAllContactsNbrs(const int& time)
+    {
+        timeContactsNbrs_=time;
+        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+
+        // Update all contacts numbers.
+        contactsNbr_=stackOfContacts_.size();
+        modeledContactsNbr_=stackOfModeledContacts_.size();
+        unmodeledContactsNbr_=stackOfUnmodeledContacts_.size();
     }
 
     void EstimatorInterface::computeInert(const stateObservation::Matrix & inertia,
@@ -459,6 +466,7 @@ namespace sotStateObservation
    void EstimatorInterface::computeInput(const int& time)
    {
        timeInput_=time;
+       if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
 
        const stateObservation::Matrix& inertia=convertMatrix<stateObservation::Matrix>(inertiaSIN.access(time));
@@ -529,6 +537,8 @@ namespace sotStateObservation
    void EstimatorInterface::computeMeasurement(const int& time)
    {
        timeMeasurement_=time;
+       if(time!=timeForces_) getForcesInControlFrame(time);
+       if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
 
        const stateObservation::Vector& accelerometer=convertVector<stateObservation::Vector>(accelerometerSIN.access(time));
@@ -560,8 +570,6 @@ namespace sotStateObservation
            measurement_.segment(12+i*6+3,3)=inputForces_[*iterator].tail(3);
            ++i;
        }
-
    }
-
 }
 

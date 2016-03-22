@@ -115,21 +115,21 @@ namespace sotStateObservation
 
             unsigned& getContactsNbr(unsigned& contactsNbr, const int& time)
             {
-                 if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+                 if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
                  contactsNbr = contactsNbr_;
                  return contactsNbr;
             }
 
             unsigned& getModeledContactsNbr(unsigned& modeledContactsNbr, const int& time)
             {
-                 if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+                 if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
                  modeledContactsNbr = modeledContactsNbr_;
                  return modeledContactsNbr;
             }
 
             unsigned& getUnmodeledContactsNbr(unsigned& unmodeledContactsNbr, const int& time)
             {
-                 if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+                 if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
                  unmodeledContactsNbr = unmodeledContactsNbr_;
                  return unmodeledContactsNbr;
             }
@@ -247,6 +247,7 @@ namespace sotStateObservation
             void getForcesInControlFrame(const int& time);
             void getSensorsPositionsInControlFrame(const int& time);
             void computeStackOfContacts(const int& time);
+            void computeAllContactsNbrs(const int& time);
             void computeInput(const int& inTime);
             void computeMeasurement(const int& time);
 
@@ -256,7 +257,7 @@ namespace sotStateObservation
                   const stateObservation::Vector&, stateObservation::Vector&);
 
             /// Parameters
-            double timeStackOfContacts_, timeInput_, timeMeasurement_, timeSensorsPositions_, timeForces_;
+            double timeStackOfContacts_, timeInput_, timeMeasurement_, timeSensorsPositions_, timeForces_, timeContactsNbrs_;
 
             stateObservation::Vector forceThresholds_;
             stateObservation::Vector forceResidus_;
