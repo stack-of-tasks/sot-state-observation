@@ -64,7 +64,7 @@ namespace sotStateObservation
         imuVectorSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::imuVector"),
         accelerometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::accelerometer"),
         gyrometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::gyrometer"),
-        timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1),
+        timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1), timeSensorsPositions_(-1), timeForces_(-1),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
@@ -299,6 +299,7 @@ namespace sotStateObservation
 
     void EstimatorInterface::getForcesInControlFrame(const int& time)
     {
+        timeForces_=time;
 //            std::cout << "\t----------\t" << std::endl;
 
         inputForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
@@ -370,16 +371,23 @@ namespace sotStateObservation
         }
     }
 
-    void EstimatorInterface::computeStackOfContacts(const int& time)
+    void EstimatorInterface::getSensorsPositionsInControlFrame(const int& time)
     {
-        timeStackOfContacts_=time;
+        timeSensorsPositions_=time;
 
         inputHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightFootSIN_.access (time)));
         inputHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftFootSIN_.access (time)));
         inputHomoPosition_[contact::rh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightHandSIN_.access (time)));
         inputHomoPosition_[contact::lh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftHandSIN_.access (time)));
 
-        getForcesInControlFrame(time);
+    }
+
+    void EstimatorInterface::computeStackOfContacts(const int& time)
+    {
+        timeStackOfContacts_=time;
+
+        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
+        if(time!=timeForces_) getForcesInControlFrame(time);
 
         bool found;
 
