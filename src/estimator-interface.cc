@@ -380,6 +380,11 @@ namespace sotStateObservation
         inputHomoPosition_[contact::rh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightHandSIN_.access (time)));
         inputHomoPosition_[contact::lh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftHandSIN_.access (time)));
 
+        for (int i=0; i<contact::nbMax;++i)
+        {
+            inputPosition_[i]=kine::homogeneousMatrixToVector6(inputHomoPosition_[i]);
+        }
+
     }
 
     void EstimatorInterface::computeStackOfContacts(const int& time)
@@ -393,8 +398,6 @@ namespace sotStateObservation
 
         for (int i=0; i<contact::nbMax;++i)
         {
-            inputPosition_[i]=kine::homogeneousMatrixToVector6(inputHomoPosition_[i]);
-
             found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
 
             if(inputForces_[i].norm()>forceThresholds_[i])
