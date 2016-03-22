@@ -291,12 +291,12 @@ namespace sotStateObservation
                 bool found;
 
                 // Get forces in control frame
+                double forceTransfo;
                 stateObservation::Vector6 forceResidusVector;
                 stateObservation::Matrix3 Rct, Rc;
                 stateObservation::Vector3 pc;
                 stateObservation::Vector3 weight;
                 stateObservation::Vector6 force;
-
             } op_;
 
         public:

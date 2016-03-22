@@ -318,18 +318,19 @@ namespace sotStateObservation
             op_.Rct=op_.Rc.transpose();
             op_.pc=inputHomoPosition_[i].block(0,3,3,1);
 
+            std::cout << "inputPosition_[" << i << "]=" << inputPosition_[i].transpose() << std::endl;
+
             // For unmodeled contacts
             if(!modeled_[i])
             {
                 // Reorientation of frames
-                double v;
                 op_.force=inputForces_[i];
                 for(int u=0;u<3;++u)
                 {
-                    v=forceSensorsTransformation_[i][u];
+                    op_.forceTransfo=forceSensorsTransformation_[i][u];
 
-                    inputForces_[i][u]=(int)(v/std::abs(v))*op_.force[(int)(std::abs(v)-1)];
-                    inputForces_[i][u+3]=(int)(v/std::abs(v))*op_.force[(int)(std::abs(v)+2)];
+                    inputForces_[i][u]=(int)(op_.forceTransfo/std::abs(op_.forceTransfo))*op_.force[(int)(std::abs(op_.forceTransfo)-1)];
+                    inputForces_[i][u+3]=(int)(op_.forceTransfo/std::abs(op_.forceTransfo))*op_.force[(int)(std::abs(op_.forceTransfo)+2)];
                 }
 
                 // To debug
