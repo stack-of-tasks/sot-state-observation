@@ -70,6 +70,7 @@ namespace sotStateObservation
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
         forceSensorsTransformation_(contact::nbMax),
+        forceSensorsTransfoMatrix_(contact::nbMax),
         bias_(contact::nbMax)
     {
 
@@ -264,8 +265,8 @@ namespace sotStateObservation
         forceThresholds_.resize(contact::nbMax);
         forceThresholds_.setOnes();
         forceThresholds_*=0.02 * 56.8*stateObservation::cst::gravityConstant; // default value
-        forceThresholds_[contact::lh]=15;
-        forceThresholds_[contact::rh]=15;
+        forceThresholds_[contact::lh]=2.5;
+        forceThresholds_[contact::rh]=2.5;
 
         // ForceResidus
         forceResidus_.resize(contact::nbMax);
@@ -287,6 +288,8 @@ namespace sotStateObservation
             bias_[i].resize(6); bias_[i].setZero();
             forceSensorsTransformation_[i].resize(3);
             forceSensorsTransformation_[i].setZero();
+            forceSensorsTransfoMatrix_[i].resize(3,3);
+            forceSensorsTransfoMatrix_[i].setIdentity();
         }
         lastInertia_.setZero();
         dt_=5e-3;
@@ -302,7 +305,6 @@ namespace sotStateObservation
     {
         timeForces_=time;
         if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
-//            std::cout << "\t----------\t" << std::endl;
 
         inputForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
         inputForces_[contact::lf] = convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
@@ -318,52 +320,31 @@ namespace sotStateObservation
             op_.Rct=op_.Rc.transpose();
             op_.pc=inputHomoPosition_[i].block(0,3,3,1);
 
-            std::cout << "inputPosition_[" << i << "]=" << inputPosition_[i].transpose() << std::endl;
-
             // For unmodeled contacts
             if(!modeled_[i])
             {
                 // Reorientation of frames
-                op_.force=inputForces_[i];
-                for(int u=0;u<3;++u)
-                {
-                    op_.forceTransfo=forceSensorsTransformation_[i][u];
-
-                    inputForces_[i][u]=(int)(op_.forceTransfo/std::abs(op_.forceTransfo))*op_.force[(int)(std::abs(op_.forceTransfo)-1)];
-                    inputForces_[i][u+3]=(int)(op_.forceTransfo/std::abs(op_.forceTransfo))*op_.force[(int)(std::abs(op_.forceTransfo)+2)];
-                }
-
-                // To debug
-                std::cout << "inputForces_[" << i << "]=" << inputForces_[i].transpose() << std::endl;
+                inputForces_[i] << forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(0,3),
+                                   forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(3,3);
 
                 // Computation in the local frame of the weight action of theend-effector on the sensor
                 op_.weight << 0,
-                          0,
-                          -forceResidus_[i];
+                              0,
+                              -forceResidus_[i];
 
                 op_.forceResidusVector << op_.Rct*op_.weight,
-                                      0,
-                                      0,
-                                      0;
-
-                std::cout << "forceResidusVector=" << op_.forceResidusVector.transpose() << std::endl;
+                                          0,
+                                          0,
+                                          0;
 
                 // Substract the weight action from input forces
                 inputForces_[i]-=op_.forceResidusVector;
-
-                // To debug
-                std::cout << "inputForcesSubstract_[" << i << "]=" << inputForces_[i].transpose() << std::endl;
-
             }
 
             // Express forces in the local frame
             inputForces_[i]
                 << op_.Rc*inputForces_[i].head(3),
                    op_.Rc*inputForces_[i].tail(3)-kine::skewSymmetric(op_.pc)*inputForces_[i].head(3);
-
-
-            // To debug
-            std::cout << "inputForcesLocal_[" << i << "]=" << inputForces_[i].transpose() << std::endl;
 
         }
     }
