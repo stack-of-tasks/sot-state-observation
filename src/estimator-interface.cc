@@ -312,9 +312,7 @@ namespace sotStateObservation
         inputForces_[contact::lh] = convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
 
         for (int i=0; i<contact::nbMax;++i)
-        {
-            std::cout << "\t" << std::endl;
-            
+        {          
             // force sensor position
             op_.Rc=inputHomoPosition_[i].block(0,0,3,3);
             op_.Rct=op_.Rc.transpose();
@@ -331,11 +329,13 @@ namespace sotStateObservation
                 op_.weight << 0,
                               0,
                               -forceResidus_[i];
+                stateObservation::Vector3 l;
+                l << 0,
+                     0,
+                     -0.035;
 
                 op_.forceResidusVector << op_.Rct*op_.weight,
-                                          0,
-                                          0,
-                                          0;
+                                          kine::skewSymmetric(l)*op_.Rct*op_.weight;
 
                 // Substract the weight action from input forces
                 inputForces_[i]-=op_.forceResidusVector;
