@@ -4,7 +4,7 @@
 //
 // CNRS
 //
-// This file is part of sot-dynamic.
+// This file is part of sot-state-observation.
 // sot-dynamic is free software: you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
 // as published by the Free Software Foundation, either version 3 of
@@ -322,9 +322,26 @@ namespace sotStateObservation
                 double forceTransfo;
                 stateObservation::Vector6 forceResidusVector;
                 stateObservation::Matrix3 Rct, Rc;
-                stateObservation::Vector3 pc;
                 stateObservation::Vector3 weight;
                 stateObservation::Vector6 force;
+                stateObservation::Vector3 l;
+
+                // Compute Input
+                stateObservation::Vector contactPosition;
+                stateObservation::Vector bias;
+                stateObservation::Vector inert;
+                stateObservation::Vector dinert;
+                double m;
+                stateObservation::Vector com;
+                stateObservation::Vector comddot;
+                stateObservation::Vector dangMomentumOut;
+
+                // General
+                stateObservation::Vector3 pc;
+
+                // Iterators
+                int i;
+
             } op_;
 
         public:
