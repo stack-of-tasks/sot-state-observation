@@ -71,7 +71,8 @@ namespace sotStateObservation
         inputHomoPosition_(contact::nbMax),
         forceSensorsTransformation_(contact::nbMax),
         forceSensorsTransfoMatrix_(contact::nbMax),
-        bias_(contact::nbMax)
+        bias_(contact::nbMax),
+        withUnmodeledMeasurements_(true)
     {
 
         /// Signals
@@ -258,6 +259,26 @@ namespace sotStateObservation
                    new
                    ::dynamicgraph::command::Getter <EstimatorInterface,dynamicgraph::Vector>
                       (*this, &EstimatorInterface::getRightHandSensorTransformation, docstring));
+
+        docstring =
+                "\n"
+                "    Set withUnmodeleedMeausrements \n"
+                "\n";
+
+        addCommand(std::string("setWithUnmodeledMeausrements"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,bool>
+                (*this, &EstimatorInterface::setWithUnmodeledMeasurements, docstring));
+
+        docstring =
+                "\n"
+                "    Get withUnmodeleedMeausrements\n"
+                "\n";
+
+        addCommand(std::string("getWithUnmodeledMeausrements"),
+                   new
+                   ::dynamicgraph::command::Getter <EstimatorInterface,bool>
+                      (*this, &EstimatorInterface::getWithUnmodeledMeasurements, docstring));
 
         /// Parameters
 
@@ -522,12 +543,15 @@ namespace sotStateObservation
        measurement_.segment(0,3)=accelerometer;
        measurement_.segment(3,3)=gyrometer;
 
-       for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
+       if (withUnmodeledMeasurements_)
        {
-           op_.pc=inputHomoPosition_[*iterator].block(0,3,3,1);
+           for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
+           {
+               op_.pc=inputHomoPosition_[*iterator].block(0,3,3,1);
 
-           measurement_.segment(6,3)+=inputForces_[*iterator].head(3);
-           measurement_.segment(9,3)+=inputForces_[*iterator].tail(3)+kine::skewSymmetric(op_.pc)*inputForces_[*iterator].head(3);
+               measurement_.segment(6,3)+=inputForces_[*iterator].head(3);
+               measurement_.segment(9,3)+=inputForces_[*iterator].tail(3)+kine::skewSymmetric(op_.pc)*inputForces_[*iterator].head(3);
+           }
        }
 
        op_.i=0;

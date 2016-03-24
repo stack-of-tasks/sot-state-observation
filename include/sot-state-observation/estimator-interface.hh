@@ -204,6 +204,16 @@ namespace sotStateObservation
                 return convertVector<dynamicgraph::Vector>(forceSensorsTransformation_[contact::rh]);
             }
 
+            void setWithUnmodeledMeasurements(const bool & b)
+            {
+                withUnmodeledMeasurements_=b;
+            }
+
+            bool getWithUnmodeledMeasurements() const
+            {
+                return withUnmodeledMeasurements_;
+            }
+
             /**
             \name Parameters
             @{
@@ -306,6 +316,8 @@ namespace sotStateObservation
 
             stateObservation::Vector input_;
             stateObservation::Vector measurement_;
+
+            bool withUnmodeledMeasurements_;
 
             // From input reconstructor
             std::vector<stateObservation::Vector> bias_;
