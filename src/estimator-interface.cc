@@ -470,6 +470,7 @@ namespace sotStateObservation
        timeInput_=time;
        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+       if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
 
        const stateObservation::Matrix& inertia=convertMatrix<stateObservation::Matrix>(inertiaSIN.access(time));
        const stateObservation::Matrix& homoWaist=convertMatrix<stateObservation::Matrix>(positionWaistSIN.access(time));
@@ -535,6 +536,7 @@ namespace sotStateObservation
        if(time!=timeForces_) getForcesInControlFrame(time);
        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+       if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
 
        const stateObservation::Vector& accelerometer=convertVector<stateObservation::Vector>(accelerometerSIN.access(time));
        const stateObservation::Vector& gyrometer=convertVector<stateObservation::Vector>(gyrometerSIN.access(time));
