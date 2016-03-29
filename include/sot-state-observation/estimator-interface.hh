@@ -281,6 +281,7 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <unsigned, int> unmodeledContactsNbrSOUT_;
 
             /// Methods
+            void getForces(const int& time);
             void getForcesInControlFrame(const int& time);
             void getSensorsPositionsInControlFrame(const int& time);
             void computeStackOfContacts(const int& time);

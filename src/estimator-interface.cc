@@ -322,15 +322,20 @@ namespace sotStateObservation
     {
     }
 
-    void EstimatorInterface::getForcesInControlFrame(const int& time)
+    void EstimatorInterface::getForces(const int& time)
     {
         timeForces_=time;
-        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
 
         inputForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
         inputForces_[contact::lf] = convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
         inputForces_[contact::rh] = convertVector<stateObservation::Vector>(forceRightHandSIN_.access (time));
         inputForces_[contact::lh] = convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
+    }
+
+    void EstimatorInterface::getForcesInControlFrame(const int& time)
+    {
+        if(time!=timeForces_) getForces(time);
+        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
 
         for (int i=0; i<contact::nbMax;++i)
         {          
@@ -388,7 +393,6 @@ namespace sotStateObservation
     void EstimatorInterface::computeStackOfContacts(const int& time)
     {
         timeStackOfContacts_=time;
-        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
         if(time!=timeForces_) getForcesInControlFrame(time);
 
         for (int i=0; i<contact::nbMax;++i)
