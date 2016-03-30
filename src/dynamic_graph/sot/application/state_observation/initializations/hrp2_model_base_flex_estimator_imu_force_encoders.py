@@ -30,8 +30,8 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	self.setWithForceSensors(True)
 	self.setForceVariance(1e-4)
 #	self.setWithComBias(False)
-	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(1.e-13,)*2)))
-	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3))) 
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(1.e-13,)*2+(1.e-4,)*6)))
+	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3+(1e-13,)*6))) 
 
 	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
 	plug(self.robot.dynamic.signal('left-ankle'),self.leftFootPos.sin1)
@@ -91,12 +91,22 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.contactsPos.selec1 (0, 6)
         self.contactsPos.selec2 (0, 6)
 
-		# Contacts forces
+		# Unmodeled contacts forces
+	self.unmodeledContactsForces=(0,0,0,0,0,0)
+
+		# Modeled Contacts forces
+	self.modeledForces = Stack_of_vector ('SensorsModeledFORCE')
+        plug(self.odometryFF.forceSupport1,self.modeledForces.sin1)
+        plug(self.odometryFF.forceSupport2,self.modeledForces.sin2)
+        self.modeledForces.selec1 (0, 6)
+        self.modeledForces.selec2 (0, 6)
+
+		# Sensor stack forces
 	self.sensorStackforce = Stack_of_vector ('SensorsFORCE')
-        plug(self.odometryFF.forceSupport1,self.sensorStackforce.sin1)
-        plug(self.odometryFF.forceSupport2,self.sensorStackforce.sin2)
+        self.sensorStackforce.sin1.value=self.unmodeledContactsForces
+        plug(self.modeledForces.sout,self.sensorStackforce.sin2)
         self.sensorStackforce.selec1 (0, 6)
-        self.sensorStackforce.selec2 (0, 6)
+        self.sensorStackforce.selec2 (0, 12)
 
 		# Calibration
 	self.calibration= Calibrate('calibration')
@@ -111,7 +121,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         plug(self.sensorStackforce.sout,self.sensorStack.sin2)
         self.contactForces = self.sensorStack.sin2
         self.sensorStack.selec1 (0, 6)
-        self.sensorStack.selec2 (0, 12)
+        self.sensorStack.selec2 (0, 18)
 
 	plug(self.sensorStack.sout,self.measurement)
     
