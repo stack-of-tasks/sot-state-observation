@@ -30,6 +30,7 @@
 #include <math.h>
 
 #include <state-observation/tools/definitions.hpp>
+#include <sot-state-observation/tools/definitions.hh>
 #include <state-observation/tools/miscellaneous-algorithms.hpp>
 
 #include <sot-state-observation/odometry.hh>
