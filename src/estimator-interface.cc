@@ -49,6 +49,7 @@ namespace sotStateObservation
         modeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::modeledContactsNbr"),
         unmodeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::unmodeledContactsNbr"),
         supportContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::supportContactsNbr"),
+        stackOfSupportContactsSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::stackOfSupportContacts"),
         positionLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_lf"),
         forceLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lf"),
         positionRightFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_rf"),
@@ -162,6 +163,9 @@ namespace sotStateObservation
 
         signalRegistration (supportContactsNbrSOUT_);
         supportContactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getSupportContactsNbr, this, _1, _2));
+
+        signalRegistration (stackOfSupportContactsSOUT_);
+        stackOfSupportContactsSOUT_.setFunction(boost::bind(&EstimatorInterface::getStackOfSupportContacts, this, _1, _2));
 
         /// Commands
 

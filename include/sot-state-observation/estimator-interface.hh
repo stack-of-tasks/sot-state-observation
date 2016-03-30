@@ -211,6 +211,20 @@ namespace sotStateObservation
                 return withUnmodeledMeasurements_;
             }
 
+            dynamicgraph::Vector& getStackOfSupportContacts(dynamicgraph::Vector& stackOfSupportContacts, const int& time)
+            {
+                if(time!=timeStackOfContacts_) computeStackOfContacts(time);
+
+                stackOfSupportContacts.resize(stackOfSupportContacts_.size());
+                op_.i=0;
+                for (iterator = stackOfSupportContacts_.begin(); iterator != stackOfSupportContacts_.end(); ++iterator)
+                {
+                    stackOfSupportContacts(op_.i)=*iterator;
+                    ++op_.i;
+                }
+                return stackOfSupportContacts;
+            }
+
             /**
             \name Parameters
             @{
@@ -277,6 +291,7 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <unsigned, int> modeledContactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> unmodeledContactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> supportContactsNbrSOUT_;
+            dynamicgraph::SignalPtr <Vector, int> stackOfSupportContactsSOUT_;
 
             /// Methods
             void getForces(const int& time);
