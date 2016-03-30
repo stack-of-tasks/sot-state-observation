@@ -134,6 +134,13 @@ namespace sotStateObservation
                  return unmodeledContactsNbr;
             }
 
+            unsigned& getSupportContactsNbr(unsigned& supportContactsNbr, const int& time)
+            {
+                 if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
+                 supportContactsNbr = supportContactsNbr_;
+                 return supportContactsNbr;
+            }
+
             void setLeftFootBias (const ::dynamicgraph::Vector & b)
             {
                 bias_[0]=convertVector<stateObservation::Vector>(b);
@@ -279,6 +286,7 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <unsigned, int> contactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> modeledContactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> unmodeledContactsNbrSOUT_;
+            dynamicgraph::SignalPtr <unsigned, int> supportContactsNbrSOUT_;
 
             /// Methods
             void getForces(const int& time);
@@ -300,13 +308,15 @@ namespace sotStateObservation
             stateObservation::Vector forceThresholds_;
             stateObservation::Vector forceResidus_;
             std::vector<bool> modeled_;
+            std::vector<bool> support_;
 
             std::list<int> stackOfContacts_;
             std::list<int> stackOfModeledContacts_;
             std::list<int> stackOfUnmodeledContacts_;
+            std::list<int> stackOfSupportContacts_;
             std::list<int>::iterator iterator;
 
-            unsigned contactsNbr_, modeledContactsNbr_, unmodeledContactsNbr_;
+            unsigned contactsNbr_, modeledContactsNbr_, unmodeledContactsNbr_, supportContactsNbr_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
