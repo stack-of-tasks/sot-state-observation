@@ -295,7 +295,7 @@ namespace sotStateObservation
                   const stateObservation::Vector&, stateObservation::Vector&);
 
             /// Parameters
-            double timeStackOfContacts_, timeInput_, timeMeasurement_, timeSensorsPositions_, timeForces_, timeContactsNbrs_;
+            double timeStackOfContacts_, timeInput_, timeMeasurement_, timeSensorsPositions_, timeForces_, timeForcesInControlFrame_, timeContactsNbrs_;
 
             stateObservation::Vector forceThresholds_;
             stateObservation::Vector forceResidus_;
@@ -330,6 +330,7 @@ namespace sotStateObservation
             {
                 // Compute stack of contacts
                 bool found;
+                double contactForce;
 
                 // Get forces in control frame
                 double forceTransfo;

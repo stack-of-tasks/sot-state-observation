@@ -66,6 +66,7 @@ namespace sotStateObservation
         gyrometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::gyrometer"),
         timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1),
         timeSensorsPositions_(-1), timeForces_(-1), timeContactsNbrs_(-1),
+        timeForcesInControlFrame_(-1),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
@@ -293,8 +294,8 @@ namespace sotStateObservation
         forceResidus_.resize(contact::nbMax);
         forceResidus_[contact::lf]=7.8;
         forceResidus_[contact::lf]=7.8;
-        forceResidus_[contact::lh]=11;
-        forceResidus_[contact::rh]=11;
+        forceResidus_[contact::lh]=11.25;
+        forceResidus_[contact::rh]=11.25;
 
         // Modeled
         modeled_.resize(contact::nbMax);
@@ -334,6 +335,8 @@ namespace sotStateObservation
 
     void EstimatorInterface::getForcesInControlFrame(const int& time)
     {
+        timeForcesInControlFrame_=time;
+
         if(time!=timeForces_) getForces(time);
         if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
 
@@ -393,13 +396,14 @@ namespace sotStateObservation
     void EstimatorInterface::computeStackOfContacts(const int& time)
     {
         timeStackOfContacts_=time;
-        if(time!=timeForces_) getForcesInControlFrame(time);
+        if(time!=timeForces_) getForces(time);
 
         for (int i=0; i<contact::nbMax;++i)
         {
             op_.found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
+            op_.contactForce=inputForces_[i].segment(0,3).norm()-forceResidus_[i];
 
-            if(inputForces_[i].norm()>forceThresholds_[i])
+            if(op_.contactForce>forceThresholds_[i] ||  op_.contactForce<-forceThresholds_[i])
             {
                 if (!op_.found)
                 {
@@ -537,7 +541,7 @@ namespace sotStateObservation
    void EstimatorInterface::computeMeasurement(const int& time)
    {
        timeMeasurement_=time;
-       if(time!=timeForces_) getForcesInControlFrame(time);
+       if(time!=timeForcesInControlFrame_) getForcesInControlFrame(time);
        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
        if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
