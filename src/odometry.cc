@@ -47,6 +47,7 @@ namespace sotStateObservation
         rightFootPositionRefSIN_ (NULL, "Odometry("+inName+")::input(Matrix)::rightFootPositionRef"),
         forceLeftFootSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_lf"),
         forceRightFootSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_rf"),
+        stackOfSupportContactsSIN_ (NULL, "Odometry("+inName+")::input(vector)::stackOfSupportContacts"),
         robotStateInSIN_ (NULL, "Odometry("+inName+")::input(vector)::robotStateIn"),
         robotStateOutSOUT_ (NULL, "Odometry("+inName+")::output(vector)::robotStateOut"),
         nbSupportSOUT_ (NULL,"Odometry("+inName+")::output(unsigned)::nbSupport"),
@@ -70,6 +71,8 @@ namespace sotStateObservation
 
         signalRegistration (leftFootPositionRefSIN_);
         signalRegistration (rightFootPositionRefSIN_);
+
+        signalRegistration (stackOfSupportContactsSIN_);
 
         signalRegistration (robotStateInSIN_);
         signalRegistration (robotStateOutSOUT_);
@@ -182,6 +185,12 @@ namespace sotStateObservation
         forceLeftFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(forceLeftFoot));
         forceLeftFootSIN_.setTime (time_);
         inputForces_[contact::lf]=forceLeftFoot;
+
+        stateObservation::Vector v; v.resize(2);
+        v << 0.0,
+             1.0;
+        stackOfSupportContactsSIN_.setConstant(convertVector<dynamicgraph::Vector>(v));
+        stackOfSupportContactsSIN_.setTime(time_);
 
         posUTheta_.setZero();
         rot_.setZero();

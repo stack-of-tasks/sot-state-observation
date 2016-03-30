@@ -128,6 +128,8 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <Matrix, int> leftFootPositionRefSIN_;
             dynamicgraph::SignalPtr <Matrix, int> rightFootPositionRefSIN_;
 
+            dynamicgraph::SignalPtr <Vector, int> stackOfSupportContactsSIN_;
+
             dynamicgraph::SignalPtr <Vector, int> robotStateInSIN_;
             dynamicgraph::SignalPtr <Vector, int> robotStateOutSOUT_;
 
