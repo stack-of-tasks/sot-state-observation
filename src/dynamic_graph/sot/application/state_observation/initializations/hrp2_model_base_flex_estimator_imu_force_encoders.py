@@ -6,7 +6,7 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose, Selec_of_vector, Inverse_of_matrixHomo, Multiply_of_matrixHomo, MatrixHomoToPoseRollPitchYaw
-from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, Odometry, Filter
+from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, Odometry, Filter, EstimatorInterface
 
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
@@ -29,16 +29,26 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 	self.setWithForceSensors(True)
 	self.setForceVariance(1e-4)
-#	self.setWithComBias(False)
 	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(1.e-13,)*2+(1.e-4,)*6)))
 	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3+(1e-13,)*6))) 
 
-	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
-	plug(self.robot.dynamic.signal('left-ankle'),self.leftFootPos.sin1)
-	self.leftFootPos.sin2.value=self.robot.forceSensorInLeftAnkle
-	self.rightFootPos=Multiply_of_matrixHomo("rightFootPos")
-	plug(self.robot.dynamic.signal('right-ankle'),self.rightFootPos.sin1)
-	self.rightFootPos.sin2.value=self.robot.forceSensorInRightAnkle
+	#Estimator interface
+	self.interface=EstimatorInterface("EstimatorInterface")
+	self.interface.setLeftHandSensorTransformation((0.,0.,1.57))
+	self.interface.setRightHandSensorTransformation((0.,0.,1.57))
+        self.interface.setFDInertiaDot(True)  
+
+	# Contacts forces
+	plug (self.robot.device.forceLLEG,self.interface.force_lf)
+	plug (self.robot.device.forceRLEG,self.interface.force_rf)
+	plug (self.robot.device.forceLARM,self.interface.force_lh)
+	plug (self.robot.device.forceRARM,self.interface.force_rh)
+
+	# Contacts positions
+	plug (self.robot.frames['leftFootForceSensor'].position,self.interface.position_lf)
+	plug (self.robot.frames['rightFootForceSensor'].position,self.interface.position_rf)
+	plug (self.robot.dynamic.signal('right-wrist'),self.interface.position_lh)
+	plug (self.robot.dynamic.signal('left-wrist'),self.interface.position_rh)
 
 	# Reconstruction of the position of the free flyer from encoders
 
@@ -68,7 +78,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         plug (self.robot.device.forceRLEG,self.odometryFF.force_rf)
         plug (self.rightFootPosFF.sout,self.odometryFF.rightFootPosition)
         plug (self.leftFootPosFF.sout,self.odometryFF.leftFootPosition)
-	plug (self.odometryFF.nbSupport,self.contactNbr)
+	plug (self.interface.supportContactsNbr,self.contactNbr)
 	self.odometryFF.setLeftFootPosition(self.robot.frames['leftFootForceSensor'].position.value)
 	self.odometryFF.setRightFootPosition(self.robot.frames['rightFootForceSensor'].position.value)
 
@@ -110,7 +120,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 		# Calibration
 	self.calibration= Calibrate('calibration')
-        plug(self.odometryFF.nbSupport,self.calibration.contactsNbr)
+        plug(self.interface.supportContactsNbr,self.calibration.contactsNbr)
 	plug(self.sensorStackimu.sout,self.calibration.imuIn)
         plug(self.contactsPos.sout,self.calibration.contactsPositionIn)
 	plug(self.robot.dynamicEncoders.com,self.calibration.comIn)
@@ -178,7 +188,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         
         	# Concatenate with InputReconstructor entity
         self.inputVector=InputReconstructor(name+'inputVector')
-        plug(self.odometryFF.nbSupport,self.inputVector.nbContacts)
+        plug(self.interface.supportContactsNbr,self.inputVector.nbContacts)
         plug(self.comVector.sout,self.inputVector.comVector)
         plug(self.robot.dynamicEncoders.inertia,self.inputVector.inertia)
 	plug(self.robot.dynamicEncoders.angularmomentum,self.inputVector.angMomentum)

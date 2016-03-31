@@ -133,8 +133,6 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <Vector, int> robotStateInSIN_;
             dynamicgraph::SignalPtr <Vector, int> robotStateOutSOUT_;
 
-            dynamicgraph::SignalPtr <unsigned int, int> nbSupportSOUT_;
-
             dynamicgraph::SignalPtr <Vector, int> supportPos1SOUT_;
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> homoSupportPos1SOUT_;
             dynamicgraph::SignalPtr <Vector, int> forceSupport1SOUT_;

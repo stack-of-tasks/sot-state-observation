@@ -50,7 +50,6 @@ namespace sotStateObservation
         stackOfSupportContactsSIN_ (NULL, "Odometry("+inName+")::input(vector)::stackOfSupportContacts"),
         robotStateInSIN_ (NULL, "Odometry("+inName+")::input(vector)::robotStateIn"),
         robotStateOutSOUT_ (NULL, "Odometry("+inName+")::output(vector)::robotStateOut"),
-        nbSupportSOUT_ (NULL,"Odometry("+inName+")::output(unsigned)::nbSupport"),
         supportPos1SOUT_(NULL,"Odometry("+inName+")::output(vector)::supportPos1"),
         supportPos2SOUT_(NULL,"Odometry("+inName+")::output(vector)::supportPos2"),
         homoSupportPos1SOUT_(NULL, "Odometry("+inName+")::output(HomoMatrix)::homoSupportPos1"),
@@ -77,7 +76,6 @@ namespace sotStateObservation
         signalRegistration (robotStateInSIN_);
         signalRegistration (robotStateOutSOUT_);
 
-        signalRegistration (nbSupportSOUT_);
         signalRegistration (supportPos1SOUT_ << homoSupportPos1SOUT_ << forceSupport1SOUT_);
         signalRegistration (supportPos2SOUT_ << homoSupportPos2SOUT_ << forceSupport2SOUT_);
         signalRegistration (forceSupportStackSOUT_);
@@ -101,8 +99,6 @@ namespace sotStateObservation
 
         addCommand(std::string("setRightFootPosition"),
                    ::dynamicgraph::command::makeCommandVoid1(*this, & Odometry::setRightFootPosition, docstring));
-
-        nbSupportSOUT_.setFunction(boost::bind(&Odometry::getNbSupport, this, _1, _2));
 
         supportPos1SOUT_.setFunction(boost::bind(&Odometry::getSupportPos1, this, _1, _2));
         homoSupportPos1SOUT_.setFunction(boost::bind(&Odometry::getHomoSupportPos1, this, _1, _2));
@@ -217,13 +213,6 @@ namespace sotStateObservation
 
     Odometry::~Odometry()
     {
-    }
-
-    unsigned int& Odometry::getNbSupport(unsigned int& nbSupport, const int& time)
-    {
-        if(time!=time_) computeOdometry(time);
-        nbSupport = stackOfSupports_.size();
-        return nbSupport;
     }
 
     Vector& Odometry::getSupportPos1(Vector& supportPos1, const int& time)
