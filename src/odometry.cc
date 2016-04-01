@@ -220,9 +220,8 @@ namespace sotStateObservation
         if(time!=time_) computeOdometry(time);
 
         supportPos1.resize(6);
-        if (stackOfSupports_.size()>=1) {
-            iterator_ = stackOfSupports_.begin();
-            supportPos1=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[*iterator_]));
+        if (supportContactsNbr_>=1) {
+            supportPos1=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[stackOfSupportContacts_[0]]));
         } else {
             supportPos1.setZero();
         }
@@ -230,11 +229,10 @@ namespace sotStateObservation
     }
 
     MatrixHomogeneous& Odometry::getHomoSupportPos1(MatrixHomogeneous& homoSupportPos1, const int& time)
-    {
-        if(time!=time_) computeOdometry(time);
-        if (stackOfSupports_.size()>=1) {
-            iterator_ = stackOfSupports_.begin();
-            homoSupportPos1=convertMatrix<MatrixHomogeneous>(odometryHomoPosition_[*iterator_]);
+    {      
+        if(time!=time_) computeOdometry(time);     
+        if (supportContactsNbr_>=1) {
+            homoSupportPos1=convertMatrix<MatrixHomogeneous>(odometryHomoPosition_[stackOfSupportContacts_[0]]);
         } else {
             homoSupportPos1.setIdentity();
         }
@@ -246,11 +244,10 @@ namespace sotStateObservation
         if(time!=time_) computeOdometry(time);
 
         forceSupport1.resize(6);
-        if (stackOfSupports_.size()>=1) {
-            iterator_ = stackOfSupports_.begin();
-            forceSupport1=convertVector<dynamicgraph::Vector>(inputForces_[*iterator_]);
+        if (supportContactsNbr_>=1) {
+            forceSupport1=convertVector<dynamicgraph::Vector>(inputForces_[stackOfSupportContacts_[0]]);
         } else {
-                        forceSupport1.setZero();
+            forceSupport1.setZero();
         }
         return forceSupport1;
     }
@@ -278,10 +275,8 @@ namespace sotStateObservation
         if(time!=time_) computeOdometry(time);
 
         supportPos2.resize(6);
-        if (stackOfSupports_.size()>=2) {
-            iterator_ = stackOfSupports_.begin();
-            for(int i=1; i<2; ++i) ++iterator_ ;
-            supportPos2=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[*iterator_]));
+        if (supportContactsNbr_>=2) {
+            supportPos2=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[stackOfSupportContacts_[1]]));
         } else {
             supportPos2.setZero();
         }
@@ -291,10 +286,8 @@ namespace sotStateObservation
     MatrixHomogeneous & Odometry::getHomoSupportPos2(MatrixHomogeneous & homoSupportPos2, const int& time)
     {
         if(time!=time_) computeOdometry(time);
-        if (stackOfSupports_.size()>=2) {
-            iterator_ = stackOfSupports_.begin();
-            for(int i=1; i<2; ++i) ++iterator_ ;
-            homoSupportPos2=convertMatrix<MatrixHomogeneous>(odometryHomoPosition_[*iterator_]);
+        if (supportContactsNbr_>=2) {
+            homoSupportPos2=convertMatrix<MatrixHomogeneous>(odometryHomoPosition_[stackOfSupportContacts_[1]]);
         } else {
             homoSupportPos2.setIdentity();
         }
@@ -306,12 +299,10 @@ namespace sotStateObservation
         if(time!=time_) computeOdometry(time);
 
         forceSupport2.resize(6);
-        if (stackOfSupports_.size()>=2) {
-            iterator_ = stackOfSupports_.begin();
-            for(int i=1; i<2; ++i) ++iterator_ ;
-            forceSupport2=convertVector<dynamicgraph::Vector>(inputForces_[*iterator_]);
+        if (supportContactsNbr_>=2) {
+            forceSupport2=convertVector<dynamicgraph::Vector>(inputForces_[stackOfSupportContacts_[1]]);
         } else {
-                        forceSupport2.setZero();
+            forceSupport2.setZero();
         }
         return forceSupport2;
     }
@@ -351,9 +342,8 @@ namespace sotStateObservation
         odometryHomoPosition_[contact::rf]=referenceHomoPosition_[contact::rf];
     }
 
-    void Odometry::computeStackOfContacts(const int& time)
+    void Odometry::getInputs(const int& time)
     {
-
         inputForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
         inputHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(rightFootPositionSIN_.access (time)));
         referenceHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(rightFootPositionRefSIN_.access (time));
@@ -362,24 +352,10 @@ namespace sotStateObservation
         inputHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(leftFootPositionSIN_.access (time)));
         referenceHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(leftFootPositionRefSIN_.access (time));
 
-        double fz;
-        bool found;
-
-        for (int i=0; i<contact::nbMax;++i){
+        for (int i=0; i<contact::nbMax;++i)
+        {
             inputPosition_[i]=kine::homogeneousMatrixToVector6(inputHomoPosition_[i]);
             referencePosition_[i]=kine::homogeneousMatrixToVector6(referenceHomoPosition_[i]);
-
-            fz =  inputHomoPosition_[i](2,0) * inputForces_[i](0) +
-                  inputHomoPosition_[i](2,1) * inputForces_[i](1) +
-                  inputHomoPosition_[i](2,2) * inputForces_[i](2);
-
-            found = (std::find(stackOfSupports_.begin(), stackOfSupports_.end(), i) != stackOfSupports_.end());
-
-            if(fz>forceThreshold_) {
-                if (!found) stackOfSupports_.push_back(i);
-            } else {
-                if(found) stackOfSupports_.remove(i);
-            }
         }
     }
 
@@ -407,23 +383,26 @@ namespace sotStateObservation
 
     void Odometry::computeOdometry(const int& time){
 
-        computeStackOfContacts(time);
+        getInputs(time);
+
+        stackOfSupportContacts_ = convertVector<stateObservation::Vector>(stackOfSupportContactsSIN_.access (time));
+        supportContactsNbr_ = stackOfSupportContacts_.size();
 
         /// Computation of alpha
         alpha_.setZero();
         double sum=0;
         double f=0;
-        for (iterator_=stackOfSupports_.begin(); iterator_ != stackOfSupports_.end(); ++iterator_)
+        for (int i=0; i<supportContactsNbr_; ++i)
         {
-            f=inputForces_[*iterator_].segment(0,3).norm();
-            alpha_[*iterator_]=f;
+            f=inputForces_[stackOfSupportContacts_[i]].segment(0,3).norm();
+            alpha_[stackOfSupportContacts_[i]]=f;
             sum+=f;
         }
         alpha_=(1/sum)*alpha_;
 
         /// Find the pivot support.
 //        pivotSupport_=std::distance(&alpha_[0], (std::max_element(&alpha_[0],&alpha_[alpha_.size()])));
-        pivotSupport_=*(stackOfSupports_.begin());
+        pivotSupport_=stackOfSupportContacts_[0];
 
         /// Compute odometryHomoPosition.
         for (int i=0; i<contact::nbMax; ++i){
@@ -445,9 +424,9 @@ namespace sotStateObservation
 //        freeFlyerInHomo.block(0,3,3,1)=freeFlyerIn.segment(0,3);
 
             // reconstruction of odometryFreeFlyer
-        if(stackOfSupports_.size()==1){
+        if(supportContactsNbr_==1){
             odometryFreeFlyer_=odometryHomoPosition_[pivotSupport_]*inputHomoPosition_[pivotSupport_].inverse()*freeFlyerInHomo;
-        } else if (stackOfSupports_.size()==2){
+        } else if (supportContactsNbr_==2){
             stateObservation::Matrix4 odometryFreeFlyerL=odometryHomoPosition_[contact::lf]*inputHomoPosition_[contact::lf].inverse()*freeFlyerInHomo;
             stateObservation::Matrix4 odometryFreeFlyerR=odometryHomoPosition_[contact::rf]*inputHomoPosition_[contact::rf].inverse()*freeFlyerInHomo;
             odometryFreeFlyer_=homogeneousMatricesAverage(odometryFreeFlyerL, odometryFreeFlyerR, alpha_[contact::rf]);

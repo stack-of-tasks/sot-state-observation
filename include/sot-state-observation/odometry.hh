@@ -113,7 +113,7 @@ namespace sotStateObservation
         private:
 
             /// Methods
-            void computeStackOfContacts(const int& time);
+            void getInputs(const int& time);
             void computeOdometry(const int& time);
             stateObservation::Matrix4 regulateOdometryWithRef(stateObservation::Matrix4 posEnc, stateObservation::Vector posRef, double alpha);
             stateObservation::Matrix4 homogeneousMatricesAverage(stateObservation::Matrix4 m1, stateObservation::Matrix4 m2, double alpha);
@@ -148,15 +148,14 @@ namespace sotStateObservation
             /// Parameters
             double forceThreshold_, time_;
 
-            std::list<int> stackOfSupports_;
-            std::list<int>::iterator iterator_;
-
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator<Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator<Vector6> > inputPosition_;
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator<Matrix4> > referenceHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator<Vector6> > referencePosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator<Vector6> > inputForces_;
 
+            stateObservation::Vector stackOfSupportContacts_;
+            double supportContactsNbr_;
             int pivotSupport_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator<Matrix4> > odometryHomoPosition_;
