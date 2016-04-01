@@ -50,6 +50,7 @@ namespace sotStateObservation
         stackOfSupportContactsSIN_ (NULL, "Odometry("+inName+")::input(vector)::stackOfSupportContacts"),
         robotStateInSIN_ (NULL, "Odometry("+inName+")::input(vector)::robotStateIn"),
         robotStateOutSOUT_ (NULL, "Odometry("+inName+")::output(vector)::robotStateOut"),
+        freeFlyerSOUT_ (NULL, "Odometry("+inName+")::output(vector)::freeFlyer"),
         pivotPositionSOUT_ (NULL, "Odometry("+inName+")::output(Vector)::pivotPosition"),
         forceThreshold_ (.02 * 56.8*stateObservation::cst::gravityConstant), time_(0),
         inputForces_(contact::nbMax),
@@ -68,6 +69,8 @@ namespace sotStateObservation
 
         signalRegistration (robotStateInSIN_);
         signalRegistration (robotStateOutSOUT_);
+
+        signalRegistration (freeFlyerSOUT_);
 
         signalRegistration (pivotPositionSOUT_);
 
@@ -90,6 +93,7 @@ namespace sotStateObservation
                    ::dynamicgraph::command::makeCommandVoid1(*this, & Odometry::setRightFootPosition, docstring));
 
         robotStateOutSOUT_.setFunction(boost::bind(&Odometry::getRobotStateOut, this, _1, _2));
+        freeFlyerSOUT_.setFunction(boost::bind(&Odometry::getFreeFlyer, this, _1, _2));
         pivotPositionSOUT_.setFunction(boost::bind(&Odometry::getPivotPositionOut, this, _1, _2));
 
         stateObservation::Matrix leftFootPos;
@@ -202,6 +206,20 @@ namespace sotStateObservation
         robotState = convertVector<Vector>(state);
 
         return robotState;
+    }
+
+    Vector& Odometry::getFreeFlyer(Vector& freeFlyer, const int& time)
+    {
+        if(time!=time_) computeOdometry(time);
+
+        stateObservation::Vector3 rpy=(Matrix3(odometryFreeFlyer_.block(0,0,3,3))).eulerAngles(0, 1, 2);
+
+        stateObservation::Vector ff(6);
+        ff << odometryFreeFlyer_.block(0,3,3,1),
+              rpy;
+
+        freeFlyer = convertVector<Vector>(ff);
+        return freeFlyer;
     }
 
     Vector& Odometry::getPivotPositionOut(Vector& pivotPositionOut, const int& time)

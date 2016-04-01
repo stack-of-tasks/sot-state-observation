@@ -44,13 +44,15 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	plug (self.robot.device.forceLARM,self.interface.force_lh)
 	plug (self.robot.device.forceRARM,self.interface.force_rh)
 
-	# Reconstruction of the position of the free flyer from encoders
-
-        	# Create dynamic with the free flyer at the origin of the control frame
+	# Selecting robotState
 	self.robot.device.robotState.value=46*(0.,)
 	self.robotState = Selec_of_vector('robotState')
 	plug(self.robot.device.robotState,self.robotState.sin)
 	self.robotState.selec(0,36)
+
+	# Reconstruction of the position of the free flyer from encoders
+
+        	# Create dynamic with the free flyer at the origin of the control frame
 	self.robot.dynamicFF=self.createDynamic(self.robotState.sout,'_dynamicFF')
         self.robot.dynamicFF.inertia.recompute(1)
         self.robot.dynamicFF.waist.recompute(1)
@@ -96,7 +98,8 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         # Input reconstruction
 
 		# Create dynamicEncoders
-	self.robot.dynamicEncoders=self.createDynamic(self.odometry.robotStateOut,'_dynamicEncoders')
+	self.robot.dynamicEncoders=self.createDynamic(self.robotState.sout,'_dynamicEncoders')
+	plug(self.odometry.freeFlyer,self.robot.dynamicEncoders.ffposition)
 		# IMU Vector
 			# Creating an operational point for the IMU
         self.robot.dynamicEncoders.createJacobian(name+'ChestJ_OpPoint','chest')
