@@ -53,53 +53,57 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	# Reconstruction of the position of the free flyer from encoders
 
         	# Create dynamic with the free flyer at the origin of the control frame
-	self.robot.dynamicFF=self.createDynamic(self.robotState.sout,'_dynamicFF')
-        self.robot.dynamicFF.inertia.recompute(1)
-        self.robot.dynamicFF.waist.recompute(1)
+	self.robot.dynamicOdo=self.createDynamic(self.robotState.sout,'_dynamicOdo')
+        self.robot.dynamicOdo.inertia.recompute(1)
+        self.robot.dynamicOdo.waist.recompute(1)
 
-		# Reconstruction of the position of the contacts in dynamicFF
-	self.leftFootPosFF=Multiply_of_matrixHomo("leftFootPosFF")
-	plug(self.robot.dynamicFF.signal('left-ankle'),self.leftFootPosFF.sin1)
-	self.leftFootPosFF.sin2.value=self.robot.forceSensorInLeftAnkle
-	self.rightFootPosFF=Multiply_of_matrixHomo("rightFootPosFF")
-	plug(self.robot.dynamicFF.signal('right-ankle'),self.rightFootPosFF.sin1)
-	self.rightFootPosFF.sin2.value=self.robot.forceSensorInRightAnkle
+		# Reconstruction of the position of the contacts in dynamicOdo
+	self.leftFootPosOdo=Multiply_of_matrixHomo("leftFootPosOdo")
+	plug(self.robot.dynamicOdo.signal('left-ankle'),self.leftFootPosOdo.sin1)
+	self.leftFootPosOdo.sin2.value=self.robot.forceSensorInLeftAnkle
+	self.rightFootPosOdo=Multiply_of_matrixHomo("rightFootPosOdo")
+	plug(self.robot.dynamicOdo.signal('right-ankle'),self.rightFootPosOdo.sin1)
+	self.rightFootPosOdo.sin2.value=self.robot.forceSensorInRightAnkle
 
 		# Odometry
         self.odometry=Odometry ('odometry')
-	plug (self.robot.device.robotState,self.odometry.robotStateIn)
 	plug (self.robot.frames['leftFootForceSensor'].position,self.odometry.leftFootPositionRef)
 	plug (self.robot.frames['rightFootForceSensor'].position,self.odometry.rightFootPositionRef)
-        plug (self.rightFootPosFF.sout,self.odometry.rightFootPosition)
-        plug (self.leftFootPosFF.sout,self.odometry.leftFootPosition)
+        plug (self.rightFootPosOdo.sout,self.odometry.rightFootPosition)
+        plug (self.leftFootPosOdo.sout,self.odometry.leftFootPosition)
 	plug (self.robot.device.forceLLEG,self.odometry.force_lf)
         plug (self.robot.device.forceRLEG,self.odometry.force_rf)
 	self.odometry.setLeftFootPosition(self.robot.frames['leftFootForceSensor'].position.value)
 	self.odometry.setRightFootPosition(self.robot.frames['rightFootForceSensor'].position.value)
 
+	# Create dynamicEncoders
+	self.robot.dynamicEncoders=self.createDynamic(self.robotState.sout,'_dynamicEncoders')
+	plug(self.odometry.freeFlyer,self.robot.dynamicEncoders.ffposition)
+
+	# Reconstruction of the position of the contacts in dynamicEncoders
+	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
+	plug(self.robot.dynamicEncoders.signal('left-ankle'),self.leftFootPos.sin1)
+	self.leftFootPos.sin2.value=self.robot.forceSensorInLeftAnkle
+	self.rightFootPos=Multiply_of_matrixHomo("rightFootPos")
+	plug(self.robot.dynamicEncoders.signal('right-ankle'),self.rightFootPos.sin1)
+	self.rightFootPos.sin2.value=self.robot.forceSensorInRightAnkle
+
+	# Contacts positions
+	plug (self.leftFootPos.sout,self.interface.position_lf)
+	plug (self.rightFootPos.sout,self.interface.position_rf)
+	plug (self.robot.dynamicEncoders.signal('right-wrist'),self.interface.position_lh)
+	plug (self.robot.dynamicEncoders.signal('left-wrist'),self.interface.position_rh)
+
 	# Compute contacts number
 	plug (self.interface.supportContactsNbr,self.contactNbr)
 
         # Compute measurement vector
-
-		# IMU
         plug(self.robot.device.accelerometer,self.interface.accelerometer)
         plug(self.robot.device.gyrometer,self.interface.gyrometer)
-
-		# Contacts positions
-	plug (self.robot.frames['leftFootForceSensor'].position,self.interface.position_lf)
-	plug (self.robot.frames['rightFootForceSensor'].position,self.interface.position_rf)
-	plug (self.robot.dynamic.signal('right-wrist'),self.interface.position_lh)
-	plug (self.robot.dynamic.signal('left-wrist'),self.interface.position_rh)
-
-		# Get measurement vector
 	plug(self.interface.measurement,self.measurement)
     
         # Input reconstruction
 
-		# Create dynamicEncoders
-	self.robot.dynamicEncoders=self.createDynamic(self.robotState.sout,'_dynamicEncoders')
-	plug(self.odometry.freeFlyer,self.robot.dynamicEncoders.ffposition)
 		# IMU Vector
 			# Creating an operational point for the IMU
         self.robot.dynamicEncoders.createJacobian(name+'ChestJ_OpPoint','chest')
