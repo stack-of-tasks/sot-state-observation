@@ -82,18 +82,6 @@ namespace sotStateObservation
                     "Entity that compute the stack of contacts and their position using odometry";
             }
 
-            unsigned int& getNbSupport(unsigned int& , const int& time);
-
-            Vector& getSupportPos1(Vector& , const int& time);
-            MatrixHomogeneous& getHomoSupportPos1(MatrixHomogeneous& , const int& time);
-            dynamicgraph::Vector& getForceSupport1(dynamicgraph::Vector& , const int& time);
-
-            dynamicgraph::Vector& getSupportPos2(dynamicgraph::Vector& , const int& time);
-            MatrixHomogeneous& getHomoSupportPos2(MatrixHomogeneous& , const int& time);
-            dynamicgraph::Vector& getForceSupport2(dynamicgraph::Vector& , const int& time);
-
-            dynamicgraph::Vector& getForceSupportStack(dynamicgraph::Vector& , const int& time);
-
             Vector& getRobotStateOut(Vector& robotState, const int& time);
             Vector& getPivotPositionOut(Vector& pivotPositionOut, const int& time);
 
@@ -132,16 +120,6 @@ namespace sotStateObservation
 
             dynamicgraph::SignalPtr <Vector, int> robotStateInSIN_;
             dynamicgraph::SignalPtr <Vector, int> robotStateOutSOUT_;
-
-            dynamicgraph::SignalPtr <Vector, int> supportPos1SOUT_;
-            dynamicgraph::SignalPtr <MatrixHomogeneous, int> homoSupportPos1SOUT_;
-            dynamicgraph::SignalPtr <Vector, int> forceSupport1SOUT_;
-
-            dynamicgraph::SignalPtr <Vector, int> supportPos2SOUT_;
-            dynamicgraph::SignalPtr <MatrixHomogeneous, int> homoSupportPos2SOUT_;
-            dynamicgraph::SignalPtr <Vector, int> forceSupport2SOUT_;
-
-            dynamicgraph::SignalPtr <Vector, int> forceSupportStackSOUT_;
 
             dynamicgraph::SignalPtr <Vector, int> pivotPositionSOUT_;
 

@@ -50,14 +50,7 @@ namespace sotStateObservation
         stackOfSupportContactsSIN_ (NULL, "Odometry("+inName+")::input(vector)::stackOfSupportContacts"),
         robotStateInSIN_ (NULL, "Odometry("+inName+")::input(vector)::robotStateIn"),
         robotStateOutSOUT_ (NULL, "Odometry("+inName+")::output(vector)::robotStateOut"),
-        supportPos1SOUT_(NULL,"Odometry("+inName+")::output(vector)::supportPos1"),
-        supportPos2SOUT_(NULL,"Odometry("+inName+")::output(vector)::supportPos2"),
-        homoSupportPos1SOUT_(NULL, "Odometry("+inName+")::output(HomoMatrix)::homoSupportPos1"),
-        homoSupportPos2SOUT_(NULL, "Odometry("+inName+")::output(HomoMatrix)::homoSupportPos2"),
-        forceSupport1SOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupport1"),
-        forceSupport2SOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupport2"),
-        forceSupportStackSOUT_ (NULL, "Odometry("+inName+")::output(vector)::forceSupportStack"),
-        pivotPositionSOUT_ (NULL, "Odometry("+inName+")::output(vector)::pivotPosition"),
+        pivotPositionSOUT_ (NULL, "Odometry("+inName+")::output(Vector)::pivotPosition"),
         forceThreshold_ (.02 * 56.8*stateObservation::cst::gravityConstant), time_(0),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax), inputHomoPosition_(contact::nbMax),
@@ -75,10 +68,6 @@ namespace sotStateObservation
 
         signalRegistration (robotStateInSIN_);
         signalRegistration (robotStateOutSOUT_);
-
-        signalRegistration (supportPos1SOUT_ << homoSupportPos1SOUT_ << forceSupport1SOUT_);
-        signalRegistration (supportPos2SOUT_ << homoSupportPos2SOUT_ << forceSupport2SOUT_);
-        signalRegistration (forceSupportStackSOUT_);
 
         signalRegistration (pivotPositionSOUT_);
 
@@ -99,16 +88,6 @@ namespace sotStateObservation
 
         addCommand(std::string("setRightFootPosition"),
                    ::dynamicgraph::command::makeCommandVoid1(*this, & Odometry::setRightFootPosition, docstring));
-
-        supportPos1SOUT_.setFunction(boost::bind(&Odometry::getSupportPos1, this, _1, _2));
-        homoSupportPos1SOUT_.setFunction(boost::bind(&Odometry::getHomoSupportPos1, this, _1, _2));
-        forceSupport1SOUT_.setFunction(boost::bind(&Odometry::getForceSupport1, this, _1, _2));
-
-        supportPos2SOUT_.setFunction(boost::bind(&Odometry::getSupportPos2, this, _1, _2));
-        homoSupportPos2SOUT_.setFunction(boost::bind(&Odometry::getHomoSupportPos2, this, _1, _2));
-        forceSupport2SOUT_.setFunction(boost::bind(&Odometry::getForceSupport2, this, _1, _2));
-
-        forceSupportStackSOUT_.setFunction(boost::bind(&Odometry::getForceSupportStack, this, _1, _2));
 
         robotStateOutSOUT_.setFunction(boost::bind(&Odometry::getRobotStateOut, this, _1, _2));
         pivotPositionSOUT_.setFunction(boost::bind(&Odometry::getPivotPositionOut, this, _1, _2));
@@ -202,109 +181,10 @@ namespace sotStateObservation
         for (int i=0; i<contact::nbMax; ++i){
                 odometryHomoPosition_[i]=referenceHomoPosition_[i];
         }
-
-//        odometryFreeFlyer_ <<  1,0,0,0.0102748,
-//                               0,1,0,0.00199113,
-//                               0,0,1,0.648926,
-//                               0,0,0,1;
-//        computeOdometry(time_);
-
    }
 
     Odometry::~Odometry()
     {
-    }
-
-    Vector& Odometry::getSupportPos1(Vector& supportPos1, const int& time)
-    {
-        if(time!=time_) computeOdometry(time);
-
-        supportPos1.resize(6);
-        if (supportContactsNbr_>=1) {
-            supportPos1=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[stackOfSupportContacts_[0]]));
-        } else {
-            supportPos1.setZero();
-        }
-        return supportPos1;
-    }
-
-    MatrixHomogeneous& Odometry::getHomoSupportPos1(MatrixHomogeneous& homoSupportPos1, const int& time)
-    {      
-        if(time!=time_) computeOdometry(time);     
-        if (supportContactsNbr_>=1) {
-            homoSupportPos1=convertMatrix<MatrixHomogeneous>(odometryHomoPosition_[stackOfSupportContacts_[0]]);
-        } else {
-            homoSupportPos1.setIdentity();
-        }
-        return homoSupportPos1;
-    }
-
-    Vector& Odometry::getForceSupport1(Vector& forceSupport1, const int& time)
-    {
-        if(time!=time_) computeOdometry(time);
-
-        forceSupport1.resize(6);
-        if (supportContactsNbr_>=1) {
-            forceSupport1=convertVector<dynamicgraph::Vector>(inputForces_[stackOfSupportContacts_[0]]);
-        } else {
-            forceSupport1.setZero();
-        }
-        return forceSupport1;
-    }
-
-    Vector& Odometry::getForceSupportStack(Vector& forceSupportStack, const int& time)
-    {
-      if(time!=time_) computeOdometry(time);
-      forceSupportStack.resize(stackOfSupports_.size()*6);
-
-      int i = 0 ;
-      for (iterator_=stackOfSupports_.begin();
-            iterator_!=stackOfSupports_.end();
-              ++iterator_)
-      {
-        setSubvector(forceSupportStack,i*6,convertVector<dynamicgraph::Vector>(inputForces_[*iterator_]));
-        ++i;
-      }
-      return forceSupportStack;
-
-
-    }
-
-    Vector& Odometry::getSupportPos2(Vector& supportPos2, const int& time)
-    {
-        if(time!=time_) computeOdometry(time);
-
-        supportPos2.resize(6);
-        if (supportContactsNbr_>=2) {
-            supportPos2=convertVector<dynamicgraph::Vector>(kine::homogeneousMatrixToVector6(odometryHomoPosition_[stackOfSupportContacts_[1]]));
-        } else {
-            supportPos2.setZero();
-        }
-        return supportPos2;
-    }
-
-    MatrixHomogeneous & Odometry::getHomoSupportPos2(MatrixHomogeneous & homoSupportPos2, const int& time)
-    {
-        if(time!=time_) computeOdometry(time);
-        if (supportContactsNbr_>=2) {
-            homoSupportPos2=convertMatrix<MatrixHomogeneous>(odometryHomoPosition_[stackOfSupportContacts_[1]]);
-        } else {
-            homoSupportPos2.setIdentity();
-        }
-        return homoSupportPos2;
-    }
-
-    Vector& Odometry::getForceSupport2(Vector& forceSupport2, const int& time)
-    {
-        if(time!=time_) computeOdometry(time);
-
-        forceSupport2.resize(6);
-        if (supportContactsNbr_>=2) {
-            forceSupport2=convertVector<dynamicgraph::Vector>(inputForces_[stackOfSupportContacts_[1]]);
-        } else {
-            forceSupport2.setZero();
-        }
-        return forceSupport2;
     }
 
     Vector& Odometry::getRobotStateOut(Vector& robotState, const int& time)
