@@ -312,24 +312,14 @@ namespace sotStateObservation
         }
 
         /// Compute odometryFreeFlyer
-            // reconstruction of freeFlyerInHomo
-        stateObservation::Matrix4 freeFlyerInHomo; freeFlyerInHomo.setIdentity();
-//        stateObservation::Vector6 freeFlyerIn = convertVector<stateObservation::Vector>(robotStateInSIN_.access (time)).segment(0,6);
-//        rot_= stateObservation::Matrix3( AngleAxis(freeFlyerIn[5], stateObservation::Vector3::UnitZ()) *
-//                                         AngleAxis(freeFlyerIn[4], stateObservation::Vector3::UnitY()) *
-//                                         AngleAxis(freeFlyerIn[3], stateObservation::Vector3::UnitX()));
-//        freeFlyerInHomo.block(0,0,3,3)=rot_;
-//        freeFlyerInHomo.block(0,3,3,1)=freeFlyerIn.segment(0,3);
-
-            // reconstruction of odometryFreeFlyer
         if(supportContactsNbr_==1){
-            odometryFreeFlyer_=odometryHomoPosition_[pivotSupport_]*inputHomoPosition_[pivotSupport_].inverse()*freeFlyerInHomo;
+            odometryFreeFlyer_=odometryHomoPosition_[pivotSupport_]*inputHomoPosition_[pivotSupport_].inverse();
         } else if (supportContactsNbr_==2){
-            stateObservation::Matrix4 odometryFreeFlyerL=odometryHomoPosition_[contact::lf]*inputHomoPosition_[contact::lf].inverse()*freeFlyerInHomo;
-            stateObservation::Matrix4 odometryFreeFlyerR=odometryHomoPosition_[contact::rf]*inputHomoPosition_[contact::rf].inverse()*freeFlyerInHomo;
+            stateObservation::Matrix4 odometryFreeFlyerL=odometryHomoPosition_[contact::lf]*inputHomoPosition_[contact::lf].inverse();
+            stateObservation::Matrix4 odometryFreeFlyerR=odometryHomoPosition_[contact::rf]*inputHomoPosition_[contact::rf].inverse();
             odometryFreeFlyer_=homogeneousMatricesAverage(odometryFreeFlyerL, odometryFreeFlyerR, alpha_[contact::rf]);
         }
-//        odometryFreeFlyer_=odometryHomoPosition_[pivotSupport_]*inputHomoPosition_[pivotSupport_].inverse()*freeFlyerInHomo;
+//        odometryFreeFlyer_=odometryHomoPosition_[pivotSupport_]*inputHomoPosition_[pivotSupport_].inverse();
 
         time_=time;
     }

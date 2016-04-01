@@ -75,6 +75,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         plug (self.robot.device.forceRLEG,self.odometry.force_rf)
 	self.odometry.setLeftFootPosition(self.robot.frames['leftFootForceSensor'].position.value)
 	self.odometry.setRightFootPosition(self.robot.frames['rightFootForceSensor'].position.value)
+	plug(self.interface.stackOfSupportContacts,self.odometry.stackOfSupportContacts)
 
 	# Create dynamicEncoders
 	self.robot.dynamicEncoders=self.createDynamic(self.robotState.sout,'_dynamicEncoders')

@@ -124,6 +124,8 @@ namespace sotStateObservation
 
             dynamicgraph::SignalPtr <Vector, int>  freeFlyerSOUT_;
 
+
+
             dynamicgraph::SignalPtr <Vector, int> pivotPositionSOUT_;
 
             /// Parameters
