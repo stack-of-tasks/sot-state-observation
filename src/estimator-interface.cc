@@ -296,8 +296,8 @@ namespace sotStateObservation
         forceThresholds_.resize(contact::nbMax);
         forceThresholds_.setOnes();
         forceThresholds_*=0.02 * 56.8*stateObservation::cst::gravityConstant; // default value
-        forceThresholds_[contact::lh]=2.5;
-        forceThresholds_[contact::rh]=2.5;
+        forceThresholds_[contact::lh]=100;//2.5;
+        forceThresholds_[contact::rh]=100;//2.5;
 
         // ForceResidus
         forceResidus_.resize(contact::nbMax);

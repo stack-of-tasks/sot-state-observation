@@ -82,7 +82,6 @@ namespace sotStateObservation
                     "Entity that compute the stack of contacts and their position using odometry";
             }
 
-            Vector& getRobotStateOut(Vector& robotState, const int& time);
             Vector& getFreeFlyer(Vector& freeFlyer, const int& time);
             Vector& getPivotPositionOut(Vector& pivotPositionOut, const int& time);
 
@@ -119,12 +118,7 @@ namespace sotStateObservation
 
             dynamicgraph::SignalPtr <Vector, int> stackOfSupportContactsSIN_;
 
-            dynamicgraph::SignalPtr <Vector, int> robotStateInSIN_;
-            dynamicgraph::SignalPtr <Vector, int> robotStateOutSOUT_;
-
             dynamicgraph::SignalPtr <Vector, int>  freeFlyerSOUT_;
-
-
 
             dynamicgraph::SignalPtr <Vector, int> pivotPositionSOUT_;
 
