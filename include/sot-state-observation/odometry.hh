@@ -82,6 +82,8 @@ namespace sotStateObservation
                     "Entity that compute the stack of contacts and their position using odometry";
             }
 
+            MatrixHomogeneous& getHomoLeftFootPos(MatrixHomogeneous& homoLeftFootPos, const int& time);
+            MatrixHomogeneous& getHomoRightFootPos(MatrixHomogeneous& homoRightFootPos, const int& time);
             Vector& getFreeFlyer(Vector& freeFlyer, const int& time);
             Vector& getPivotPositionOut(Vector& pivotPositionOut, const int& time);
 
@@ -118,8 +120,10 @@ namespace sotStateObservation
 
             dynamicgraph::SignalPtr <Vector, int> stackOfSupportContactsSIN_;
 
-            dynamicgraph::SignalPtr <Vector, int>  freeFlyerSOUT_;
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionSOUT_;
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> rightFootPositionSOUT_;
 
+            dynamicgraph::SignalPtr <Vector, int>  freeFlyerSOUT_;
             dynamicgraph::SignalPtr <Vector, int> pivotPositionSOUT_;
 
             /// Parameters

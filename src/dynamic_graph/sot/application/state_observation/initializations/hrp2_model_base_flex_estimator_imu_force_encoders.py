@@ -69,8 +69,8 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.odometry=Odometry ('odometry')
 	plug (self.robot.frames['leftFootForceSensor'].position,self.odometry.leftFootPositionRef)
 	plug (self.robot.frames['rightFootForceSensor'].position,self.odometry.rightFootPositionRef)
-        plug (self.rightFootPosOdo.sout,self.odometry.rightFootPosition)
-        plug (self.leftFootPosOdo.sout,self.odometry.leftFootPosition)
+        plug (self.rightFootPosOdo.sout,self.odometry.rightFootPositionIn)
+        plug (self.leftFootPosOdo.sout,self.odometry.leftFootPositionIn)
 	plug (self.robot.device.forceLLEG,self.odometry.force_lf)
         plug (self.robot.device.forceRLEG,self.odometry.force_rf)
 	self.odometry.setLeftFootPosition(self.robot.frames['leftFootForceSensor'].position.value)
@@ -82,16 +82,18 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	plug(self.odometry.freeFlyer,self.robot.dynamicEncoders.ffposition)
 
 	# Reconstruction of the position of the contacts in dynamicEncoders
-	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
-	plug(self.robot.dynamicEncoders.signal('left-ankle'),self.leftFootPos.sin1)
-	self.leftFootPos.sin2.value=self.robot.forceSensorInLeftAnkle
-	self.rightFootPos=Multiply_of_matrixHomo("rightFootPos")
-	plug(self.robot.dynamicEncoders.signal('right-ankle'),self.rightFootPos.sin1)
-	self.rightFootPos.sin2.value=self.robot.forceSensorInRightAnkle
+#	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
+#	plug(self.robot.dynamicEncoders.signal('left-ankle'),self.leftFootPos.sin1)
+#	self.leftFootPos.sin2.value=self.robot.forceSensorInLeftAnkle
+#	self.rightFootPos=Multiply_of_matrixHomo("rightFootPos")
+#	plug(self.robot.dynamicEncoders.signal('right-ankle'),self.rightFootPos.sin1)
+#	self.rightFootPos.sin2.value=self.robot.forceSensorInRightAnkle
 
 	# Contacts positions
-	plug (self.leftFootPos.sout,self.interface.position_lf)
-	plug (self.rightFootPos.sout,self.interface.position_rf)
+#	plug (self.leftFootPos.sout,self.interface.position_lf)
+#	plug (self.rightFootPos.sout,self.interface.position_rf)
+	plug (self.odometry.leftFootPositionOut,self.interface.position_lf)
+	plug (self.odometry.rightFootPositionOut,self.interface.position_rf)
 	plug (self.robot.dynamicEncoders.signal('right-wrist'),self.interface.position_lh)
 	plug (self.robot.dynamicEncoders.signal('left-wrist'),self.interface.position_rh)
 

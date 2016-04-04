@@ -41,13 +41,15 @@ namespace sotStateObservation
 
     Odometry::Odometry( const std::string & inName):
         Entity(inName),
-        leftFootPositionSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::leftFootPosition"),
-        rightFootPositionSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::rightFootPosition"),
+        leftFootPositionSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::leftFootPositionIn"),
+        rightFootPositionSIN_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::rightFootPositionIn"),
         leftFootPositionRefSIN_ (NULL, "Odometry("+inName+")::input(Matrix)::leftFootPositionRef"),
         rightFootPositionRefSIN_ (NULL, "Odometry("+inName+")::input(Matrix)::rightFootPositionRef"),
         forceLeftFootSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_lf"),
         forceRightFootSIN_ (NULL, "Odometry("+inName+")::input(vector)::force_rf"),
         stackOfSupportContactsSIN_ (NULL, "Odometry("+inName+")::input(vector)::stackOfSupportContacts"),
+        leftFootPositionSOUT_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::leftFootPositionOut"),
+        rightFootPositionSOUT_ (NULL, "Odometry("+inName+")::input(HomoMatrix)::rightFootPositionOut"),
         freeFlyerSOUT_ (NULL, "Odometry("+inName+")::output(vector)::freeFlyer"),
         pivotPositionSOUT_ (NULL, "Odometry("+inName+")::output(Vector)::pivotPosition"),
         forceThreshold_ (.02 * 56.8*stateObservation::cst::gravityConstant), time_(0),
@@ -65,8 +67,10 @@ namespace sotStateObservation
 
         signalRegistration (stackOfSupportContactsSIN_);
 
-        signalRegistration (freeFlyerSOUT_);
+        signalRegistration (leftFootPositionSOUT_);
+        signalRegistration (rightFootPositionSOUT_);
 
+        signalRegistration (freeFlyerSOUT_);
         signalRegistration (pivotPositionSOUT_);
 
         std::string docstring;
@@ -87,6 +91,8 @@ namespace sotStateObservation
         addCommand(std::string("setRightFootPosition"),
                    ::dynamicgraph::command::makeCommandVoid1(*this, & Odometry::setRightFootPosition, docstring));
 
+        leftFootPositionSOUT_.setFunction(boost::bind(&Odometry::getHomoLeftFootPos, this, _1, _2));
+        rightFootPositionSOUT_.setFunction(boost::bind(&Odometry::getHomoRightFootPos, this, _1, _2));
         freeFlyerSOUT_.setFunction(boost::bind(&Odometry::getFreeFlyer, this, _1, _2));
         pivotPositionSOUT_.setFunction(boost::bind(&Odometry::getPivotPositionOut, this, _1, _2));
 
@@ -179,6 +185,19 @@ namespace sotStateObservation
     {
     }
 
+    MatrixHomogeneous& Odometry::getHomoLeftFootPos(MatrixHomogeneous& homoLeftFootPos, const int& time)
+    {
+        if(time!=time_) computeOdometry(time);
+        homoLeftFootPos=convertMatrix<dynamicgraph::Matrix>(odometryHomoPosition_[contact::lf]);
+        return homoLeftFootPos;
+    }
+
+    MatrixHomogeneous& Odometry::getHomoRightFootPos(MatrixHomogeneous& homoRightFootPos, const int& time)
+    {
+        if(time!=time_) computeOdometry(time);
+        homoRightFootPos=convertMatrix<dynamicgraph::Matrix>(odometryHomoPosition_[contact::rf]);
+        return homoRightFootPos;
+    }
 
     Vector& Odometry::getFreeFlyer(Vector& freeFlyer, const int& time)
     {
