@@ -610,7 +610,7 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         flexibilityPosition = convertVector<dynamicgraph::Vector>
-                    (estimator_.getFlexibilityVector().segment(stateObservation::kine::pos,3));
+                    (estimator_.getFlexibilityVector().segment(stateObservation::state::pos,3));
 
         return flexibilityPosition;
     }
@@ -621,7 +621,7 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         flexibilityVelocity = convertVector<dynamicgraph::Vector>
-            (estimator_.getFlexibilityVector().segment(stateObservation::kine::linVel,3));
+            (estimator_.getFlexibilityVector().segment(stateObservation::state::linVel,3));
 
         return flexibilityVelocity;
     }
@@ -632,7 +632,7 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         flexibilityAcceleration = convertVector<dynamicgraph::Vector>
-                (estimator_.getFlexibilityVector().segment(stateObservation::kine::linAcc,3));
+                (estimator_.getFlexibilityVector().segment(stateObservation::state::linAcc,3));
 
         return flexibilityAcceleration;
     }
@@ -643,7 +643,7 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         flexibilityThetaU = convertVector<dynamicgraph::Vector>
-                (estimator_.getFlexibilityVector().segment(stateObservation::kine::ori,3));
+                (estimator_.getFlexibilityVector().segment(stateObservation::state::ori,3));
 
         return flexibilityThetaU;
     }
@@ -655,7 +655,7 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         flexibilityOmega = convertVector<dynamicgraph::Vector>
-                (estimator_.getFlexibilityVector().segment(stateObservation::kine::angVel,3));
+                (estimator_.getFlexibilityVector().segment(stateObservation::state::angVel,3));
 
         return flexibilityOmega;
     }
@@ -666,7 +666,7 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         flexibilityOmegaDot = convertVector<dynamicgraph::Vector>
-                            (estimator_.getFlexibilityVector().segment(stateObservation::kine::angAcc,3));
+                            (estimator_.getFlexibilityVector().segment(stateObservation::state::angAcc,3));
 
         return flexibilityOmegaDot;
     }
@@ -690,8 +690,8 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         stateObservation::Vector v = stateObservation::Vector::Zero(6,1);
-        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::pos,3);
-        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::ori,3);
+        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::pos,3);
+        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::ori,3);
 
         flexibilityPoseThetaU = convertVector<dynamicgraph::Vector>(v);
 
@@ -704,7 +704,7 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         stateObservation::Vector3 bias; bias.setZero();
-        bias.segment(0,2) = estimator_.getFlexibilityVector().segment(stateObservation::kine::comBias,2);
+        bias.segment(0,2) = estimator_.getFlexibilityVector().segment(stateObservation::state::comBias,2);
 
         comBias= convertVector<dynamicgraph::Vector>(bias);
         return comBias;
@@ -718,8 +718,8 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         stateObservation::Vector v = stateObservation::Vector::Zero(6,1);
-        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::linVel,3);
-        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::angVel,3);
+        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::linVel,3);
+        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::angVel,3);
 
         flexibilityVelocityVector = convertVector<dynamicgraph::Vector>(v);
 
@@ -735,8 +735,8 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         stateObservation::Vector v = stateObservation::Vector::Zero(6,1);
-        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::linAcc,3);
-        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::kine::angAcc,3);
+        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::linAcc,3);
+        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::angAcc,3);
 
         flexibilityAccelerationVector = convertVector<dynamicgraph::Vector>(v);
 
@@ -823,9 +823,9 @@ namespace sotStateObservation
         flexInversePoseThetaU.resize(6);
 
         setSubvector(flexInversePoseThetaU, 0,
-                            getSubvector(fi,stateObservation::kine::pos,3));
+                            getSubvector(fi,stateObservation::state::pos,3));
         setSubvector(flexInversePoseThetaU, 3,
-                            getSubvector(fi,stateObservation::kine::ori,3));
+                            getSubvector(fi,stateObservation::state::ori,3));
 
         return flexInversePoseThetaU;
     }
@@ -838,9 +838,9 @@ namespace sotStateObservation
         flexInverseVelocityVector.resize(6);
 
         setSubvector(flexInverseVelocityVector, 0,
-                            getSubvector(fi,stateObservation::kine::linVel,3));
+                            getSubvector(fi,stateObservation::state::linVel,3));
         setSubvector(flexInverseVelocityVector, 3,
-                            getSubvector(fi,stateObservation::kine::angVel,3));
+                            getSubvector(fi,stateObservation::state::angVel,3));
 
         return flexInverseVelocityVector;
     }
@@ -850,7 +850,7 @@ namespace sotStateObservation
     {
         const ::dynamicgraph::Vector& fi=flexInverseSOUT(inTime);
 
-        flexInverseVelocity = getSubvector(fi,stateObservation::kine::linVel,3);
+        flexInverseVelocity = getSubvector(fi,stateObservation::state::linVel,3);
 
         return flexInverseVelocity;
     }
@@ -860,7 +860,7 @@ namespace sotStateObservation
     {
         const ::dynamicgraph::Vector& fi=flexInverseSOUT(inTime);
 
-        flexInverseOmega = getSubvector(fi,stateObservation::kine::angVel,3);
+        flexInverseOmega = getSubvector(fi,stateObservation::state::angVel,3);
 
         return flexInverseOmega;
     }
