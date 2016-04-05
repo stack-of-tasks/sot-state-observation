@@ -56,7 +56,7 @@ namespace sotStateObservation
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax), inputHomoPosition_(contact::nbMax),
         referencePosition_(contact::nbMax), referenceHomoPosition_(contact::nbMax),
-        odometryHomoPosition_(contact::nbMax), alpha_(contact::nbMax)
+        odometryHomoPosition_(contact::nbMax)
     {
 
         signalRegistration (leftFootPositionSIN_ << forceLeftFootSIN_);
@@ -171,10 +171,12 @@ namespace sotStateObservation
         stackOfSupportContactsSIN_.setConstant(convertVector<dynamicgraph::Vector>(v));
         stackOfSupportContactsSIN_.setTime(time_);
 
-        posUTheta_.setZero();
-        rot_.setZero();
-        homo_.setIdentity();
-        aa_=AngleAxis(0,stateObservation::Vector3::UnitZ());
+        op_.posUTheta_.setZero();
+        op_.rot_.setZero();
+        op_.homo_.setIdentity();
+        op_.aa_=AngleAxis(0,stateObservation::Vector3::UnitZ());
+
+        op_.alpha.resize(contact::nbMax);
 
         for (int i=0; i<contact::nbMax; ++i){
                 odometryHomoPosition_[i]=referenceHomoPosition_[i];
@@ -250,52 +252,51 @@ namespace sotStateObservation
 
     stateObservation::Matrix4 Odometry::regulateOdometryWithRef(stateObservation::Matrix4 posEnc, stateObservation::Vector posRef, double alpha)
     {
-        posUTheta_=kine::homogeneousMatrixToVector6(posEnc);
-        posUTheta_.segment(2,3)=alpha*posRef.segment(2,3)+(1-alpha)*posUTheta_.segment(2,3);
-        return kine::vector6ToHomogeneousMatrix(posUTheta_);
+        op_.posUTheta_=kine::homogeneousMatrixToVector6(posEnc);
+        op_.posUTheta_.segment(2,3)=alpha*posRef.segment(2,3)+(1-alpha)*op_.posUTheta_.segment(2,3);
+        return kine::vector6ToHomogeneousMatrix(op_.posUTheta_);
     }
 
     stateObservation::Matrix4 Odometry::homogeneousMatricesAverage(stateObservation::Matrix4 m1, stateObservation::Matrix4 m2, double alpha){
 
         // Rotational part
-        aa_=AngleAxis(Matrix3(m1.block(0,0,3,3).inverse()*m2.block(0,0,3,3)));
-        aa_=AngleAxis(alpha*aa_.angle(),aa_.axis());
-        rot_=aa_.toRotationMatrix();
-        rot_=m1.block(0,0,3,3)*rot_;
-        homo_.block(0,0,3,3)=rot_;
+        op_.aa_=AngleAxis(Matrix3(m1.block(0,0,3,3).inverse()*m2.block(0,0,3,3)));
+        op_.aa_=AngleAxis(alpha*op_.aa_.angle(),op_.aa_.axis());
+        op_.rot_=op_.aa_.toRotationMatrix();
+        op_.rot_=m1.block(0,0,3,3)*op_.rot_;
+        op_.homo_.block(0,0,3,3)=op_.rot_;
 
         // Linear part
-        homo_.block(0,3,3,1)=(1-alpha)*m1.block(0,3,3,1)+alpha*m2.block(0,3,3,1);
+        op_.homo_.block(0,3,3,1)=(1-alpha)*m1.block(0,3,3,1)+alpha*m2.block(0,3,3,1);
 
-        return homo_;
+        return op_.homo_;
     }
 
     void Odometry::computeOdometry(const int& time){
 
         getInputs(time);
 
+        /// Get stack and number of contacts
         stackOfSupportContacts_ = convertVector<stateObservation::Vector>(stackOfSupportContactsSIN_.access (time));
         supportContactsNbr_ = stackOfSupportContacts_.size();
-
-        /// Computation of alpha
-        alpha_.setZero();
-        double sum=0;
-        double f=0;
-        for (int i=0; i<supportContactsNbr_; ++i)
-        {
-            f=inputForces_[stackOfSupportContacts_[i]].segment(0,3).norm();
-            alpha_[stackOfSupportContacts_[i]]=f;
-            sum+=f;
-        }
-        alpha_=(1/sum)*alpha_;
 
         /// Find the pivot support.
 //        pivotSupport_=std::distance(&alpha_[0], (std::max_element(&alpha_[0],&alpha_[alpha_.size()])));
         pivotSupport_=stackOfSupportContacts_[0];
 
         /// Compute odometryHomoPosition.
+        op_.alpha.setZero();
+        op_.sum=0;
+        for (int i=0; i<supportContactsNbr_; ++i)
+        {
+            op_.f=inputForces_[stackOfSupportContacts_[i]].segment(0,3).norm();
+            op_.alpha[stackOfSupportContacts_[i]]=op_.f;
+            op_.sum+=op_.f;
+        }
+        op_.alpha=(1/op_.sum)*op_.alpha;
+
         for (int i=0; i<contact::nbMax; ++i){
-            if(alpha_[i]!=0){//i==pivotSupport_){//
+            if(op_.alpha[i]!=0){//i==pivotSupport_){//
                 odometryHomoPosition_[i]=regulateOdometryWithRef(odometryHomoPosition_[i], referencePosition_[i], 1);//alpha_[i]);//
             } else {
                 odometryHomoPosition_[i]=odometryHomoPosition_[pivotSupport_]*inputHomoPosition_[pivotSupport_].inverse()*inputHomoPosition_[i];
@@ -308,7 +309,7 @@ namespace sotStateObservation
         } else if (supportContactsNbr_==2){
             stateObservation::Matrix4 odometryFreeFlyerL=odometryHomoPosition_[contact::lf]*inputHomoPosition_[contact::lf].inverse();
             stateObservation::Matrix4 odometryFreeFlyerR=odometryHomoPosition_[contact::rf]*inputHomoPosition_[contact::rf].inverse();
-            odometryFreeFlyer_=homogeneousMatricesAverage(odometryFreeFlyerL, odometryFreeFlyerR, alpha_[contact::rf]);
+            odometryFreeFlyer_=homogeneousMatricesAverage(odometryFreeFlyerL, odometryFreeFlyerR, op_.alpha[contact::rf]);
         }
 //        odometryFreeFlyer_=odometryHomoPosition_[pivotSupport_]*inputHomoPosition_[pivotSupport_].inverse();
 

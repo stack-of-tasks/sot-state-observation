@@ -142,13 +142,19 @@ namespace sotStateObservation
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator<Matrix4> > odometryHomoPosition_;
             stateObservation::Matrix4 odometryFreeFlyer_;
 
-            stateObservation::Vector alpha_;
+            struct Optimization
+            {
+                // for regulateOdometryWithRef
+                stateObservation::Vector6 posUTheta_;
+                stateObservation::Matrix3 rot_;
+                stateObservation::Matrix4 homo_;
+                stateObservation::AngleAxis aa_;
 
-            // To optimize memory access
-            stateObservation::Vector6 posUTheta_;
-            stateObservation::Matrix3 rot_;
-            stateObservation::Matrix4 homo_;
-            stateObservation::AngleAxis aa_;
+                // for computeOdometry
+                double sum;
+                double f;
+                stateObservation::Vector alpha;
+            } op_;
 
         public:
           EIGEN_MAKE_ALIGNED_OPERATOR_NEW
