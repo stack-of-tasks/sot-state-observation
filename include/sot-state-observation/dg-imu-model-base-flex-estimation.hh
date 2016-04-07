@@ -224,8 +224,8 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexVelocity
                         (::dynamicgraph::Vector & flexibilityVelocity, const int& inTime);
 
-            ::dynamicgraph::Vector& computeFlexAcceleration
-                        (::dynamicgraph::Vector & flexibilityAcceleration, const int& inTime);
+            ::dynamicgraph::Vector& computeContactsForces
+                        (::dynamicgraph::Vector & contactsForces, const int& inTime);
 
             ::dynamicgraph::Vector& computeFlexThetaU
                         (::dynamicgraph::Vector & flexibilityThetaU, const int& inTime);
@@ -233,8 +233,8 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexOmega
                         (::dynamicgraph::Vector & flexibilityOmega, const int& inTime);
 
-            ::dynamicgraph::Vector& computeFlexOmegaDot
-                        (::dynamicgraph::Vector & flexibilityOmegaDot, const int& inTime);
+            ::dynamicgraph::Vector& computeContactsTorques
+                        (::dynamicgraph::Vector & contactsTorques, const int& inTime);
 
 
 
@@ -248,8 +248,8 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexVelocityVector
                         (::dynamicgraph::Vector & flexVelocityVector, const int& inTime);
 
-            ::dynamicgraph::Vector& computeFlexAccelerationVector
-                        (::dynamicgraph::Vector & flexAccelerationVector, const int& inTime);
+            ::dynamicgraph::Vector& computeContactsForcesAndTorques
+                        (::dynamicgraph::Vector & contactsForcesAndTorques, const int& inTime);
 
 
 
@@ -351,7 +351,7 @@ namespace sotStateObservation
                             < ::dynamicgraph::Vector, int> flexVelocitySOUT;
 
             dynamicgraph::SignalTimeDependent
-                            < ::dynamicgraph::Vector, int> flexAccelerationSOUT;
+                            < ::dynamicgraph::Vector, int> contactsForcesSOUT;
 
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> flexThetaUSOUT;
@@ -360,7 +360,7 @@ namespace sotStateObservation
                             < ::dynamicgraph::Vector, int> flexOmegaSOUT;
 
             dynamicgraph::SignalTimeDependent
-                            < ::dynamicgraph::Vector, int> flexOmegaDotSOUT;
+                            < ::dynamicgraph::Vector, int> contactsTorquesSOUT;
 
             /**
             \brief Transformed parts of the flexibility state vector
@@ -375,7 +375,7 @@ namespace sotStateObservation
                             < ::dynamicgraph::Vector, int> flexVelocityVectorSOUT;
 
             dynamicgraph::SignalTimeDependent
-                            < ::dynamicgraph::Vector, int> flexAccelerationVectorSOUT;
+                            < ::dynamicgraph::Vector, int> contactsForcesAndTorquesSOUT;
 
 
             /**

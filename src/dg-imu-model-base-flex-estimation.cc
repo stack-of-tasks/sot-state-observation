@@ -20,11 +20,11 @@ namespace sotStateObservation
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
         flexPositionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPosition"),
         flexVelocitySOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocity"),
-        flexAccelerationSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexAcceleration"),
+        contactsForcesSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::contactsForces"),
         flexPoseThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPoseThetaU"),
         comBiasSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::comBias"),
         flexOmegaSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexOmega"),
-        flexOmegaDotSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexOmegaDot"),
+        contactsTorquesSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexOmegaDot"),
         flexTransformationMatrixSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(homogeneousMatrix)::flexTransformationMatrix"),
         flexThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexThetaU"),
         flexVelocityVectorSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocityVector"),
@@ -32,7 +32,7 @@ namespace sotStateObservation
         flexMatrixInverseSOUT(flexInverseSOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(homogeneousMatrix)::flexMatrixInverse"),
         flexInversePoseThetaUSOUT(flexInverseSOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInversePoseThetaU"),
         flexInverseVelocityVectorSOUT(flexInverseSOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverseVelocityVector"),
-        flexAccelerationVectorSOUT(flexibilitySOUT,    "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexAccelerationVector"),
+        contactsForcesAndTorquesSOUT(flexibilitySOUT,    "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::contactsForcesAndTorques"),
         flexInverseVelocitySOUT(flexInverseSOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverseVelocity"),
         flexInverseOmegaSOUT(flexInverseSOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexInverseOmega"),
         simulatedSensorsSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::simulatedSensors"),
@@ -53,14 +53,14 @@ namespace sotStateObservation
         signalRegistration (flexibilitySOUT);
         signalRegistration (flexPositionSOUT);
         signalRegistration (flexVelocitySOUT);
-        signalRegistration (flexAccelerationSOUT);
+        signalRegistration (contactsForcesSOUT);
         signalRegistration (flexThetaUSOUT);
         signalRegistration (flexOmegaSOUT);
-        signalRegistration (flexOmegaDotSOUT);
+        signalRegistration (contactsTorquesSOUT);
         signalRegistration (flexTransformationMatrixSOUT);
         signalRegistration (flexPoseThetaUSOUT);
         signalRegistration (flexVelocityVectorSOUT);
-        signalRegistration (flexAccelerationVectorSOUT);
+        signalRegistration (contactsForcesAndTorquesSOUT);
 
         signalRegistration (comBiasSOUT);
 
@@ -93,7 +93,7 @@ namespace sotStateObservation
         flexVelocitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexVelocity,
 				    this, _1, _2));
 
-        flexAccelerationSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexAcceleration,
+        contactsForcesSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeContactsForces,
 				    this, _1, _2));
 
         flexThetaUSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexThetaU,
@@ -102,7 +102,7 @@ namespace sotStateObservation
         flexOmegaSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexOmega,
 				    this, _1, _2));
 
-        flexOmegaDotSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexOmegaDot,
+        contactsTorquesSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeContactsTorques,
                     this, _1, _2));
 
 
@@ -115,7 +115,7 @@ namespace sotStateObservation
         flexVelocityVectorSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexVelocityVector,
 				    this, _1, _2));
 
-        flexAccelerationVectorSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexAccelerationVector,
+        contactsForcesAndTorquesSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeContactsForcesAndTorques,
 				    this, _1, _2));
 
         comBiasSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeComBias,
@@ -626,15 +626,15 @@ namespace sotStateObservation
         return flexibilityVelocity;
     }
 
-    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeFlexAcceleration
-                        (::dynamicgraph::Vector & flexibilityAcceleration, const int& inTime)
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeContactsForces
+                        (::dynamicgraph::Vector & contactsForces, const int& inTime)
     {
         stateSOUT(inTime);
 
-        flexibilityAcceleration = convertVector<dynamicgraph::Vector>
-                (estimator_.getFlexibilityVector().segment(stateObservation::state::linAcc,3));
+        contactsForces = convertVector<dynamicgraph::Vector>
+                (estimator_.getFlexibilityVector().segment(stateObservation::state::fc,3));
 
-        return flexibilityAcceleration;
+        return contactsForces;
     }
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeFlexThetaU
@@ -660,15 +660,15 @@ namespace sotStateObservation
         return flexibilityOmega;
     }
 
-    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeFlexOmegaDot
-                        (::dynamicgraph::Vector & flexibilityOmegaDot, const int& inTime)
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeContactsTorques
+                        (::dynamicgraph::Vector & contactsTorques, const int& inTime)
     {
         stateSOUT(inTime);
 
-        flexibilityOmegaDot = convertVector<dynamicgraph::Vector>
-                            (estimator_.getFlexibilityVector().segment(stateObservation::state::angAcc,3));
+        contactsTorques = convertVector<dynamicgraph::Vector>
+                            (estimator_.getFlexibilityVector().segment(stateObservation::state::tc,3));
 
-        return flexibilityOmegaDot;
+        return contactsTorques;
     }
 
 
@@ -727,20 +727,20 @@ namespace sotStateObservation
     }
 
 
-    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeFlexAccelerationVector
-                        (::dynamicgraph::Vector & flexibilityAccelerationVector, const int& inTime)
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeContactsForcesAndTorques
+                        (::dynamicgraph::Vector & contactsForcesAndTorques, const int& inTime)
     {
         //std::cout << "computeFlexPoseThetaU " << inTime << std::endl;
 
         stateSOUT(inTime);
 
         stateObservation::Vector v = stateObservation::Vector::Zero(6,1);
-        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::linAcc,3);
-        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::angAcc,3);
+        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::fc,3);
+        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::tc,3);
 
-        flexibilityAccelerationVector = convertVector<dynamicgraph::Vector>(v);
+        contactsForcesAndTorques = convertVector<dynamicgraph::Vector>(v);
 
-        return flexibilityAccelerationVector;
+        return contactsForcesAndTorques;
     }
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::getForcesAndMoments(::dynamicgraph::Vector & forcesAndMoments, const int& inTime)
