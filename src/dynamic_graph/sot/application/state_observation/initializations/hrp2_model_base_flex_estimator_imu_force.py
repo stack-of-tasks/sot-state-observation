@@ -15,8 +15,8 @@ from dynamic_graph.sot.application.state_observation import Calibrate
 
 
 class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
-    def __init__(self, robot, name='flextimator2'):
 
+    def __init__(self, robot, name='flextimator'):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
         self.setSamplingPeriod(0.005)  
         self.robot = robot
@@ -35,7 +35,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
 	#Estimator interface
-	self.interface=EstimatorInterface("EstimatorInterface")
+	self.interface=EstimatorInterface(name+"EstimatorInterface")
 	self.interface.setLeftHandSensorTransformation((0.,0.,1.57))
 	self.interface.setRightHandSensorTransformation((0.,0.,1.57))
         self.interface.setFDInertiaDot(True)  
@@ -105,7 +105,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	self.comVector.setLastVector(self.com.value+(0.,)*15)#(0.,)*3+self.DCom.sout.value+(0.,)*9)
 
 		# Compute derivative of Angular Momentum
-        self.angMomDerivator = Derivator_of_Vector('angMomDerivator')
+        self.angMomDerivator = Derivator_of_Vector(name+'angMomDerivator')
         plug(self.robot.dynamic.angularmomentum,self.angMomDerivator.sin)
         self.angMomDerivator.dt.value = self.robot.timeStep 
 

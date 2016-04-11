@@ -14,9 +14,12 @@ from dynamic_graph.sot.core.matrix_util import matrixToTuple
 from dynamic_graph.sot.application.state_observation import Calibrate
 
 from dynamic_graph.sot.hrp2.dynamic_hrp2_14 import DynamicHrp2_14
+from dynamic_graph.sot.core.feature_position import FeaturePosition
+from dynamic_graph.sot.core import Task, FeatureGeneric
+from dynamic_graph.sot.core import GainAdaptive
 
 class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
-    def __init__(self, robot, name='flextimator2'):
+    def __init__(self, robot, name='flextimatorEncoders'):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
         
         self.robot = robot
@@ -33,7 +36,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3+(1e-13,)*6))) 
 
 	#Estimator interface
-	self.interface=EstimatorInterface("EstimatorInterface")
+	self.interface=EstimatorInterface(name+"EstimatorInterface")
 	self.interface.setLeftHandSensorTransformation((0.,0.,1.57))
 	self.interface.setRightHandSensorTransformation((0.,0.,1.57))
         self.interface.setFDInertiaDot(True)  
@@ -58,15 +61,15 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.robot.dynamicOdo.waist.recompute(1)
 
 		# Reconstruction of the position of the contacts in dynamicOdo
-	self.leftFootPosOdo=Multiply_of_matrixHomo("leftFootPosOdo")
+	self.leftFootPosOdo=Multiply_of_matrixHomo(name+"leftFootPosOdo")
 	plug(self.robot.dynamicOdo.signal('left-ankle'),self.leftFootPosOdo.sin1)
 	self.leftFootPosOdo.sin2.value=self.robot.forceSensorInLeftAnkle
-	self.rightFootPosOdo=Multiply_of_matrixHomo("rightFootPosOdo")
+	self.rightFootPosOdo=Multiply_of_matrixHomo(name+"rightFootPosOdo")
 	plug(self.robot.dynamicOdo.signal('right-ankle'),self.rightFootPosOdo.sin1)
 	self.rightFootPosOdo.sin2.value=self.robot.forceSensorInRightAnkle
 
 		# Odometry
-        self.odometry=Odometry ('odometry')
+        self.odometry=Odometry (name+'odometry')
 	plug (self.robot.frames['leftFootForceSensor'].position,self.odometry.leftFootPositionRef)
 	plug (self.robot.frames['rightFootForceSensor'].position,self.odometry.rightFootPositionRef)
         plug (self.rightFootPosOdo.sout,self.odometry.rightFootPositionIn)
@@ -78,8 +81,18 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	plug(self.interface.stackOfSupportContacts,self.odometry.stackOfSupportContacts)
 
 	# Create dynamicEncoders
-	self.robot.dynamicEncoders=self.createDynamic(self.robotState.sout,'_dynamicEncoders')
-	plug(self.odometry.freeFlyer,self.robot.dynamicEncoders.ffposition)
+	self.robotStateWoFF = Selec_of_vector('robotStateWoFF')
+	plug(self.robot.device.robotState,self.robotStateWoFF.sin)
+	self.robotStateWoFF.selec(6,36)
+        self.stateEncoders = Stack_of_vector (name+'stateEncoders')
+        plug(self.odometry.freeFlyer,self.stateEncoders.sin1)
+        plug(self.robotStateWoFF.sout,self.stateEncoders.sin2)
+        self.stateEncoders.selec1 (0, 6)
+        self.stateEncoders.selec2 (0, 30)
+	self.robot.dynamicEncoders=self.createDynamic(self.stateEncoders.sout,'_dynamicEncoders')
+#	self.robot.dynamicEncoders=self.createDynamic(self.robotState.sout,'_dynamicEncoders')
+#	plug(self.odometry.freeFlyer,self.robot.dynamicEncoders.ffposition)
+#	self.robot.dynamicEncoders=self.createDynamic(self.robot.device.state,'_dynamicEncoders')
 
 	# Reconstruction of the position of the contacts in dynamicEncoders
 #	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
@@ -116,7 +129,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         plug (self.robot.dynamicEncoders.chest,self.imuOpPoint.positionIN)	
         plug (self.robot.dynamicEncoders.signal(name+'ChestJ_OpPoint'),self.imuOpPoint.jacobianIN)
 			# IMU position
-	self.PosAccelerometer=Multiply_of_matrixHomo("PosAccelerometer")
+	self.PosAccelerometer=Multiply_of_matrixHomo(name+"PosAccelerometer")
 	plug(self.robot.dynamicEncoders.chest,self.PosAccelerometer.sin1)
 	self.PosAccelerometer.sin2.value=matrixToTuple(self.robot.accelerometerPosition)
         self.inputPos = MatrixHomoToPoseUTheta(name+'InputPosition')
@@ -145,10 +158,10 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.comVector.outputFormat.value = '010101'  
 	self.comVector.setFiniteDifferencesInterval(20)
 		# Compute derivative of Angular Momentum
-        self.angMomDerivator = Derivator_of_Vector('angMomDerivator')
+        self.angMomDerivator = Derivator_of_Vector(name+'angMomDerivator')
         plug(self.robot.dynamicEncoders.angularmomentum,self.angMomDerivator.sin)
         self.angMomDerivator.dt.value = self.robot.timeStep          
-        	# Concatenate with InputReconstructor entity
+        	# Concatenate with interace estimator
         plug(self.comVector.sout,self.interface.comVector)
         plug(self.robot.dynamicEncoders.inertia,self.interface.inertia)
 	plug(self.robot.dynamicEncoders.angularmomentum,self.interface.angMomentum)
@@ -163,47 +176,121 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
     # Create a dynamic ######################################
 
+    def createCenterOfMassFeatureAndTask(self,
+    				         dynamicTmp,
+                                         featureName, featureDesName,
+                                         taskName,
+                                         selec = '111',
+                                         ingain = 1.):
+        dynamicTmp.com.recompute(0)
+        dynamicTmp.Jcom.recompute(0)
+    
+        featureCom = FeatureGeneric(featureName)
+        plug(dynamicTmp.com, featureCom.errorIN)
+        plug(dynamicTmp.Jcom, featureCom.jacobianIN)
+        featureCom.selec.value = selec
+        featureComDes = FeatureGeneric(featureDesName)
+        featureComDes.errorIN.value = dynamicTmp.com.value
+        featureCom.setReference(featureComDes.name)
+        taskCom = Task(taskName)
+        taskCom.add(featureName)
+        gainCom = GainAdaptive('gain'+taskName)
+        gainCom.setConstant(ingain)
+        plug(gainCom.gain, taskCom.controlGain)
+        plug(taskCom.error, gainCom.error)    
+        return (featureCom, featureComDes, taskCom, gainCom)
+
+    def createOperationalPointFeatureAndTask(self,
+					 dynamicTmp,
+	                                 operationalPointName,
+	                                 featureName,
+	                                 taskName,
+	                                 ingain = .2):
+
+        jacobianName = 'J{0}'.format(operationalPointName)
+        dynamicTmp.signal(operationalPointName).recompute(0)
+        dynamicTmp.signal(jacobianName).recompute(0)
+        feature = \
+           FeaturePosition(featureName,
+	                   dynamicTmp.signal(operationalPointName),
+	                   dynamicTmp.signal(jacobianName),
+     	                   dynamicTmp.signal(operationalPointName).value)
+        task = Task(taskName)
+        task.add(featureName)
+        gain = GainAdaptive('gain'+taskName)
+        gain.setConstant(ingain)
+        plug(gain.gain, task.controlGain)
+        plug(task.error, gain.error)  
+        return (feature, task, gain)
+
     def createDynamic(self,state,name) :
 	# Create dynamic
-        dynamicTmp = self.robot.loadModelFromJrlDynamics(
+        self.dynamicTmp = self.robot.loadModelFromJrlDynamics(
                               self.robot.name + name, 
                               self.robot.modelDir, 
                               self.robot.modelName,
                               self.robot.specificitiesPath,
                               self.robot.jointRankPath,
                               DynamicHrp2_14)
-        dynamicTmp.dimension = dynamicTmp.getDimension()
-        if dynamicTmp.dimension != len(self.robot.halfSitting):
-            raise RuntimeError("Dimension of half-sitting: {0} differs from dimension of robot: {1}".format (len(self.halfSitting), dynamicTmp.dimension))
+        self.dynamicTmp.dimension = self.dynamicTmp.getDimension()
+        if self.dynamicTmp.dimension != len(self.robot.halfSitting):
+            raise RuntimeError("Dimension of half-sitting: {0} differs from dimension of robot: {1}".format (len(self.halfSitting), self.dynamicTmp.dimension))
 
 	# Pluging position
-	plug(state, dynamicTmp.position)
+	plug(state, self.dynamicTmp.position)
 
-	self.derivative=True
+	self.derivative=False
 
 	# Pluging velocity
 	self.robot.enableVelocityDerivator = self.derivative
  	if self.robot.enableVelocityDerivator:
-            dynamicTmp.velocityDerivator = Derivator_of_Vector('velocityDerivator')
-            dynamicTmp.velocityDerivator.dt.value = self.robot.timeStep
-            plug(state, dynamicTmp.velocityDerivator.sin)
-            plug(dynamicTmp.velocityDerivator.sout, dynamicTmp.velocity)
+            self.dynamicTmp.velocityDerivator = Derivator_of_Vector('velocityDerivator')
+            self.dynamicTmp.velocityDerivator.dt.value = self.robot.timeStep
+            plug(state, self.dynamicTmp.velocityDerivator.sin)
+            plug(self.dynamicTmp.velocityDerivator.sout, self.dynamicTmp.velocity)
         else:
-            dynamicTmp.velocity.value = dynamicTmp.dimension*(0.,)
+            self.dynamicTmp.velocity.value = self.dynamicTmp.dimension*(0.,)
 
 	# Pluging acceleration
 	self.robot.enableAccelerationDerivator = self.derivative
         if self.robot.enableAccelerationDerivator:
-            dynamicTmp.accelerationDerivator = Derivator_of_Vector('accelerationDerivator')
-            dynamicTmp.accelerationDerivator.dt.value = self.robot.timeStep
-            plug(dynamicTmp.velocityDerivator.sout,
-                 dynamicTmp.accelerationDerivator.sin)
-            plug(dynamicTmp.accelerationDerivator.sout, dynamicTmp.acceleration)
+            self.dynamicTmp.accelerationDerivator = Derivator_of_Vector('accelerationDerivator')
+            self.dynamicTmp.accelerationDerivator.dt.value = self.robot.timeStep
+            plug(self.dynamicTmp.velocityDerivator.sout, self.dynamicTmp.accelerationDerivator.sin)
+            plug(self.dynamicTmp.accelerationDerivator.sout, self.dynamicTmp.acceleration)
         else:
-            dynamicTmp.acceleration.value = dynamicTmp.dimension*(0.,)
+            self.dynamicTmp.acceleration.value = self.dynamicTmp.dimension*(0.,)
 
-        for dynamicTmp.op in self.robot.OperationalPoints:
-            dynamicTmp.createOpPoint(dynamicTmp.op, dynamicTmp.op)
+#        # --- center of mass ------------
+#        (self.featureCom, self.featureComDes, self.taskCom, self.gainCom) = \
+#            self.createCenterOfMassFeatureAndTask\
+#            (self.dynamicTmp, '{0}_feature_com'.format(self.robot.name),
+#             '{0}_feature_ref_com'.format(self.robot.name),
+#             '{0}_task_com'.format(self.robot.name))
 
-	return dynamicTmp
+        # --- operational points tasks -----
+        self.robot.features = dict()
+        self.robot.tasks = dict()
+        self.robot.gains = dict()
+        for op in self.robot.OperationalPoints:
+	    opName= op + name
+            self.dynamicTmp.createOpPoint(op, op)
+	    (self.robot.features[opName], self.robot.tasks[opName], self.robot.gains[opName]) = \
+                self.createOperationalPointFeatureAndTask(self.dynamicTmp, op, 
+		    '{0}_feature_{1}'.format(self.robot.name, opName),
+                    '{0}_task_{1}'.format(self.robot.name, opName))
+            # define a member for each operational point
+            w = op.split('-')
+            memberName = w[0]
+            for i in w[1:]:
+                memberName += i.capitalize()
+            setattr(self, memberName, self.robot.features[opName])
+
+#        self.robot.tasks ['com'] = self.taskCom
+#        self.robot.features ['com']  = self.featureCom
+#        self.robot.gains['com'] = self.gainCom
+      
+        self.robot.features['waist'+name].selec.value = '011100'
+
+	return self.dynamicTmp
 
