@@ -88,7 +88,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug(self.sensorStackimu.sout,self.sensorStack.sin1)
         plug(self.sensorStackOptional.sout,self.sensorStack.sin2)
         self.sensorStack.selec1 (0, 6)
-        self.sensorStack.selec2 (0, 12)
+        self.sensorStack.selec2toEnd (0)
 	plug(self.sensorStack.sout,self.measurement);
      
         # Input reconstruction
