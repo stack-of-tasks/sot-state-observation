@@ -267,9 +267,10 @@ namespace sotStateObservation
               ++iterator_)
       {
         setSubvector(forceSupportStack,i*6,convertVector<dynamicgraph::Vector>(inputForces_[*iterator_]));
+        ++i;
       }
       return forceSupportStack;
-      ++i;
+
 
     }
 
