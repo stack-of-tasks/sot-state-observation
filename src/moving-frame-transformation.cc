@@ -270,16 +270,34 @@ namespace sotStateObservation
     dynamicgraph::Vector& MovingFrameTransformation::computegP0
   (dynamicgraph::Vector & position, const int& inTime)
   {
-    dynamicgraph::sot::MatrixHomogeneous gMl(gMlSIN(inTime));
-    const dynamicgraph::Vector & lP0 = lP0SIN(inTime);
 
-
-    if (yawRemoved_)
+    if (pointMode_)
     {
-        removeYaw(gMl);
-    }
+      dynamicgraph::sot::MatrixHomogeneous gMl(gMlSIN(inTime));
+      const dynamicgraph::Vector & lP0 = lP0SIN(inTime);
 
-    gMl.multiply(lP0,position);
+
+      if (yawRemoved_)
+      {
+        removeYaw(gMl);
+      }
+
+      gMl.multiply(lP0,position);
+    }
+    else
+    {
+      dynamicgraph::sot::MatrixHomogeneous gM0(gM0SOUT(inTime));
+      ::dynamicgraph::sot::MatrixRotation R;
+      ::dynamicgraph::sot::VectorUTheta ut;
+      ::dynamicgraph::Vector t(3);
+      gM0.extract(R);
+      gM0.extract(t);
+      ut.fromMatrix(R);
+      position.resize(6);
+      setSubvector(position,0,t);
+      setSubvector(position,3,static_cast<dynamicgraph::Vector>(ut));
+
+    }
 
     return position;
   }
