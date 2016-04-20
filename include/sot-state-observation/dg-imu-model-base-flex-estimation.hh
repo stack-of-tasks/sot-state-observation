@@ -55,8 +55,7 @@ namespace sotStateObservation
 
             void setComBiasGuess (const ::dynamicgraph::Vector & x)
             {
-                setComBiasGuess_=true;
-                comBiasGuess_=convertVector<stateObservation::Vector>(x);
+                estimator_.setComBiasGuess(convertVector<stateObservation::Vector>(x));
             }
 			
             /// Enable or disable the estimation
@@ -70,14 +69,12 @@ namespace sotStateObservation
 
             void setFlexibilityGuess (const ::dynamicgraph::Vector & xh0)
             {
-                setFlexibilityGuess_=true;
-                flexibilityGuess_=convertVector<stateObservation::Vector>(xh0);
+                estimator_.setFlexibilityGuess(convertVector<stateObservation::Vector>(xh0));
             }
 
             void setFlexibilityCovariance (const ::dynamicgraph::Matrix & p)
             {
-                setFlexibilityCovariance_=true;
-                flexibilityCovariance_=convertMatrix<stateObservation::Matrix>(p);
+                estimator_.setFlexibilityCovariance(convertMatrix<stateObservation::Matrix>(p));
             }
 
             ::dynamicgraph::Matrix  getFlexibilityCovariance () const
@@ -87,14 +84,12 @@ namespace sotStateObservation
 
             void setSamplingPeriod(const double & dt)
             {
-                setDt_=true;
-                dt_=dt;
+                estimator_.setSamplingPeriod(dt);
             }
 
             void setContactModel(const unsigned & nb)
             {
-                setContactModel_=true;
-                contactModel_=nb;
+                estimator_.setContactModel(nb);
             }
 
             void setProcessNoiseCovariance(const ::dynamicgraph::Matrix & q)
@@ -110,8 +105,7 @@ namespace sotStateObservation
 
             void setMeasurementNoiseCovariance(const ::dynamicgraph::Matrix & r)
             {
-                setMeasurementNoiseCovariance_=true;
-                measurementNoiseCovariance_=convertMatrix<stateObservation::Matrix>(r);
+                estimator_.setMeasurementNoiseCovariance(convertMatrix<stateObservation::Matrix>(r));
             }
 
             ::dynamicgraph::Matrix getMeasurementNoiseCovariance() const
@@ -131,32 +125,28 @@ namespace sotStateObservation
 
             void setKfe(const dynamicgraph::Matrix & m)
             {
-                setKfe_=true;
-                Kfe_=convertMatrix<stateObservation::Matrix3>(m);
+                estimator_.setKfe(convertMatrix<stateObservation::Matrix3>(m));
             }
 
             void setKfv(const dynamicgraph::Matrix & m)
             {
-                setKfv_=true;
-                Kfv_=convertMatrix<stateObservation::Matrix3>(m);
+                estimator_.setKfv(convertMatrix<stateObservation::Matrix3>(m));
             }
 
             void setKte(const dynamicgraph::Matrix & m)
             {
-                setKte_=true;
-                Kte_=convertMatrix<stateObservation::Matrix3>(m);
+                estimator_.setKte(convertMatrix<stateObservation::Matrix3>(m));
             }
 
             void setKtv(const dynamicgraph::Matrix & m)
             {
-                setKtv_=true;
-                Ktv_=convertMatrix<stateObservation::Matrix3>(m);
+                estimator_.setKtv(convertMatrix<stateObservation::Matrix3>(m));
             }
 
 
             void setWithForce(const bool & b)
             {
-                withForcesMeasurements_=true;
+                estimator_.setWithForcesMeasurements(b);
             }
 
             void setWithComBias(const bool & b)
@@ -166,8 +156,7 @@ namespace sotStateObservation
 
             void setForceVariance(const double & d)
             {
-                setForceVariance_=true;
-                forceVariance_=d;
+                estimator_.setForceVariance(d);
             }
 
             void setBias(const dynamicgraph::Vector & bias)
@@ -177,8 +166,7 @@ namespace sotStateObservation
 
             void setRobotMass(const double & m)
             {
-                setRobotMass_=true;
-                robotMass_=m;
+                estimator_.setRobotMass(m);
             }
 
             double getRobotMass() const
@@ -439,49 +427,13 @@ namespace sotStateObservation
             unsigned contactNumber_;
 
             bool withComBias_;
-            bool withForcesMeasurements_;
 
             stateObservation::Vector bias_;
+
             int currentTime_;
-
-            stateObservation::Vector flexibilityGuess_;
-            bool setFlexibilityGuess_;
-
-            stateObservation::Matrix flexibilityCovariance_;
-            bool setFlexibilityCovariance_;
-
-            stateObservation::Vector comBiasGuess_;
-            bool setComBiasGuess_;
 
             stateObservation::Matrix Q_;
             bool recomputeQ_;
-
-            double dt_;
-            bool setDt_;
-
-            bool setContactModel_;
-            unsigned contactModel_;
-
-            bool setMeasurementNoiseCovariance_;
-            stateObservation::Matrix measurementNoiseCovariance_;
-
-            bool setKfe_;
-            stateObservation::Matrix3 Kfe_;
-
-            bool setKfv_;
-            stateObservation::Matrix3 Kfv_;
-
-            bool setKte_;
-            stateObservation::Matrix3 Kte_;
-
-            bool setKtv_;
-            stateObservation::Matrix3 Ktv_;
-
-            bool setForceVariance_;
-            double forceVariance_;
-
-            bool setRobotMass_;
-            double robotMass_;
 
         };
 
