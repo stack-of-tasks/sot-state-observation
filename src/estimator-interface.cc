@@ -67,9 +67,10 @@ namespace sotStateObservation
         imuVectorSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::imuVector"),
         accelerometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::accelerometer"),
         gyrometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::gyrometer"),
+        driftSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::drift"),
         timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1),
         timeSensorsPositions_(-1), timeForces_(-1), timeContactsNbrs_(-1),
-        timeForcesInControlFrame_(-1),
+        timeForcesInControlFrame_(-1), timeDrift_(-1),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
@@ -144,6 +145,10 @@ namespace sotStateObservation
         signalRegistration (gyrometerSIN);
         dynamicgraph::Vector gyrometer(3);
         gyrometerSIN.setConstant(gyrometer);
+
+        signalRegistration (driftSIN);
+        dynamicgraph::Vector drift(3);
+        driftSIN.setConstant(drift);
 
         // Output
         signalRegistration (inputSOUT_);
@@ -409,6 +414,12 @@ namespace sotStateObservation
 
     }
 
+    void EstimatorInterface::getDrift(const int& time)
+    {
+        timeDrift_=time;
+        drift_ = convertVector<stateObservation::Vector>(driftSIN.access (time));
+    }
+
     void EstimatorInterface::computeStackOfContacts(const int& time)
     {
         timeStackOfContacts_=time;
@@ -564,14 +575,16 @@ namespace sotStateObservation
        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
        if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
+       if(time!=timeDrift_) getDrift(time);
 
        const stateObservation::Vector& accelerometer=convertVector<stateObservation::Vector>(accelerometerSIN.access(time));
        const stateObservation::Vector& gyrometer=convertVector<stateObservation::Vector>(gyrometerSIN.access(time));
 
-       measurement_.resize(12+modeledContactsNbr_*6); measurement_.setZero();
+       measurement_.resize(18+modeledContactsNbr_*6); measurement_.setZero();
        measurement_.segment(0,3)=accelerometer;
        measurement_.segment(3,3)=gyrometer;
 
+       op_.i=6;
        if (withUnmodeledMeasurements_)
        {
            for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
@@ -580,16 +593,19 @@ namespace sotStateObservation
 
                measurement_.segment(6,3)+=inputForces_[*iterator].head(3);
                measurement_.segment(9,3)+=inputForces_[*iterator].tail(3)+kine::skewSymmetric(op_.pc)*inputForces_[*iterator].head(3);
+               op_.i+=6;
            }
        }
 
-       op_.i=0;
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
        {
-           measurement_.segment(12+op_.i*6,3)=inputForces_[*iterator].head(3);
-           measurement_.segment(12+op_.i*6+3,3)=inputForces_[*iterator].tail(3);
-           ++op_.i;
+           measurement_.segment(op_.i,3)=inputForces_[*iterator].head(3);
+           measurement_.segment(op_.i+3,3)=inputForces_[*iterator].tail(3);
+           op_.i+=6;
        }
+
+       measurement_.segment(op_.i,6) = drift_;
+
    }
 }
 

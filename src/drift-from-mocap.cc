@@ -56,8 +56,6 @@ namespace sotStateObservation
     init_ = limbLocal * limbGlobal.inverse();
 
     initialized_ = true;
-
-
   }
 
   ::dynamicgraph::sot::MatrixHomogeneous& DriftFromMocap::computeDrift

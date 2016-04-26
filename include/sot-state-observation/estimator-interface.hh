@@ -284,6 +284,11 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> accelerometerSIN;
             dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> gyrometerSIN;
 
+            /**
+            \brief Drift
+            */
+            dynamicgraph::SignalPtr < ::dynamicgraph::Vector, int> driftSIN;
+
             // Output signals
             dynamicgraph::SignalPtr <Vector, int> inputSOUT_;
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
@@ -297,6 +302,7 @@ namespace sotStateObservation
             void getForces(const int& time);
             void getForcesInControlFrame(const int& time);
             void getSensorsPositionsInControlFrame(const int& time);
+            void getDrift(const int& time);
             void computeStackOfContacts(const int& time);
             void computeAllContactsNbrs(const int& time);
             void computeInput(const int& inTime);
@@ -308,7 +314,8 @@ namespace sotStateObservation
                   const stateObservation::Vector&, stateObservation::Vector&);
 
             /// Parameters
-            double timeStackOfContacts_, timeInput_, timeMeasurement_, timeSensorsPositions_, timeForces_, timeForcesInControlFrame_, timeContactsNbrs_;
+            double timeStackOfContacts_, timeInput_, timeMeasurement_, timeSensorsPositions_,
+                   timeForces_, timeForcesInControlFrame_, timeContactsNbrs_, timeDrift_;
 
             stateObservation::Vector forceThresholds_;
             stateObservation::Vector forceResidus_;
@@ -329,6 +336,8 @@ namespace sotStateObservation
 
             std::vector<stateObservation::Vector3,Eigen::aligned_allocator_indirection<stateObservation::Vector3> > forceSensorsTransformation_;
             std::vector<stateObservation::Matrix3,Eigen::aligned_allocator_indirection<stateObservation::Matrix3> > forceSensorsTransfoMatrix_;
+
+            stateObservation::Vector6 drift_;
 
             stateObservation::Vector input_;
             stateObservation::Vector measurement_;
