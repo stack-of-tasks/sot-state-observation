@@ -20,24 +20,31 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
         self.setSamplingPeriod(0.005)  
         self.robot = robot
-	self.setContactModel(1)
 
+	# State definition
+	self.setWithComBias(False)
+	self.setWithForceSensors(False)
+	self.setAbsolutePosition(False)
+	# self.interface.setWithUnmodeledMeausrements(False) # FIXME : move it in the estimator directly
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(0e0,)*3+(1e-4,)*3+(0e0,)*3+(1.e-2,)*6+(2.5e-10,)*2+(1.e-8,)*3)))
+
+	# Measurement definition
 	self.setWithForceSensors(True)
 	self.setForceVariance(1e-4)
-	self.setWithComBias(False)
-
-	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(0e0,)*6+(1.e-13,)*2+(0.e0,)*3+(1.e-4,)*6)))
 	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3+(1e-13,)*6))) 
 
+	# Contact model definition
+	self.setContactModel(1)
         self.setKfe(matrixToTuple(np.diag((40000,40000,40000))))
         self.setKfv(matrixToTuple(np.diag((600,600,600))))
         self.setKte(matrixToTuple(np.diag((600,600,600))))
         self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
-	#Estimator interface
+	# Estimator interface
 	self.interface=EstimatorInterface(name+"EstimatorInterface")
 	self.interface.setLeftHandSensorTransformation((0.,0.,1.57))
 	self.interface.setRightHandSensorTransformation((0.,0.,1.57))
+	self.interface.setWithUnmodeledMeausrements(False) # FIXME : move it in the estimator directly
         self.interface.setFDInertiaDot(True)  
 
 	# Contacts forces anf positions
