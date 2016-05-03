@@ -585,16 +585,13 @@ namespace sotStateObservation
        measurement_.segment(3,3)=gyrometer;
 
        op_.i=6;
-       if (withUnmodeledMeasurements_)
+       for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
        {
-           for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
-           {
-               op_.pc=inputHomoPosition_[*iterator].block(0,3,3,1);
+           op_.pc=inputHomoPosition_[*iterator].block(0,3,3,1);
 
-               measurement_.segment(6,3)+=inputForces_[*iterator].head(3);
-               measurement_.segment(9,3)+=inputForces_[*iterator].tail(3)+kine::skewSymmetric(op_.pc)*inputForces_[*iterator].head(3);
-               op_.i+=6;
-           }
+           measurement_.segment(6,3)+=inputForces_[*iterator].head(3);
+           measurement_.segment(9,3)+=inputForces_[*iterator].tail(3)+kine::skewSymmetric(op_.pc)*inputForces_[*iterator].head(3);
+           op_.i+=6;
        }
 
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)

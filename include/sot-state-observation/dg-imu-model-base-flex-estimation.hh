@@ -174,10 +174,14 @@ namespace sotStateObservation
                 return estimator_.getRobotMass();
             }
 
-
             void setWithAbsolutePosition(const bool & b)
             {
               estimator_.setWithAbsolutePos(b);
+            }
+
+            void setWithUnmodeledMeasurements(const bool & b)
+            {
+              estimator_.setWithUnmodeledMeasurements(b);
             }
 
             void setAbsolutePosVariance(const double & d)

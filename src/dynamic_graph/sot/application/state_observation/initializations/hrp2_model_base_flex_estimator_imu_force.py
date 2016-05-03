@@ -21,17 +21,16 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.setSamplingPeriod(0.005)  
         self.robot = robot
 
-	# State definition
-	self.setWithComBias(False)
-	self.setWithForceSensors(False)
-	self.setAbsolutePosition(False)
-	# self.interface.setWithUnmodeledMeausrements(False) # FIXME : move it in the estimator directly
-	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(0e0,)*3+(1e-4,)*3+(0e0,)*3+(1.e-2,)*6+(2.5e-10,)*2+(1.e-8,)*3)))
-
-	# Measurement definition
+	# State and measurement definition
 	self.setWithForceSensors(True)
-	self.setForceVariance(1e-4)
+	self.setWithUnmodeledMeasurements(False)
+	self.setWithComBias(False)
+	self.setAbsolutePosition(False)
+
+	# Covariances
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(0e0,)*3+(1e-4,)*3+(0e0,)*3+(1.e-2,)*6+(2.5e-10,)*2+(1.e-8,)*3)))
 	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3+(1e-13,)*6))) 
+	self.setForceVariance(1e-4)
 
 	# Contact model definition
 	self.setContactModel(1)
@@ -44,7 +43,6 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	self.interface=EstimatorInterface(name+"EstimatorInterface")
 	self.interface.setLeftHandSensorTransformation((0.,0.,1.57))
 	self.interface.setRightHandSensorTransformation((0.,0.,1.57))
-	self.interface.setWithUnmodeledMeausrements(False) # FIXME : move it in the estimator directly
         self.interface.setFDInertiaDot(True)  
 
 	# Contacts forces anf positions
@@ -89,7 +87,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug(self.inputPosVel.sout,self.IMUVector.sin)
         self.IMUVector.inputFormat.value  = '001111'
         self.IMUVector.outputFormat.value = '011111'
-        self.IMUVector.setFiniteDifferencesInterval(2)
+        self.IMUVector.setFiniteDifferencesInterval(1)
 	self.inputPosVel.sout.recompute(0)
 	self.IMUVector.setLastVector(self.inputPosVel.sout.value+(0.,)*6)
 
@@ -107,7 +105,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug(self.comVectorIn.sout,self.comVector.sin)
         self.comVector.inputFormat.value  = '000101'
         self.comVector.outputFormat.value = '010101'  
-	self.comVector.setFiniteDifferencesInterval(20)
+	self.comVector.setFiniteDifferencesInterval(1)
 	self.DCom.sout.recompute(0)
 	self.comVector.setLastVector(self.com.value+(0.,)*15)#(0.,)*3+self.DCom.sout.value+(0.,)*9)
 

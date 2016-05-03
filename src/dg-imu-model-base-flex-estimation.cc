@@ -402,6 +402,15 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool >
                     (*this, & DGIMUModelBaseFlexEstimation::setWithAbsolutePosition,docstring));
 
+        docstring  =
+                "\n"
+                "    Sets if an unmodeled forces are used or not. "
+                "\n";
+
+        addCommand(std::string("setWithUnmodeledMeasurements"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool >
+                    (*this, & DGIMUModelBaseFlexEstimation::setWithUnmodeledMeasurements,docstring));
+
 
         docstring  =
                 "\n"
