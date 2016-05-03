@@ -6,7 +6,7 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose, Selec_of_vector, Inverse_of_matrixHomo, Multiply_of_matrixHomo, MatrixHomoToPoseRollPitchYaw
-from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, Odometry, Filter, EstimatorInterface
+from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, Odometry, Filter, EstimatorInterface, DriftFromMocap
 
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
@@ -21,19 +21,26 @@ from dynamic_graph.sot.core import GainAdaptive
 class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
     def __init__(self, robot, name='flextimatorEncoders'):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
-        
+        self.setSamplingPeriod(0.005)  
         self.robot = robot
-	self.setSamplingPeriod(self.robot.timeStep)  
-	self.setContactModel(1)
-	self.setKfe(matrixToTuple(np.diag((40000,40000,40000))))
-	self.setKfv(matrixToTuple(np.diag((600,600,600))))
-	self.setKte(matrixToTuple(np.diag((600,600,600))))
-	self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
+	# State and measurement definition
 	self.setWithForceSensors(True)
-	self.setForceVariance(1e-4)
-	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*6+(0e0,)*6+(1.e-13,)*2+(1.e-4,)*6)))
+	self.setWithUnmodeledMeasurements(False)
+	self.setWithComBias(False)
+	self.setAbsolutePosition(False)
+
+	# Covariances
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(0e0,)*3+(1e-4,)*3+(0e0,)*3+(1.e-2,)*6+(2.5e-10,)*2+(1.e-8,)*3)))
 	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3+(1e-13,)*6))) 
+	self.setForceVariance(1e-4)
+
+	# Contact model definition
+	self.setContactModel(1)
+        self.setKfe(matrixToTuple(np.diag((40000,40000,40000))))
+        self.setKfv(matrixToTuple(np.diag((600,600,600))))
+        self.setKte(matrixToTuple(np.diag((600,600,600))))
+        self.setKtv(matrixToTuple(np.diag((60,60,60))))
 
 	#Estimator interface
 	self.interface=EstimatorInterface(name+"EstimatorInterface")
@@ -113,9 +120,13 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	# Compute contacts number
 	plug (self.interface.supportContactsNbr,self.contactNbr)
 
+        # Drift
+        self.drift = DriftFromMocap(name+'Drift')
+
         # Compute measurement vector
         plug(self.robot.device.accelerometer,self.interface.accelerometer)
         plug(self.robot.device.gyrometer,self.interface.gyrometer)
+	plug(self.drift.driftVector,self.interface.drift)
 	plug(self.interface.measurement,self.measurement)
     
         # Input reconstruction
