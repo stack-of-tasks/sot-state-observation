@@ -28,7 +28,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	self.setAbsolutePosition(False)
 
 	# Covariances
-	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(0e0,)*3+(1e-4,)*3+(0e0,)*3+(1.e-2,)*6+(2.5e-10,)*2+(1.e-8,)*3)))
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1.e-2,)*6+(2.5e-10,)*2+(1.e-8,)*3)))
 	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3+(1e-13,)*6))) 
 	self.setForceVariance(1e-4)
 

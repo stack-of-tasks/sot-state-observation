@@ -610,7 +610,7 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         contactsForces = convertVector<dynamicgraph::Vector>
-                (estimator_.getFlexibilityVector().segment(stateObservation::state::fc,3));
+                (estimator_.getFlexibilityVector().segment(stateObservation::state::fc1,3));
 
         return contactsForces;
     }
@@ -644,7 +644,7 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         contactsTorques = convertVector<dynamicgraph::Vector>
-                            (estimator_.getFlexibilityVector().segment(stateObservation::state::tc,3));
+                            (estimator_.getFlexibilityVector().segment(stateObservation::state::fc2,3));
 
         return contactsTorques;
     }
@@ -713,8 +713,8 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         stateObservation::Vector v = stateObservation::Vector::Zero(6,1);
-        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::fc,3);
-        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::tc,3);
+        v.head(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::fc1,3);
+        v.tail(3) = estimator_.getFlexibilityVector().segment(stateObservation::state::fc2,3);
 
         contactsForcesAndTorques = convertVector<dynamicgraph::Vector>(v);
 
