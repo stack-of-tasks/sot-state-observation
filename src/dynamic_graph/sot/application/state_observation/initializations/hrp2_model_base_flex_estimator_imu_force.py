@@ -46,20 +46,24 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.interface.setFDInertiaDot(True)  
 
 	# Contacts forces anf positions
+		# Feet
 	plug (self.robot.device.forceLLEG,self.interface.force_lf)
 	plug (self.robot.device.forceRLEG,self.interface.force_rf)
 	plug (self.robot.frames['leftFootForceSensor'].position,self.interface.position_lf)
 	plug (self.robot.frames['rightFootForceSensor'].position,self.interface.position_rf)
+		# Hands
 	plug (self.robot.device.forceLARM,self.interface.force_lh)
 	plug (self.robot.device.forceRARM,self.interface.force_rh)
 	plug (self.robot.dynamic.signal('right-wrist'),self.interface.position_lh)
 	plug (self.robot.dynamic.signal('left-wrist'),self.interface.position_rh)
-		
-	Peg = (0,0,4.60) # Position of the anchorage in the global frame
-	Prl1 = np.matrix([[1,0,0,0-3.19997004e-02],[0,1,0,0.15-0],[0,0,1,1.28-1],[0,0,0,1]]) # Positions of the contacts on the robot (in the local frame) with respect to the chest
-	Prl2 = np.matrix([[1,0,0,0-3.19997004e-02],[0,1,0,-0.15-0],[0,0,1,1.28-1],[0,0,0,1]])
-	(self.contact1OpPoint,self.contact1Pos,self.contact1)=self.createContact('contact1', Prl1,Peg)
-	(self.contact2OpPoint,self.contact2Pos,self.contact2)=self.createContact('contact2', Prl2,Peg)
+		# Strings
+	self.Peg = (0,0,4.60) # Position of the anchorage in the global frame
+	self.Prl1 = np.matrix([[1,0,0,0-3.19997004e-02],[0,1,0,0.15-0],[0,0,1,1.28-1],[0,0,0,1]]) # Positions of the contacts on the robot (in the local frame) with respect to the chest
+	self.Prl2 = np.matrix([[1,0,0,0-3.19997004e-02],[0,1,0,-0.15-0],[0,0,1,1.28-1],[0,0,0,1]])
+	(self.contact1OpPoint,self.contact1Pos,self.contact1)=self.createContact('contact1', self.Prl1,self.Peg)
+	(self.contact2OpPoint,self.contact2Pos,self.contact2)=self.createContact('contact2', self.Prl2,self.Peg)
+	plug(self.contact1.sout,self.interface.position_ls)
+	plug(self.contact2.sout,self.interface.position_rs)
 	
         # Drift
         self.drift = DriftFromMocap(name+'Drift')

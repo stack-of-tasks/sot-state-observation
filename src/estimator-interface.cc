@@ -58,6 +58,8 @@ namespace sotStateObservation
         forceLeftHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lh"),
         positionRightHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_rh"),
         forceRightHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_rh"),
+        positionLeftStringSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::position_ls"),
+        positionRightStringSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::position_rs"),
         comVectorSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::comVector"),
         inertiaSIN(NULL , "EstimatorInterface("+inName+")::input(matrix)::inertia"),
         dinertiaSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::dinertia"),
@@ -85,6 +87,7 @@ namespace sotStateObservation
         // Input
         MatrixHomogeneous pos;
         stateObservation::Vector6 force;
+        dynamicgraph::Vector vpos; vpos.resize(6);
 
         signalRegistration (positionLeftFootSIN_ << forceLeftFootSIN_);
         positionLeftFootSIN_.setConstant(pos);
@@ -109,6 +112,14 @@ namespace sotStateObservation
         positionRightHandSIN_.setTime (timeStackOfContacts_);
         forceRightHandSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
         forceRightHandSIN_.setTime (timeStackOfContacts_);
+
+        signalRegistration (positionLeftStringSIN_);
+        positionLeftStringSIN_.setConstant(vpos);
+        positionLeftStringSIN_.setTime (timeStackOfContacts_);
+
+        signalRegistration (positionRightStringSIN_);
+        positionRightStringSIN_.setConstant(vpos);
+        positionRightStringSIN_.setTime (timeStackOfContacts_);
 
         signalRegistration (comVectorSIN);
         dynamicgraph::Vector comVector(3);

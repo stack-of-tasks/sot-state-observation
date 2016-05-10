@@ -255,6 +255,9 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionRightHandSIN_;
             dynamicgraph::SignalPtr <Vector, int> forceRightHandSIN_;
 
+            dynamicgraph::SignalPtr <Vector, int> positionLeftStringSIN_;
+            dynamicgraph::SignalPtr <Vector, int> positionRightStringSIN_;
+
             /**
             \brief Com and derivatives
             */
