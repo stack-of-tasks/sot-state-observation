@@ -54,7 +54,13 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	plug (self.robot.device.forceRARM,self.interface.force_rh)
 	plug (self.robot.dynamic.signal('right-wrist'),self.interface.position_lh)
 	plug (self.robot.dynamic.signal('left-wrist'),self.interface.position_rh)
-
+		
+	Peg = (0,0,4.60) # Position of the anchorage in the global frame
+	Prl1 = np.matrix([[1,0,0,0-3.19997004e-02],[0,1,0,0.15-0],[0,0,1,1.28-1],[0,0,0,1]]) # Positions of the contacts on the robot (in the local frame) with respect to the chest
+	Prl2 = np.matrix([[1,0,0,0-3.19997004e-02],[0,1,0,-0.15-0],[0,0,1,1.28-1],[0,0,0,1]])
+	(self.contact1OpPoint,self.contact1Pos,self.contact1)=self.createContact('contact1', Prl1,Peg)
+	(self.contact2OpPoint,self.contact2Pos,self.contact2)=self.createContact('contact2', Prl2,Peg)
+	
         # Drift
         self.drift = DriftFromMocap(name+'Drift')
 
@@ -135,5 +141,22 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	plug (self.interface.modeledContactsNbr,self.contactNbr)
 
         self.robot.flextimator = self
+
+    def createContact(self,name, prl,peg):
+	self.contactOpPoint = OpPointModifier(name+'_opPoint')
+	self.contactOpPoint.setEndEffector(False)
+	self.contactOpPoint.setTransformation(matrixToTuple(prl))
+	plug (self.robot.dynamic.chest,self.contactOpPoint.positionIN)
+
+	self.contactPos = MatrixHomoToPose(name+'_pos')
+	plug(self.contactOpPoint.position, self.contactPos.sin)
+
+	self.contact = Stack_of_vector (name)
+	self.contact.sin1.value = peg
+	plug(self.contactPos.sout,self.contact.sin2)
+	self.contact.selec1 (0, 3)
+	self.contact.selec2 (0, 3)
+
+	return (self.contactOpPoint,self.contactPos,self.contact)
 
 
