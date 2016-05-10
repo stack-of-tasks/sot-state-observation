@@ -103,6 +103,13 @@ namespace sotStateObservation
                 return measurement;
             }
 
+            unsigned& getContactsModel(unsigned& contactsModel, const int& time)
+            {
+                 // if(time!=timeContactsModel_) computeContactsModel(time);
+                 contactsModel = contactsModel_;
+                 return contactsModel;
+            }
+
             unsigned& getContactsNbr(unsigned& contactsNbr, const int& time)
             {
                  if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
@@ -295,6 +302,7 @@ namespace sotStateObservation
             // Output signals
             dynamicgraph::SignalPtr <Vector, int> inputSOUT_;
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
+            dynamicgraph::SignalPtr <unsigned, int> contactsModelSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> modeledContactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> unmodeledContactsNbrSOUT_;
@@ -318,7 +326,7 @@ namespace sotStateObservation
 
             /// Parameters
             double timeStackOfContacts_, timeInput_, timeMeasurement_, timeSensorsPositions_,
-                   timeForces_, timeForcesInControlFrame_, timeContactsNbrs_, timeDrift_;
+                   timeForces_, timeForcesInControlFrame_, timeContactsNbrs_, timeDrift_, timeContactsModel_;
 
             stateObservation::Vector forceThresholds_;
             stateObservation::Vector forceResidus_;
@@ -332,6 +340,7 @@ namespace sotStateObservation
             std::list<int>::iterator iterator;
 
             unsigned contactsNbr_, modeledContactsNbr_, unmodeledContactsNbr_, supportContactsNbr_;
+            unsigned contactsModel_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;

@@ -16,6 +16,7 @@ namespace sotStateObservation
         measurementSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::measurement"),
         inputSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::input"),
         contactsNbrSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactNbr"),
+        contactsModelSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactsModel"),
         stateSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::state"),
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
         flexPositionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPosition"),
@@ -48,6 +49,7 @@ namespace sotStateObservation
         signalRegistration (measurementSIN);
         signalRegistration (inputSIN);
         signalRegistration (contactsNbrSIN);
+        signalRegistration (contactsModelSIN);
 
         signalRegistration (stateSOUT);
         signalRegistration (flexibilitySOUT);
@@ -510,6 +512,11 @@ namespace sotStateObservation
 
         contactsNbrSIN.setConstant(0);
 
+        // Contacts model
+        contactsModelSIN.setConstant(1);
+        contactsModel_=1;
+        estimator_.setContactModel(1);
+
         currentTime_=-1;
 
         dynamicgraph::Vector state(estimator_.getStateSize()+estimator_.getWithComBias()*2);
@@ -538,9 +545,16 @@ namespace sotStateObservation
         const dynamicgraph::Vector & measurement = measurementSIN.access(inTime);
         const dynamicgraph::Vector & input = inputSIN.access(inTime);
         const unsigned & contactNb = contactsNbrSIN.access(inTime);
+        const unsigned & contactsModel = contactsModelSIN.access(inTime);
 
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
+
+        if(contactsModel_!=contactsModel)
+        {
+            contactsModel_=contactsModel;
+            estimator_.setContactModel(contactsModel);
+        }
 
         // Update of inputSize_ considering contactsNb
         if (contactNumber_!= contactNb)

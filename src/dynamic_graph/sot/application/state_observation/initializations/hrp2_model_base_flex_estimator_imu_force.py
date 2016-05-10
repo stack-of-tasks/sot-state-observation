@@ -33,7 +33,6 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	self.setForceVariance(1e-4)
 
 	# Contact model definition
-	self.setContactModel(1)
         self.setKfe(matrixToTuple(np.diag((40000,40000,40000))))
         self.setKfv(matrixToTuple(np.diag((600,600,600))))
         self.setKte(matrixToTuple(np.diag((600,600,600))))
@@ -64,6 +63,9 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	(self.contact2OpPoint,self.contact2Pos,self.contact2)=self.createContact('contact2', self.Prl2,self.Peg)
 	plug(self.contact1.sout,self.interface.position_ls)
 	plug(self.contact2.sout,self.interface.position_rs)
+
+	# Contacts model
+	plug(self.interface.contactsModel,self.contactsModel)
 	
         # Drift
         self.drift = DriftFromMocap(name+'Drift')

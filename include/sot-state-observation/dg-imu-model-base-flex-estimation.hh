@@ -314,6 +314,11 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalPtr < unsigned , int> contactsNbrSIN;
 
+            /**
+            \brief Contacts model
+            */
+            dynamicgraph::SignalPtr < unsigned , int> contactsModelSIN;
+
 
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> forcesAndMomentsSOUT;
@@ -429,6 +434,7 @@ namespace sotStateObservation
             static const unsigned inputSizeBase=42;
             unsigned inputSize_;
             unsigned contactNumber_;
+            unsigned contactsModel_;
 
             bool withComBias_;
 

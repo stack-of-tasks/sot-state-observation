@@ -45,6 +45,7 @@ namespace sotStateObservation
         Entity(inName),
         inputSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::input"),
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
+        contactsModelSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsModel"),
         contactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsNbr"),
         modeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::modeledContactsNbr"),
         unmodeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::unmodeledContactsNbr"),
@@ -72,7 +73,8 @@ namespace sotStateObservation
         driftSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::drift"),
         timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1),
         timeSensorsPositions_(-1), timeForces_(-1), timeContactsNbrs_(-1),
-        timeForcesInControlFrame_(-1), timeDrift_(-1),
+        timeForcesInControlFrame_(-1), timeDrift_(-1), timeContactsModel_(-1),
+        contactsModel_(2),
         inputForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
@@ -167,6 +169,9 @@ namespace sotStateObservation
 
         signalRegistration (measurementSOUT_);
         measurementSOUT_.setFunction(boost::bind(&EstimatorInterface::getMeasurement, this, _1, _2));
+
+        signalRegistration (contactsModelSOUT_);
+        contactsModelSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsModel, this, _1, _2));
 
         signalRegistration (contactsNbrSOUT_);
         contactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsNbr, this, _1, _2));
