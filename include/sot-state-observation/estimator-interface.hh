@@ -345,6 +345,7 @@ namespace sotStateObservation
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > controlFrameForces_;
 
             std::vector<stateObservation::Vector3,Eigen::aligned_allocator_indirection<stateObservation::Vector3> > forceSensorsTransformation_;
             std::vector<stateObservation::Matrix3,Eigen::aligned_allocator_indirection<stateObservation::Matrix3> > forceSensorsTransfoMatrix_;

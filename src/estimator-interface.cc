@@ -76,6 +76,7 @@ namespace sotStateObservation
         timeForcesInControlFrame_(-1), timeDrift_(-1), timeContactsModel_(-1),
         contactsModel_(2),
         inputForces_(contact::nbMax),
+        controlFrameForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
         forceSensorsTransformation_(contact::nbMax),
@@ -388,8 +389,8 @@ namespace sotStateObservation
             if(!modeled_[i])
             {
                 // Reorientation of frames
-                inputForces_[i] << forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(0,3),
-                                   forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(3,3);
+                controlFrameForces_[i] << forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(0,3),
+                                          forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(3,3);
 
                 // Computation in the local frame of the weight action of theend-effector on the sensor
                 op_.weight << 0,
@@ -403,13 +404,13 @@ namespace sotStateObservation
                                           kine::skewSymmetric(op_.l)*op_.Rct*op_.weight;
 
                 // Substract the weight action from input forces
-                inputForces_[i]-=op_.forceResidusVector;
+                controlFrameForces_[i]-=op_.forceResidusVector;
             }
 
             // Express forces in the local frame
-            inputForces_[i]
-                << op_.Rc*inputForces_[i].head(3),
-                   op_.Rc*inputForces_[i].tail(3)-kine::skewSymmetric(op_.pc)*inputForces_[i].head(3);
+            controlFrameForces_[i]
+                    << op_.Rc*controlFrameForces_[i].head(3),
+                       op_.Rc*controlFrameForces_[i].tail(3)-kine::skewSymmetric(op_.pc)*controlFrameForces_[i].head(3);
 
         }
     }
@@ -605,15 +606,15 @@ namespace sotStateObservation
        {
            op_.pc=inputHomoPosition_[*iterator].block(0,3,3,1);
 
-           measurement_.segment(6,3)+=inputForces_[*iterator].head(3);
-           measurement_.segment(9,3)+=inputForces_[*iterator].tail(3)+kine::skewSymmetric(op_.pc)*inputForces_[*iterator].head(3);
+           measurement_.segment(6,3)+=controlFrameForces_[*iterator].head(3);
+           measurement_.segment(9,3)+=controlFrameForces_[*iterator].tail(3)+kine::skewSymmetric(op_.pc)*controlFrameForces_[*iterator].head(3);
            op_.i+=6;
        }
 
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
        {
-           measurement_.segment(op_.i,3)=inputForces_[*iterator].head(3);
-           measurement_.segment(op_.i+3,3)=inputForces_[*iterator].tail(3);
+           measurement_.segment(op_.i,3)=controlFrameForces_[*iterator].head(3);
+           measurement_.segment(op_.i+3,3)=controlFrameForces_[*iterator].tail(3);
            op_.i+=6;
        }
 
