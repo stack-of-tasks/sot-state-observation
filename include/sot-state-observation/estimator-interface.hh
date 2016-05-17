@@ -310,6 +310,7 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <Vector, int> inputSOUT_;
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsModelSOUT_;
+            dynamicgraph::SignalPtr <unsigned, int> configSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> modeledContactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> unmodeledContactsNbrSOUT_;

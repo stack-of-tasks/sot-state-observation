@@ -17,6 +17,7 @@ namespace sotStateObservation
         inputSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::input"),
         contactsNbrSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactNbr"),
         contactsModelSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactsModel"),
+        configSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::config"),
         stateSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::state"),
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
         flexPositionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPosition"),
@@ -50,6 +51,7 @@ namespace sotStateObservation
         signalRegistration (inputSIN);
         signalRegistration (contactsNbrSIN);
         signalRegistration (contactsModelSIN);
+        signalRegistration (configSIN);
 
         signalRegistration (stateSOUT);
         signalRegistration (flexibilitySOUT);
@@ -517,6 +519,11 @@ namespace sotStateObservation
         contactsModel_=1;
         estimator_.setContactModel(1);
 
+        // Config
+        configSIN.setConstant(1);
+        withForce_=true;
+        config_=1;
+
         currentTime_=-1;
 
         dynamicgraph::Vector state(estimator_.getStateSize()+estimator_.getWithComBias()*2);
@@ -546,6 +553,7 @@ namespace sotStateObservation
         const dynamicgraph::Vector & input = inputSIN.access(inTime);
         const unsigned & contactNb = contactsNbrSIN.access(inTime);
         const unsigned & contactsModel = contactsModelSIN.access(inTime);
+        const unsigned & config = configSIN.access(inTime);
 
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
@@ -554,6 +562,13 @@ namespace sotStateObservation
         {
             contactsModel_=contactsModel;
             estimator_.setContactModel(contactsModel);
+        }
+
+        if(config_!=config)
+        {
+            if (config==1) estimator_.setWithForcesMeasurements(withForce_);
+            if (config==0) estimator_.setWithForcesMeasurements(false);
+            config_=config;
         }
 
         // Update of inputSize_ considering contactsNb

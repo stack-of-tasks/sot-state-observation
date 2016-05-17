@@ -46,6 +46,7 @@ namespace sotStateObservation
         inputSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::input"),
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
         contactsModelSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsModel"),
+        configSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::config"),
         contactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsNbr"),
         modeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::modeledContactsNbr"),
         unmodeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::unmodeledContactsNbr"),
@@ -173,6 +174,9 @@ namespace sotStateObservation
 
         signalRegistration (contactsModelSOUT_);
         contactsModelSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsModel, this, _1, _2));
+
+        signalRegistration (configSOUT_);
+        configSOUT_.setFunction(boost::bind(&EstimatorInterface::getConfig, this, _1, _2));
 
         signalRegistration (contactsNbrSOUT_);
         contactsNbrSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsNbr, this, _1, _2));
@@ -361,6 +365,28 @@ namespace sotStateObservation
     {
     }
 
+    void EstimatorInterface::getDrift(const int& time)
+    {
+        timeDrift_=time;
+        drift_ = convertVector<stateObservation::Vector>(driftSIN.access (time));
+    }
+
+    void EstimatorInterface::getSensorsPositionsInControlFrame(const int& time)
+    {
+        timeSensorsPositions_=time;
+
+        inputHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightFootSIN_.access (time)));
+        inputHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftFootSIN_.access (time)));
+        inputHomoPosition_[contact::rh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightHandSIN_.access (time)));
+        inputHomoPosition_[contact::lh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftHandSIN_.access (time)));
+
+        for (int i=0; i<contact::nbMax;++i)
+        {
+            inputPosition_[i]=kine::homogeneousMatrixToVector6(inputHomoPosition_[i]);
+        }
+
+    }
+
     void EstimatorInterface::getForces(const int& time)
     {
         timeForces_=time;
@@ -415,28 +441,6 @@ namespace sotStateObservation
         }
     }
 
-    void EstimatorInterface::getSensorsPositionsInControlFrame(const int& time)
-    {
-        timeSensorsPositions_=time;
-
-        inputHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightFootSIN_.access (time)));
-        inputHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftFootSIN_.access (time)));
-        inputHomoPosition_[contact::rh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightHandSIN_.access (time)));
-        inputHomoPosition_[contact::lh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftHandSIN_.access (time)));
-
-        for (int i=0; i<contact::nbMax;++i)
-        {
-            inputPosition_[i]=kine::homogeneousMatrixToVector6(inputHomoPosition_[i]);
-        }
-
-    }
-
-    void EstimatorInterface::getDrift(const int& time)
-    {
-        timeDrift_=time;
-        drift_ = convertVector<stateObservation::Vector>(driftSIN.access (time));
-    }
-
     void EstimatorInterface::computeStackOfContacts(const int& time)
     {
         timeStackOfContacts_=time;
@@ -475,16 +479,26 @@ namespace sotStateObservation
         timeContacts_=time;
         if(time!=timeStackOfContacts_) computeStackOfContacts(time);
 
-        // Update all contacts numbers.
+        // Update all a priori contacts numbers.
         contactsNbr_=stackOfContacts_.size();
         modeledContactsNbr_=stackOfModeledContacts_.size();
         unmodeledContactsNbr_=stackOfUnmodeledContacts_.size();
         supportContactsNbr_=stackOfSupportContacts_.size();
 
-        config_=1;
-        contactsModel_=1;
-
-
+        // Treat the case where the robot is supported by the strings
+        if(supportContactsNbr_<1)
+        {
+            contactsNbr_+=2;
+            modeledContactsNbr_=2;
+            supportContactsNbr_=2;
+            config_=0;
+            contactsModel_=2;
+        }
+        else
+        {
+            config_=1;
+            contactsModel_=1;
+        }
     }
 
     void EstimatorInterface::computeInert(const stateObservation::Matrix & inertia,

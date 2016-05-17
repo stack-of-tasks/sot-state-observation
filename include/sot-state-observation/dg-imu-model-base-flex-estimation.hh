@@ -147,6 +147,12 @@ namespace sotStateObservation
             void setWithForce(const bool & b)
             {
                 estimator_.setWithForcesMeasurements(b);
+                withForce_=b;
+            }
+
+            const bool & getWithForce()
+            {
+               return estimator_.getWithForcesMeasurements();
             }
 
             void setWithComBias(const bool & b)
@@ -319,6 +325,11 @@ namespace sotStateObservation
             */
             dynamicgraph::SignalPtr < unsigned , int> contactsModelSIN;
 
+            /**
+            \brief Config
+            */
+            dynamicgraph::SignalPtr < unsigned , int> configSIN;
+
 
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> forcesAndMomentsSOUT;
@@ -435,8 +446,10 @@ namespace sotStateObservation
             unsigned inputSize_;
             unsigned contactNumber_;
             unsigned contactsModel_;
+            unsigned config_;
 
             bool withComBias_;
+            bool withForce_;
 
             stateObservation::Vector bias_;
 

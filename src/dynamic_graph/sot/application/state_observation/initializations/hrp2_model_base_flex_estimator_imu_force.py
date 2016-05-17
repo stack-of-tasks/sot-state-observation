@@ -44,7 +44,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	self.interface.setRightHandSensorTransformation((0.,0.,1.57))
         self.interface.setFDInertiaDot(True)  
 
-	# Contacts forces anf positions
+	# Contacts forces and positions
 		# Feet
 	plug (self.robot.device.forceLLEG,self.interface.force_lf)
 	plug (self.robot.device.forceRLEG,self.interface.force_rf)
@@ -64,8 +64,9 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	plug(self.contact1.sout,self.interface.position_ls)
 	plug(self.contact2.sout,self.interface.position_rs)
 
-	# Contacts model
+	# Contacts model and config
 	plug(self.interface.contactsModel,self.contactsModel)
+	plug(self.interface.config,self.config)
 	
         # Drift
         self.drift = DriftFromMocap(name+'Drift')
