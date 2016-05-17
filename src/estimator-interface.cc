@@ -72,9 +72,9 @@ namespace sotStateObservation
         gyrometerSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::gyrometer"),
         driftSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::drift"),
         timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1),
-        timeSensorsPositions_(-1), timeForces_(-1), timeContactsNbrs_(-1),
-        timeForcesInControlFrame_(-1), timeDrift_(-1), timeContactsModel_(-1),
-        contactsModel_(2),
+        timeSensorsPositions_(-1), timeForces_(-1),
+        timeForcesInControlFrame_(-1), timeDrift_(-1), timeContacts_(-1),
+        contactsModel_(1),
         inputForces_(contact::nbMax),
         controlFrameForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
@@ -470,9 +470,9 @@ namespace sotStateObservation
         }
     }
 
-    void EstimatorInterface::computeAllContactsNbrs(const int& time)
+    void EstimatorInterface::computeContacts(const int& time)
     {
-        timeContactsNbrs_=time;
+        timeContacts_=time;
         if(time!=timeStackOfContacts_) computeStackOfContacts(time);
 
         // Update all contacts numbers.
@@ -480,6 +480,11 @@ namespace sotStateObservation
         modeledContactsNbr_=stackOfModeledContacts_.size();
         unmodeledContactsNbr_=stackOfUnmodeledContacts_.size();
         supportContactsNbr_=stackOfSupportContacts_.size();
+
+        config_=1;
+        contactsModel_=1;
+
+
     }
 
     void EstimatorInterface::computeInert(const stateObservation::Matrix & inertia,
@@ -524,8 +529,8 @@ namespace sotStateObservation
    {
        timeInput_=time;
        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
+       if(time!=timeContacts_) computeContacts(time);
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
-       if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
 
        const stateObservation::Matrix& inertia=convertMatrix<stateObservation::Matrix>(inertiaSIN.access(time));
        const stateObservation::Matrix& homoWaist=convertMatrix<stateObservation::Matrix>(positionWaistSIN.access(time));
@@ -589,9 +594,9 @@ namespace sotStateObservation
    {
        timeMeasurement_=time;
        if(time!=timeForcesInControlFrame_) getForcesInControlFrame(time);
-       if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
+       //if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
+       if(time!=timeContacts_) computeContacts(time);
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
-       if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
        if(time!=timeDrift_) getDrift(time);
 
        const stateObservation::Vector& accelerometer=convertVector<stateObservation::Vector>(accelerometerSIN.access(time));
@@ -601,22 +606,22 @@ namespace sotStateObservation
        measurement_.segment(0,3)=accelerometer;
        measurement_.segment(3,3)=gyrometer;
 
-       op_.i=6;
        for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
        {
-           op_.pc=inputHomoPosition_[*iterator].block(0,3,3,1);
-
-           measurement_.segment(6,3)+=controlFrameForces_[*iterator].head(3);
-           measurement_.segment(9,3)+=controlFrameForces_[*iterator].tail(3)+kine::skewSymmetric(op_.pc)*controlFrameForces_[*iterator].head(3);
-           op_.i+=6;
+//           op_.pc=inputHomoPosition_[*iterator].block(0,3,3,1);
+//           measurement_.segment(6,3)+=controlFrameForces_[*iterator].head(3);
+//           measurement_.segment(9,3)+=controlFrameForces_[*iterator].tail(3);//+kine::skewSymmetric(op_.pc)*controlFrameForces_[*iterator].head(3);
+           measurement_.segment(6,6)+=controlFrameForces_[*iterator];
        }
+
+       op_.i=12;
 
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
        {
-           measurement_.segment(op_.i,3)=controlFrameForces_[*iterator].head(3);
-           measurement_.segment(op_.i+3,3)=controlFrameForces_[*iterator].tail(3);
+           measurement_.segment(op_.i,6)=controlFrameForces_[*iterator];
            op_.i+=6;
        }
+
 
        measurement_.segment(op_.i,6) = drift_;
 

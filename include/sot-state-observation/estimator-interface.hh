@@ -105,35 +105,42 @@ namespace sotStateObservation
 
             unsigned& getContactsModel(unsigned& contactsModel, const int& time)
             {
-                 // if(time!=timeContactsModel_) computeContactsModel(time);
+                 if(time!=timeContacts_) computeContacts(time);
                  contactsModel = contactsModel_;
                  return contactsModel;
             }
 
+            unsigned& getConfig(unsigned& config, const int& time)
+            {
+                 if(time!=timeContacts_) computeContacts(time);
+                 config=config_;
+                 return config;
+            }
+
             unsigned& getContactsNbr(unsigned& contactsNbr, const int& time)
             {
-                 if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
+                 if(time!=timeContacts_) computeContacts(time);
                  contactsNbr = contactsNbr_;
                  return contactsNbr;
             }
 
             unsigned& getModeledContactsNbr(unsigned& modeledContactsNbr, const int& time)
             {
-                 if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
+                 if(time!=timeContacts_) computeContacts(time);
                  modeledContactsNbr = modeledContactsNbr_;
                  return modeledContactsNbr;
             }
 
             unsigned& getUnmodeledContactsNbr(unsigned& unmodeledContactsNbr, const int& time)
             {
-                 if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
+                 if(time!=timeContacts_) computeContacts(time);
                  unmodeledContactsNbr = unmodeledContactsNbr_;
                  return unmodeledContactsNbr;
             }
 
             unsigned& getSupportContactsNbr(unsigned& supportContactsNbr, const int& time)
             {
-                 if(time!=timeContactsNbrs_) computeAllContactsNbrs(time);
+                 if(time!=timeContacts_) computeContacts(time);
                  supportContactsNbr = supportContactsNbr_;
                  return supportContactsNbr;
             }
@@ -315,9 +322,9 @@ namespace sotStateObservation
             void getSensorsPositionsInControlFrame(const int& time);
             void getDrift(const int& time);
             void computeStackOfContacts(const int& time);
-            void computeAllContactsNbrs(const int& time);
             void computeInput(const int& inTime);
             void computeMeasurement(const int& time);
+            void computeContacts(const int& time);
 
             // From input reconstructor
             void computeInert
@@ -326,7 +333,7 @@ namespace sotStateObservation
 
             /// Parameters
             double timeStackOfContacts_, timeInput_, timeMeasurement_, timeSensorsPositions_,
-                   timeForces_, timeForcesInControlFrame_, timeContactsNbrs_, timeDrift_, timeContactsModel_;
+                   timeForces_, timeForcesInControlFrame_, timeDrift_, timeContacts_;
 
             stateObservation::Vector forceThresholds_;
             stateObservation::Vector forceResidus_;
@@ -341,6 +348,7 @@ namespace sotStateObservation
 
             unsigned contactsNbr_, modeledContactsNbr_, unmodeledContactsNbr_, supportContactsNbr_;
             unsigned contactsModel_;
+            unsigned config_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
