@@ -13,6 +13,8 @@ from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
 from dynamic_graph.sot.application.state_observation import Calibrate
 
+from dynamic_graph.sot.application.state_observation.initializations.hrp2_model_base_flex_estimator_imu_force import HRP2MocapToSOT 
+
 
 class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
@@ -69,7 +71,10 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	plug(self.interface.config,self.config)
 	
         # Drift
+	self.mocap = HRP2MocapToSOT(name+'Mocap')
         self.drift = DriftFromMocap(name+'Drift')
+	plug(self.mocap.robotPositionInMocap.sout,self.drift.limbGlobal)
+	plug(self.mocap.robotPositionISot.sout,self.drift.limbLocal)
 
 	# Meausrement reconstruction
 	plug(self.robot.device.accelerometer,self.interface.accelerometer)
