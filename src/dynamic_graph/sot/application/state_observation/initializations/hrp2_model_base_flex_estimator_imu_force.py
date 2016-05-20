@@ -77,7 +77,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	plug(self.mocap.robotPositionInMocap.sout,self.drift.limbGlobal)
 	plug(self.mocap.robotPositionISot.sout,self.drift.limbLocal)
 
-	# Meausrement reconstruction
+	# Measurement reconstruction
 	plug(self.robot.device.accelerometer,self.interface.accelerometer)
 	plug(self.robot.device.gyrometer,self.interface.gyrometer)
 	plug(self.drift.driftVector,self.interface.drift)

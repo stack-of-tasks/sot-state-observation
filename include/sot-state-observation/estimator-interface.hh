@@ -239,6 +239,12 @@ namespace sotStateObservation
                 return stackOfSupportContacts;
             }
 
+            void setElastPendulumModel(const unsigned & i)
+            {
+                elastPendulumModel_=i;
+            }
+
+
             /**
             \name Parameters
             @{
@@ -348,7 +354,7 @@ namespace sotStateObservation
             std::list<int>::iterator iterator;
 
             unsigned contactsNbr_, modeledContactsNbr_, unmodeledContactsNbr_, supportContactsNbr_;
-            unsigned contactsModel_;
+            unsigned contactsModel_, elastPendulumModel_;
             unsigned config_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;

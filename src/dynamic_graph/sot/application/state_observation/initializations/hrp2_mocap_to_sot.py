@@ -18,7 +18,8 @@ class HRP2MocapToSOT:
   def __init__(self,robot):
     self.robot = robot
     self.ros = RosExport('rosExportMocap')
-    self.ros.add('matrixHomoStamped', "chest", "/evart/hrp2_head_sf/PO")
+    #self.ros.add('matrixHomoStamped', "chest", "/evart/hrp2_head_sf/PO")
+    self.ros.add('matrixHomoStamped', "chest", "/evart/helmet/helmet")
     self.mocapSignal =  self.ros.signal('chest')
   
   def initialize(self):

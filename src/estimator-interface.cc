@@ -75,7 +75,7 @@ namespace sotStateObservation
         timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1),
         timeSensorsPositions_(-1), timeForces_(-1),
         timeForcesInControlFrame_(-1), timeDrift_(-1), timeContacts_(-1),
-        contactsModel_(1),
+        contactsModel_(1),elastPendulumModel_(1),
         inputForces_(contact::nbMax),
         controlFrameForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
@@ -316,6 +316,16 @@ namespace sotStateObservation
                    ::dynamicgraph::command::Getter <EstimatorInterface,bool>
                       (*this, &EstimatorInterface::getWithUnmodeledMeasurements, docstring));
 
+        docstring =
+                "\n"
+                "    Set the elast pendulum to use \n"
+                "\n";
+
+        addCommand(std::string("setElastPendulumModel"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,unsigned>
+                (*this, &EstimatorInterface::setElastPendulumModel, docstring));
+
         /// Parameters
 
         // ForceThresholds
@@ -492,7 +502,7 @@ namespace sotStateObservation
             modeledContactsNbr_=2;
             supportContactsNbr_=2;
             config_=0;
-            contactsModel_=2;
+            contactsModel_=elastPendulumModel_+1;
         }
         else
         {
