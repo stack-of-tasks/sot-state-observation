@@ -579,7 +579,8 @@ namespace sotStateObservation
         }
 
         // Update the process noise covariance
-        if(recomputeQ_) {
+        if(recomputeQ_)
+        {
             estimator_.setProcessNoiseCovariance(Q_);
             recomputeQ_=false;
         }

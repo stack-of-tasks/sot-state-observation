@@ -35,8 +35,6 @@
 
 #include <sot-state-observation/estimator-interface.hh>
 
-#include <iostream>
-
 namespace sotStateObservation
 {
     DYNAMICGRAPH_FACTORY_ENTITY_PLUGIN ( EstimatorInterface, "EstimatorInterface" );
@@ -421,13 +419,13 @@ namespace sotStateObservation
             op_.Rct=op_.Rc.transpose();
             op_.pc=inputHomoPosition_[i].block(0,3,3,1);
 
+            // Reorientation of frames
+            controlFrameForces_[i] << forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(0,3),
+                                      forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(3,3);
+
             // For unmodeled contacts
             if(!modeled_[i])
             {
-                // Reorientation of frames
-                controlFrameForces_[i] << forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(0,3),
-                                          forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(3,3);
-
                 // Computation in the local frame of the weight action of theend-effector on the sensor
                 op_.weight << 0,
                               0,
@@ -447,7 +445,6 @@ namespace sotStateObservation
             controlFrameForces_[i]
                     << op_.Rc*controlFrameForces_[i].head(3),
                        op_.Rc*controlFrameForces_[i].tail(3)-kine::skewSymmetric(op_.pc)*controlFrameForces_[i].head(3);
-
         }
     }
 
@@ -618,7 +615,7 @@ namespace sotStateObservation
    {
        timeMeasurement_=time;
        if(time!=timeForcesInControlFrame_) getForcesInControlFrame(time);
-       //if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
+       if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
        if(time!=timeContacts_) computeContacts(time);
        if(time!=timeStackOfContacts_) computeStackOfContacts(time);
        if(time!=timeDrift_) getDrift(time);
@@ -646,9 +643,7 @@ namespace sotStateObservation
            op_.i+=6;
        }
 
-
        measurement_.segment(op_.i,6) = drift_;
-
    }
 }
 
