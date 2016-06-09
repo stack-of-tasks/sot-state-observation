@@ -146,7 +146,6 @@ namespace sotStateObservation
 
             void setWithForce(const bool & b)
             {
-                estimator_.setWithForcesMeasurements(b);
                 withForce_=b;
             }
 

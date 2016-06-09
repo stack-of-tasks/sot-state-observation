@@ -564,7 +564,7 @@ namespace sotStateObservation
             estimator_.setContactModel(contactsModel);
         }
 
-        if(config_!=config)
+        if(config_!=config | withForce_!=estimator_.getWithForcesMeasurements())
         {
             if (config==1) estimator_.setWithForcesMeasurements(withForce_);
             if (config==0) estimator_.setWithForcesMeasurements(false);
