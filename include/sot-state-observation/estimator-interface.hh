@@ -244,6 +244,37 @@ namespace sotStateObservation
                 elastPendulumModel_=i;
             }
 
+            MatrixHomogeneous& getPositionSupport1(MatrixHomogeneous& positionSupport1, const int& time)
+            {
+                if(time!=timeContacts_) computeContacts(time);
+                if(stackOfSupportContacts_.size()>=1)
+                {
+                    iterator = stackOfSupportContacts_.begin();
+                    positionSupport1=convertMatrix<dynamicgraph::Matrix>(inputHomoPosition_[*iterator]);
+                }
+                else
+                {
+                    positionSupport1.setIdentity();
+                }
+                return positionSupport1;
+            }
+
+            MatrixHomogeneous& getPositionSupport2(MatrixHomogeneous& positionSupport2, const int& time)
+            {
+                if(time!=timeContacts_) computeContacts(time);
+                if(stackOfSupportContacts_.size()>=2)
+                {
+                    iterator = stackOfSupportContacts_.begin();
+                    ++iterator;
+                    positionSupport2=convertMatrix<dynamicgraph::Matrix>(inputHomoPosition_[*iterator]);
+                }
+                else
+                {
+                    positionSupport2.setIdentity();
+                }
+                return positionSupport2;
+            }
+
 
             /**
             \name Parameters
@@ -322,6 +353,8 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <unsigned, int> unmodeledContactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> supportContactsNbrSOUT_;
             dynamicgraph::SignalPtr <Vector, int> stackOfSupportContactsSOUT_;
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionSupport1SOUT_;
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionSupport2SOUT_;            
 
             /// Methods
             void getForces(const int& time);

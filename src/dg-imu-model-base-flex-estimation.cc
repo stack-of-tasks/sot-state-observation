@@ -558,12 +558,6 @@ namespace sotStateObservation
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
 
-        if(contactsModel_!=contactsModel)
-        {
-            contactsModel_=contactsModel;
-            estimator_.setContactModel(contactsModel);
-        }
-
         if(config_!=config | withForce_!=estimator_.getWithForcesMeasurements())
         {
             if (config==1) estimator_.setWithForcesMeasurements(withForce_);
@@ -571,8 +565,14 @@ namespace sotStateObservation
             config_=config;
         }
 
+        if(contactsModel_!=contactsModel)
+        {
+            contactsModel_=contactsModel;
+            estimator_.setContactModel(contactsModel);
+        }
+
         // Update of inputSize_ considering contactsNb
-        if (contactNumber_!= contactNb)
+        if (contactNb!=estimator_.getContactsNumber())
         {
             contactNumber_ = contactNb;
             estimator_.setContactsNumber(contactNb);
@@ -776,9 +776,12 @@ namespace sotStateObservation
         stateObservation::Vector forcesAndMoments=estimator_.getForcesAndMoments();
         //std::cout << "forcesAndMoments" << forcesAndMoments.transpose() << std::endl;
         forcesSupport1.resize(6);
-        if(forcesAndMoments.size() >= 6){
-            forcesSupport1=convertVector<dynamicgraph::Vector>((forcesAndMoments).block(0,0,6,1));
-        }else{
+        if(forcesAndMoments.size() >= 6)
+        {
+            forcesSupport1=convertVector<dynamicgraph::Vector>((forcesAndMoments).segment(0,6));
+        }
+        else
+        {
             forcesSupport1.setZero();
         }
 
@@ -791,9 +794,12 @@ namespace sotStateObservation
 
         stateObservation::Vector forcesAndMoments=estimator_.getForcesAndMoments();
         forcesSupport2.resize(6);
-        if(forcesAndMoments.size()==12){
-            forcesSupport2=convertVector<dynamicgraph::Vector>((forcesAndMoments).block(6,0,6,1));
-        }else{
+        if(forcesAndMoments.size()>=12)
+        {
+            forcesSupport2=convertVector<dynamicgraph::Vector>((forcesAndMoments).segment(6,6));
+        }
+        else
+        {
             forcesSupport2.setZero();
         }
 

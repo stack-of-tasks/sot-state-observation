@@ -50,6 +50,8 @@ namespace sotStateObservation
         unmodeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::unmodeledContactsNbr"),
         supportContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::supportContactsNbr"),
         stackOfSupportContactsSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::stackOfSupportContacts"),
+        positionSupport1SOUT_ (NULL, "EstimatorInterface("+inName+")::output(HomoMatrix)::positionSupport1"),
+        positionSupport2SOUT_ (NULL, "EstimatorInterface("+inName+")::output(HomoMatrix)::positionSupport2"),
         positionLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_lf"),
         forceLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lf"),
         positionRightFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_rf"),
@@ -190,6 +192,12 @@ namespace sotStateObservation
 
         signalRegistration (stackOfSupportContactsSOUT_);
         stackOfSupportContactsSOUT_.setFunction(boost::bind(&EstimatorInterface::getStackOfSupportContacts, this, _1, _2));
+
+        signalRegistration (positionSupport1SOUT_);
+        positionSupport1SOUT_.setFunction(boost::bind(&EstimatorInterface::getPositionSupport1, this, _1, _2));
+
+        signalRegistration (positionSupport2SOUT_);
+        positionSupport2SOUT_.setFunction(boost::bind(&EstimatorInterface::getPositionSupport2, this, _1, _2));
 
         /// Commands
 
@@ -444,7 +452,7 @@ namespace sotStateObservation
             // Express forces in the local frame
             controlFrameForces_[i]
                     << op_.Rc*controlFrameForces_[i].head(3),
-                       op_.Rc*controlFrameForces_[i].tail(3)-kine::skewSymmetric(op_.pc)*controlFrameForces_[i].head(3);
+                       op_.Rc*controlFrameForces_[i].tail(3)+kine::skewSymmetric(op_.pc)*controlFrameForces_[i].head(3);
         }
     }
 
@@ -489,8 +497,8 @@ namespace sotStateObservation
         // Update all a priori contacts numbers.
         contactsNbr_=stackOfContacts_.size();
         modeledContactsNbr_=stackOfModeledContacts_.size();
-        unmodeledContactsNbr_=stackOfUnmodeledContacts_.size();
         supportContactsNbr_=stackOfSupportContacts_.size();
+        unmodeledContactsNbr_=stackOfUnmodeledContacts_.size();
 
         // Treat the case where the robot is supported by the strings
         if(supportContactsNbr_<1)
@@ -551,7 +559,6 @@ namespace sotStateObservation
        timeInput_=time;
        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
        if(time!=timeContacts_) computeContacts(time);
-       if(time!=timeStackOfContacts_) computeStackOfContacts(time);
 
        const stateObservation::Matrix& inertia=convertMatrix<stateObservation::Matrix>(inertiaSIN.access(time));
        const stateObservation::Matrix& homoWaist=convertMatrix<stateObservation::Matrix>(positionWaistSIN.access(time));
@@ -600,7 +607,7 @@ namespace sotStateObservation
        op_.dangMomentumOut = op_.m*kine::skewSymmetric(op_.com)*op_.comddot;
 
        // Concatenate input
-       input_.resize(42+6*modeledContactsNbr_);
+       input_.resize(42+6*modeledContactsNbr_); input_.setZero();
        input_.segment(0,9)=comVector;
        input_.segment(9,6)=op_.inert;
        input_.segment(15,6)=op_.dinert;
@@ -617,7 +624,6 @@ namespace sotStateObservation
        if(time!=timeForcesInControlFrame_) getForcesInControlFrame(time);
        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
        if(time!=timeContacts_) computeContacts(time);
-       if(time!=timeStackOfContacts_) computeStackOfContacts(time);
        if(time!=timeDrift_) getDrift(time);
 
        const stateObservation::Vector& accelerometer=convertVector<stateObservation::Vector>(accelerometerSIN.access(time));
@@ -629,9 +635,6 @@ namespace sotStateObservation
 
        for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
        {
-//           op_.pc=inputHomoPosition_[*iterator].block(0,3,3,1);
-//           measurement_.segment(6,3)+=controlFrameForces_[*iterator].head(3);
-//           measurement_.segment(9,3)+=controlFrameForces_[*iterator].tail(3);//+kine::skewSymmetric(op_.pc)*controlFrameForces_[*iterator].head(3);
            measurement_.segment(6,6)+=controlFrameForces_[*iterator];
        }
 
