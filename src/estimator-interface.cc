@@ -53,8 +53,10 @@ namespace sotStateObservation
         positionSupport1SOUT_ (NULL, "EstimatorInterface("+inName+")::output(HomoMatrix)::positionSupport1"),
         positionSupport2SOUT_ (NULL, "EstimatorInterface("+inName+")::output(HomoMatrix)::positionSupport2"),
         positionLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_lf"),
+        velocityLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::velocity_lf"),
         forceLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lf"),
         positionRightFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_rf"),
+        velocityRightFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::velocity_rf"),
         forceRightFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_rf"),
         positionLeftHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_lh"),
         forceLeftHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lh"),
@@ -91,17 +93,22 @@ namespace sotStateObservation
         // Input
         MatrixHomogeneous pos;
         stateObservation::Vector6 force;
+        stateObservation::Vector3 velocity;
         dynamicgraph::Vector vpos; vpos.resize(6);
 
-        signalRegistration (positionLeftFootSIN_ << forceLeftFootSIN_);
+        signalRegistration (positionLeftFootSIN_ << velocityLeftFootSIN_ << forceLeftFootSIN_);
         positionLeftFootSIN_.setConstant(pos);
         positionLeftFootSIN_.setTime (timeStackOfContacts_);
+        velocityLeftFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(velocity));
+        velocityLeftFootSIN_.setTime (timeStackOfContacts_);
         forceLeftFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
         forceLeftFootSIN_.setTime (timeStackOfContacts_);
 
-        signalRegistration (positionRightFootSIN_ << forceRightFootSIN_);
+        signalRegistration (positionRightFootSIN_ << velocityRightFootSIN_ << forceRightFootSIN_);
         positionRightFootSIN_.setConstant(pos);
         positionRightFootSIN_.setTime (timeStackOfContacts_);
+        velocityRightFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(velocity));
+        velocityRightFootSIN_.setTime (timeStackOfContacts_);
         forceRightFootSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
         forceRightFootSIN_.setTime (timeStackOfContacts_);
 
@@ -439,8 +446,8 @@ namespace sotStateObservation
                               0,
                               -forceResidus_[i];
                 op_.l << 0,
-                     0,
-                     -0.035;
+                         0,
+                         -0.035;
 
                 op_.forceResidusVector << op_.Rct*op_.weight,
                                           kine::skewSymmetric(op_.l)*op_.Rct*op_.weight;

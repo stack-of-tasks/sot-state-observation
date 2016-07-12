@@ -295,9 +295,11 @@ namespace sotStateObservation
             \brief Positions and forces at contacts
             */
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionLeftFootSIN_;
+            dynamicgraph::SignalPtr <Vector, int> velocityLeftFootSIN_;
             dynamicgraph::SignalPtr <Vector, int> forceLeftFootSIN_;
 
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionRightFootSIN_;
+            dynamicgraph::SignalPtr <Vector, int> velocityRightFootSIN_;
             dynamicgraph::SignalPtr <Vector, int> forceRightFootSIN_;
 
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionLeftHandSIN_;

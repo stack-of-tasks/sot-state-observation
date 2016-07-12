@@ -44,14 +44,25 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	self.interface=EstimatorInterface(name+"EstimatorInterface")
 	self.interface.setLeftHandSensorTransformation((0.,0.,1.57))
 	self.interface.setRightHandSensorTransformation((0.,0.,1.57))
+
+	# Contacts velocities
+	self.leftFootVelocity = Multiply_matrix_vector ('leftFootVelocity')
+	plug(self.robot.frames['leftFootForceSensor'].jacobian,self.leftFootVelocity.sin1)
+	plug(self.robot.device.velocity,self.leftFootVelocity.sin2)
+	self.rightFootVelocity = Multiply_matrix_vector ('rightFootVelocity')
+	plug(self.robot.frames['rightFootForceSensor'].jacobian,self.rightFootVelocity.sin1)
+	plug(self.robot.device.velocity,self.rightFootVelocity.sin2)
+
         self.interface.setFDInertiaDot(True)  
 
-	# Contacts forces and positions
+	# Contacts forces, positions and velocities
 		# Feet
 	plug (self.robot.device.forceLLEG,self.interface.force_lf)
 	plug (self.robot.device.forceRLEG,self.interface.force_rf)
 	plug (self.robot.frames['leftFootForceSensor'].position,self.interface.position_lf)
 	plug (self.robot.frames['rightFootForceSensor'].position,self.interface.position_rf)
+	plug (self.leftFootVelocity.sout,self.interface.velocity_lf)
+	plug (self.rightFootVelocity.sout,self.interface.velocity_rf)
 		# Hands
 	plug (self.robot.device.forceLARM,self.interface.force_lh)
 	plug (self.robot.device.forceRARM,self.interface.force_rh)
