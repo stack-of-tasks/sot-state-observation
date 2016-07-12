@@ -82,6 +82,7 @@ namespace sotStateObservation
         controlFrameForces_(contact::nbMax),
         inputPosition_(contact::nbMax),
         inputHomoPosition_(contact::nbMax),
+        inputVelocity_(contact::nbMax),
         forceSensorsTransformation_(contact::nbMax),
         forceSensorsTransfoMatrix_(contact::nbMax),
         bias_(contact::nbMax),
@@ -394,10 +395,11 @@ namespace sotStateObservation
         drift_ = convertVector<stateObservation::Vector>(driftSIN.access (time));
     }
 
-    void EstimatorInterface::getSensorsPositionsInControlFrame(const int& time)
+    void EstimatorInterface::getSensorsKineInControlFrame(const int& time)
     {
         timeSensorsPositions_=time;
 
+        // Positions
         inputHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightFootSIN_.access (time)));
         inputHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftFootSIN_.access (time)));
         inputHomoPosition_[contact::rh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightHandSIN_.access (time)));
@@ -407,6 +409,10 @@ namespace sotStateObservation
         {
             inputPosition_[i]=kine::homogeneousMatrixToVector6(inputHomoPosition_[i]);
         }
+
+        // Velocities
+        inputVelocity_[contact::rf] = convertVector<stateObservation::Vector3>(velocityRightFootSIN_.access (time));
+        inputVelocity_[contact::lf] = convertVector<stateObservation::Vector3>(velocityLeftFootSIN_.access (time));
 
     }
 
@@ -425,7 +431,7 @@ namespace sotStateObservation
         timeForcesInControlFrame_=time;
 
         if(time!=timeForces_) getForces(time);
-        if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
+        if(time!=timeSensorsPositions_) getSensorsKineInControlFrame(time);
 
         for (int i=0; i<contact::nbMax;++i)
         {          
@@ -564,7 +570,7 @@ namespace sotStateObservation
    void EstimatorInterface::computeInput(const int& time)
    {
        timeInput_=time;
-       if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
+       if(time!=timeSensorsPositions_) getSensorsKineInControlFrame(time);
        if(time!=timeContacts_) computeContacts(time);
 
        const stateObservation::Matrix& inertia=convertMatrix<stateObservation::Matrix>(inertiaSIN.access(time));
@@ -629,7 +635,7 @@ namespace sotStateObservation
    {
        timeMeasurement_=time;
        if(time!=timeForcesInControlFrame_) getForcesInControlFrame(time);
-       if(time!=timeSensorsPositions_) getSensorsPositionsInControlFrame(time);
+       if(time!=timeSensorsPositions_) getSensorsKineInControlFrame(time);
        if(time!=timeContacts_) computeContacts(time);
        if(time!=timeDrift_) getDrift(time);
 

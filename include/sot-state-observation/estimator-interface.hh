@@ -361,7 +361,7 @@ namespace sotStateObservation
             /// Methods
             void getForces(const int& time);
             void getForcesInControlFrame(const int& time);
-            void getSensorsPositionsInControlFrame(const int& time);
+            void getSensorsKineInControlFrame(const int& time);
             void getDrift(const int& time);
             void computeStackOfContacts(const int& time);
             void computeInput(const int& inTime);
@@ -394,6 +394,7 @@ namespace sotStateObservation
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
+            std::vector<stateObservation::Vector3,Eigen::aligned_allocator_indirection<stateObservation::Vector3> > inputVelocity_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > controlFrameForces_;
 
