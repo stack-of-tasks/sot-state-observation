@@ -94,7 +94,7 @@ namespace sotStateObservation
         // Input
         MatrixHomogeneous pos;
         stateObservation::Vector6 force;
-        stateObservation::Vector3 velocity;
+        stateObservation::Vector6 velocity;
         dynamicgraph::Vector vpos; vpos.resize(6);
 
         signalRegistration (positionLeftFootSIN_ << velocityLeftFootSIN_ << forceLeftFootSIN_);
@@ -411,8 +411,8 @@ namespace sotStateObservation
         }
 
         // Velocities
-        inputVelocity_[contact::rf] = convertVector<stateObservation::Vector3>(velocityRightFootSIN_.access (time));
-        inputVelocity_[contact::lf] = convertVector<stateObservation::Vector3>(velocityLeftFootSIN_.access (time));
+        inputVelocity_[contact::rf] = convertVector<stateObservation::Vector6>(velocityRightFootSIN_.access (time));
+        inputVelocity_[contact::lf] = convertVector<stateObservation::Vector6>(velocityLeftFootSIN_.access (time));
 
     }
 
@@ -581,15 +581,16 @@ namespace sotStateObservation
        const stateObservation::Vector& dangMomentum=convertVector<stateObservation::Vector>(dangMomentumSIN.access(time));
        const stateObservation::Vector& imuVector=convertVector<stateObservation::Vector>(imuVectorSIN.access(time));
 
-       // Modeled contacts position
-       op_.contactPosition.resize(modeledContactsNbr_*6);
-       op_.bias.resize(6*modeledContactsNbr_);
+       // Modeled contacts kine
+       op_.contactKine.resize(modeledContactsNbr_*12);
+       op_.bias.resize(12*modeledContactsNbr_); op_.bias.setZero();
        op_.i=0;
 
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
        {
-           op_.contactPosition.segment(op_.i*6,6)=inputPosition_[*iterator];
-           op_.bias.segment(op_.i*6,6)=bias_[*iterator];
+           op_.contactKine.segment(op_.i*12,6)=inputPosition_[*iterator];
+           op_.contactKine.segment(op_.i*12+6,6)=inputVelocity_[*iterator];
+           op_.bias.segment(op_.i*12,6)=bias_[*iterator];
            ++op_.i;
        }
 
@@ -620,14 +621,14 @@ namespace sotStateObservation
        op_.dangMomentumOut = op_.m*kine::skewSymmetric(op_.com)*op_.comddot;
 
        // Concatenate input
-       input_.resize(42+6*modeledContactsNbr_); input_.setZero();
+       input_.resize(42+12*modeledContactsNbr_); input_.setZero();
        input_.segment(0,9)=comVector;
        input_.segment(9,6)=op_.inert;
        input_.segment(15,6)=op_.dinert;
        input_.segment(21,3)=angMomentum;
        input_.segment(24,3)=op_.dangMomentumOut;
        input_.segment(27,15)=imuVector;
-       input_.segment(42,6*modeledContactsNbr_)=op_.contactPosition+op_.bias;
+       input_.segment(42,12*modeledContactsNbr_)=op_.contactKine+op_.bias;
 
    }
 

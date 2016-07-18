@@ -276,6 +276,39 @@ namespace sotStateObservation
             }
 
 
+
+            Vector& getVelocitySupport1(Vector& velocitySupport1, const int& time)
+            {
+                if(time!=timeContacts_) computeContacts(time);
+                if(stackOfSupportContacts_.size()>=1)
+                {
+                    iterator = stackOfSupportContacts_.begin();
+                    velocitySupport1=convertVector<dynamicgraph::Vector>(inputVelocity_[*iterator]);
+                }
+                else
+                {
+                    velocitySupport1.setZero();
+                }
+                return velocitySupport1;
+            }
+
+            Vector& getVelocitySupport2(Vector& velocitySupport2, const int& time)
+            {
+                if(time!=timeContacts_) computeContacts(time);
+                if(stackOfSupportContacts_.size()>=2)
+                {
+                    iterator = stackOfSupportContacts_.begin();
+                    ++iterator;
+                    velocitySupport2=convertVector<dynamicgraph::Vector>(inputVelocity_[*iterator]);
+                }
+                else
+                {
+                    velocitySupport2.setZero();
+                }
+                return velocitySupport2;
+            }
+
+
             /**
             \name Parameters
             @{
@@ -394,7 +427,7 @@ namespace sotStateObservation
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
-            std::vector<stateObservation::Vector3,Eigen::aligned_allocator_indirection<stateObservation::Vector3> > inputVelocity_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputVelocity_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > controlFrameForces_;
 
@@ -429,7 +462,7 @@ namespace sotStateObservation
                 stateObservation::Vector3 l;
 
                 // Compute Input
-                stateObservation::Vector contactPosition;
+                stateObservation::Vector contactKine;
                 stateObservation::Vector bias;
                 stateObservation::Vector inert;
                 stateObservation::Vector dinert;
