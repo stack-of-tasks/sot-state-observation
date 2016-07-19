@@ -42,6 +42,7 @@ namespace sotStateObservation
     EstimatorInterface::EstimatorInterface( const std::string & inName):
         Entity(inName),
         inputSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::input"),
+        inputConstSizeSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::inputConstSize"),
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
         contactsModelSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsModel"),
         configSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::config"),
@@ -176,6 +177,9 @@ namespace sotStateObservation
         // Output
         signalRegistration (inputSOUT_);
         inputSOUT_.setFunction(boost::bind(&EstimatorInterface::getInput, this, _1, _2));
+
+        signalRegistration (inputConstSizeSOUT_);
+        inputConstSizeSOUT_.setFunction(boost::bind(&EstimatorInterface::getInputConstSize, this, _1, _2));
 
         signalRegistration (measurementSOUT_);
         measurementSOUT_.setFunction(boost::bind(&EstimatorInterface::getMeasurement, this, _1, _2));
@@ -581,9 +585,8 @@ namespace sotStateObservation
        const stateObservation::Vector& dangMomentum=convertVector<stateObservation::Vector>(dangMomentumSIN.access(time));
        const stateObservation::Vector& imuVector=convertVector<stateObservation::Vector>(imuVectorSIN.access(time));
 
-       // Modeled contacts kine
        op_.contactKine.resize(modeledContactsNbr_*12);
-       op_.bias.resize(12*modeledContactsNbr_); op_.bias.setZero();
+       op_.bias.resize(modeledContactsNbr_*12); op_.bias.setZero();
        op_.i=0;
 
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
@@ -621,14 +624,14 @@ namespace sotStateObservation
        op_.dangMomentumOut = op_.m*kine::skewSymmetric(op_.com)*op_.comddot;
 
        // Concatenate input
-       input_.resize(42+12*modeledContactsNbr_); input_.setZero();
+       input_.resize(42+op_.contactKine.size()); input_.setZero();
        input_.segment(0,9)=comVector;
        input_.segment(9,6)=op_.inert;
        input_.segment(15,6)=op_.dinert;
        input_.segment(21,3)=angMomentum;
        input_.segment(24,3)=op_.dangMomentumOut;
        input_.segment(27,15)=imuVector;
-       input_.segment(42,12*modeledContactsNbr_)=op_.contactKine+op_.bias;
+       input_.segment(42,op_.contactKine.size())=op_.contactKine+op_.bias;
 
    }
 

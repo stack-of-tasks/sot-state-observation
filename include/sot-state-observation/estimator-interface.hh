@@ -96,6 +96,25 @@ namespace sotStateObservation
                  return input;
             }
 
+            Vector& getInputConstSize(Vector& input, const int& time)
+            {
+                 if(time!=timeInput_) computeInput(time);
+
+                 op_.modeledContactsNbrMax = 0;
+                 for ( unsigned i = 0 ; i< modeled_.size(); ++i)
+                 {
+                     if (modeled_[i] == true) op_.modeledContactsNbrMax +=1;
+                 }
+
+                 op_.inputConstSize.resize(42+op_.modeledContactsNbrMax*12);
+                 op_.inputConstSize.setZero();
+                 op_.inputConstSize.segment(0,input_.size()) = input_;
+
+                 input.resize(op_.modeledContactsNbrMax);
+                 input=convertVector<dynamicgraph::Vector>(op_.inputConstSize);
+                 return input;
+            }
+
             Vector& getMeasurement(Vector& measurement, const int& time)
             {
                 if(time!=timeMeasurement_) computeMeasurement(time);
@@ -308,7 +327,6 @@ namespace sotStateObservation
                 return velocitySupport2;
             }
 
-
             /**
             \name Parameters
             @{
@@ -380,6 +398,7 @@ namespace sotStateObservation
 
             // Output signals
             dynamicgraph::SignalPtr <Vector, int> inputSOUT_;
+            dynamicgraph::SignalPtr <Vector, int> inputConstSizeSOUT_;
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsModelSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> configSOUT_;
@@ -449,6 +468,9 @@ namespace sotStateObservation
 
             struct Optimization
             {
+                unsigned modeledContactsNbrMax;
+                stateObservation::Vector inputConstSize;
+
                 // Compute stack of contacts
                 bool found;
                 double contactForce;
