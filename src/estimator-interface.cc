@@ -44,6 +44,7 @@ namespace sotStateObservation
         inputSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::input"),
         inputConstSizeSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::inputConstSize"),
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
+        measurementConstSizeSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurementConstSize"),
         contactsModelSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsModel"),
         configSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::config"),
         contactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsNbr"),
@@ -183,6 +184,9 @@ namespace sotStateObservation
 
         signalRegistration (measurementSOUT_);
         measurementSOUT_.setFunction(boost::bind(&EstimatorInterface::getMeasurement, this, _1, _2));
+
+        signalRegistration (measurementConstSizeSOUT_);
+        measurementConstSizeSOUT_.setFunction(boost::bind(&EstimatorInterface::getMeasurementConstSize, this, _1, _2));
 
         signalRegistration (contactsModelSOUT_);
         contactsModelSOUT_.setFunction(boost::bind(&EstimatorInterface::getContactsModel, this, _1, _2));

@@ -109,9 +109,8 @@ namespace sotStateObservation
                  op_.inputConstSize.resize(42+op_.modeledContactsNbrMax*12);
                  op_.inputConstSize.setZero();
                  op_.inputConstSize.segment(0,input_.size()) = input_;
-
-                 input.resize(op_.modeledContactsNbrMax);
                  input=convertVector<dynamicgraph::Vector>(op_.inputConstSize);
+
                  return input;
             }
 
@@ -120,6 +119,26 @@ namespace sotStateObservation
                 if(time!=timeMeasurement_) computeMeasurement(time);
                 measurement=convertVector<dynamicgraph::Vector>(measurement_);
                 return measurement;
+            }
+
+            Vector& getMeasurementConstSize(Vector& measurement, const int& time)
+            {
+                 if(time!=timeInput_) computeMeasurement(time);
+
+                 op_.modeledContactsNbrMax = 0;
+                 for ( unsigned i = 0 ; i< modeled_.size(); ++i)
+                 {
+                     if (modeled_[i] == true) op_.modeledContactsNbrMax +=1;
+                 }
+
+                 op_.measurementConstSize.resize(18+op_.modeledContactsNbrMax*6);
+                 op_.measurementConstSize.setZero();
+
+                 op_.measurementConstSize.head(measurement_.size()-6) = measurement_.head(measurement_.size()-6);
+                 op_.measurementConstSize.tail(6) = measurement_.tail(6);
+                 measurement=convertVector<dynamicgraph::Vector>(op_.measurementConstSize);
+
+                 return measurement;
             }
 
             unsigned& getContactsModel(unsigned& contactsModel, const int& time)
@@ -400,6 +419,7 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <Vector, int> inputSOUT_;
             dynamicgraph::SignalPtr <Vector, int> inputConstSizeSOUT_;
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
+            dynamicgraph::SignalPtr <Vector, int> measurementConstSizeSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsModelSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> configSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsNbrSOUT_;
@@ -470,6 +490,7 @@ namespace sotStateObservation
             {
                 unsigned modeledContactsNbrMax;
                 stateObservation::Vector inputConstSize;
+                stateObservation::Vector measurementConstSize;
 
                 // Compute stack of contacts
                 bool found;
