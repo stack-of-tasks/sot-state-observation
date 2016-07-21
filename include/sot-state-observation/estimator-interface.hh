@@ -131,7 +131,7 @@ namespace sotStateObservation
                      if (modeled_[i] == true) op_.modeledContactsNbrMax +=1;
                  }
 
-                 op_.measurementConstSize.resize(18+op_.modeledContactsNbrMax*6);
+                 op_.measurementConstSize.resize(12+op_.modeledContactsNbrMax*6);
                  op_.measurementConstSize.setZero();
 
                  op_.measurementConstSize.head(measurement_.size()-6) = measurement_.head(measurement_.size()-6);
@@ -148,7 +148,7 @@ namespace sotStateObservation
                  return contactsModel;
             }
 
-            unsigned& getConfig(unsigned& config, const int& time)
+            Vector& getConfig(Vector& config, const int& time)
             {
                  if(time!=timeContacts_) computeContacts(time);
                  config=config_;
@@ -421,7 +421,7 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <Vector, int> measurementSOUT_;
             dynamicgraph::SignalPtr <Vector, int> measurementConstSizeSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsModelSOUT_;
-            dynamicgraph::SignalPtr <unsigned, int> configSOUT_;
+            dynamicgraph::SignalPtr <Vector, int> configSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> contactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> modeledContactsNbrSOUT_;
             dynamicgraph::SignalPtr <unsigned, int> unmodeledContactsNbrSOUT_;
@@ -462,7 +462,7 @@ namespace sotStateObservation
 
             unsigned contactsNbr_, modeledContactsNbr_, unmodeledContactsNbr_, supportContactsNbr_;
             unsigned contactsModel_, elastPendulumModel_;
-            unsigned config_;
+            Vector config_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;

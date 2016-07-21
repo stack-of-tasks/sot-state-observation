@@ -17,7 +17,7 @@ namespace sotStateObservation
         inputSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(vector)::input"),
         contactsNbrSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactNbr"),
         contactsModelSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactsModel"),
-        configSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::config"),
+        configSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(Vector)::config"),
         stateSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::state"),
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
         flexPositionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPosition"),
@@ -520,9 +520,10 @@ namespace sotStateObservation
         estimator_.setContactModel(1);
 
         // Config
-        configSIN.setConstant(1);
         withForce_=true;
-        config_=1;
+        config_.resize(2); config_.setZero();
+        config_(1)=1;
+        configSIN.setConstant(config_);
 
         currentTime_=-1;
 
@@ -553,16 +554,16 @@ namespace sotStateObservation
         const dynamicgraph::Vector & input = inputSIN.access(inTime);
         const unsigned & contactNb = contactsNbrSIN.access(inTime);
         const unsigned & contactsModel = contactsModelSIN.access(inTime);
-        const unsigned & config = configSIN.access(inTime);
+        const dynamicgraph::Vector& config = configSIN.access(inTime);
 
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
 
-        if(config_!=config | withForce_!=estimator_.getWithForcesMeasurements())
+        if(config_(1)!=config(1) | withForce_!=estimator_.getWithForcesMeasurements())
         {
-            if (config==1) estimator_.setWithForcesMeasurements(withForce_);
-            if (config==0) estimator_.setWithForcesMeasurements(false);
-            config_=config;
+            if (config(1)==1) estimator_.setWithForcesMeasurements(withForce_);
+            if (config(1)==0) estimator_.setWithForcesMeasurements(false);
+            config_(1)=config(1);
         }
 
         if(contactsModel_!=contactsModel)
@@ -586,6 +587,7 @@ namespace sotStateObservation
         }
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
+        std::cout << estimator_.getMeasurementSize() << std::endl;
 
         stateObservation::Vector inputWBias = convertVector<stateObservation::Vector>(input);
         inputWBias.block(0,0,2,1)=inputWBias.block(0,0,2,1)+bias_;//for test purpose only

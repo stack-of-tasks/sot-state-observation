@@ -72,7 +72,8 @@ namespace sotStateObservation
 
             void setConfig(const dynamicgraph::Vector& config)
             {
-                for(int i=0;i<3;++i){
+                for(int i=0;i<3;++i)
+                {
                     if(config.elementAt(i)==1) config_[i]=true;
                     if(config.elementAt(i)==0) config_[i]=false;
                 }

@@ -327,7 +327,7 @@ namespace sotStateObservation
             /**
             \brief Config
             */
-            dynamicgraph::SignalPtr < unsigned , int> configSIN;
+            dynamicgraph::SignalPtr < dynamicgraph::Vector, int> configSIN;
 
 
             dynamicgraph::SignalTimeDependent
@@ -445,7 +445,7 @@ namespace sotStateObservation
             unsigned inputSize_;
             unsigned contactNumber_;
             unsigned contactsModel_;
-            unsigned config_;
+            dynamicgraph::Vector config_;
 
             bool withComBias_;
             bool withForce_;

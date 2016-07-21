@@ -46,7 +46,7 @@ namespace sotStateObservation
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
         measurementConstSizeSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurementConstSize"),
         contactsModelSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsModel"),
-        configSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::config"),
+        configSOUT_ (NULL, "EstimatorInterface("+inName+")::output(Vector)::config"),
         contactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::contactsNbr"),
         modeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::modeledContactsNbr"),
         unmodeledContactsNbrSOUT_ (NULL, "EstimatorInterface("+inName+")::output(unsigned)::unmodeledContactsNbr"),
@@ -350,6 +350,8 @@ namespace sotStateObservation
 
         /// Parameters
 
+        config_.resize(2); config_.setZero();
+
         // ForceThresholds
         forceThresholds_.resize(contact::nbMax);
         forceThresholds_.setOnes();
@@ -527,12 +529,12 @@ namespace sotStateObservation
             contactsNbr_+=2;
             modeledContactsNbr_=2;
             supportContactsNbr_=2;
-            config_=0;
+            config_(1)=0;
             contactsModel_=elastPendulumModel_+1;
         }
         else
         {
-            config_=1;
+            config_(1)=1;
             contactsModel_=1;
         }
     }
