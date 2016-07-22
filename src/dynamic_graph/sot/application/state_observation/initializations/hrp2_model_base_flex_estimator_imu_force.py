@@ -24,7 +24,6 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.robot = robot
 
 	# State and measurement definition
-	self.setWithForceSensors(True)
 	self.setWithComBias(False)
 	self.setAbsolutePosition(False)
 
@@ -48,6 +47,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
 	# State and measurement definition
 	self.interface.setWithUnmodeledMeasurements(False)
+	self.interface.setWithModeledForces(True)
 	
 	# Contacts velocities
 	self.leftFootVelocity = Multiply_matrix_vector ('leftFootVelocity')

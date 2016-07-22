@@ -705,10 +705,13 @@ namespace sotStateObservation
            op_.i+=6;
        }
 
-       for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
+       if(withModeledForces_)
        {
-           measurement_.segment(op_.i,6)=controlFrameForces_[*iterator];
-           op_.i+=6;
+           for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
+           {
+               measurement_.segment(op_.i,6)=controlFrameForces_[*iterator];
+               op_.i+=6;
+           }
        }
 
        measurement_.segment(op_.i,6) = drift_;

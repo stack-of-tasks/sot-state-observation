@@ -154,6 +154,7 @@ namespace sotStateObservation
 
                 config_.setZero();
                 if(withUnmodeledMeasurements_) config_(0)=1;
+                if(withModeledForces_ & supportContactsNbr_>=1) config_(1)=1;
 
                 config=convertVector<dynamicgraph::Vector>(config_);
                 return config;
