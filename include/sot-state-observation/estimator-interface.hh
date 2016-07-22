@@ -131,13 +131,27 @@ namespace sotStateObservation
                      if (modeled_[i] == true) op_.modeledContactsNbrMax +=1;
                  }
 
-                 op_.measurementConstSize.resize(12+op_.modeledContactsNbrMax*6);
+                 op_.measurementConstSize.resize(18+op_.modeledContactsNbrMax*6);
                  op_.measurementConstSize.setZero();
 
-                 op_.measurementConstSize.head(measurement_.size()-6) = measurement_.head(measurement_.size()-6);
-                 op_.measurementConstSize.tail(6) = measurement_.tail(6);
-                 measurement=convertVector<dynamicgraph::Vector>(op_.measurementConstSize);
+                 op_.measurementConstSize.head(6) = measurement_.head(6);
+                 op_.i=6;
 
+                 if(withUnmodeledMeasurements_)
+                 {
+                     op_.measurementConstSize.segment<6>(6) = measurement_.segment<6>(6);
+                     op_.i += 6;
+                 }
+
+                 if(withModeledForces_)
+                 {
+                     op_.measurementConstSize.segment(12, 6*modeledContactsNbr_) = measurement_.segment(op_.i, 6*modeledContactsNbr_);
+                     op_.i += 6*modeledContactsNbr_;
+                 }
+
+                 if(withAbsolutePose_) op_.measurementConstSize.tail(6) = measurement_.tail(6);
+
+                 measurement=convertVector<dynamicgraph::Vector>(op_.measurementConstSize);
                  return measurement;
             }
 
