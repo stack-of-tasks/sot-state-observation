@@ -88,7 +88,7 @@ namespace sotStateObservation
         forceSensorsTransformation_(contact::nbMax),
         forceSensorsTransfoMatrix_(contact::nbMax),
         bias_(contact::nbMax),
-        withUnmodeledMeasurements_(true), withModeledForces_(true)
+        withUnmodeledMeasurements_(false), withModeledForces_(true), withAbsolutePose_(false)
     {
 
         /// Signals
@@ -323,7 +323,7 @@ namespace sotStateObservation
                 "    Set withUnmodeleedMeausrements \n"
                 "\n";
 
-        addCommand(std::string("setWithUnmodeledMeausrements"),
+        addCommand(std::string("setWithUnmodeledMeasurements"),
              new
              ::dynamicgraph::command::Setter <EstimatorInterface,bool>
                 (*this, &EstimatorInterface::setWithUnmodeledMeasurements, docstring));
@@ -357,6 +357,26 @@ namespace sotStateObservation
                    new
                    ::dynamicgraph::command::Getter <EstimatorInterface,bool>
                       (*this, &EstimatorInterface::getWithModeledForces, docstring));
+
+        docstring =
+                "\n"
+                "    Set withAbsolutePose \n"
+                "\n";
+
+        addCommand(std::string("setWithAbsolutePose"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,bool>
+                (*this, &EstimatorInterface::setWithAbsolutePose, docstring));
+
+        docstring =
+                "\n"
+                "    Get withAbsolutePose\n"
+                "\n";
+
+        addCommand(std::string("getWithAbsolutePose"),
+                   new
+                   ::dynamicgraph::command::Getter <EstimatorInterface,bool>
+                      (*this, &EstimatorInterface::getWithAbsolutePose, docstring));
 
         docstring =
                 "\n"

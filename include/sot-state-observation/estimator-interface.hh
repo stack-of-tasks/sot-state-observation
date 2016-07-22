@@ -273,6 +273,16 @@ namespace sotStateObservation
                 return withModeledForces_;
             }
 
+            void setWithAbsolutePose(const bool & b)
+            {
+                withAbsolutePose_=b;
+            }
+
+            bool getWithAbsolutePose() const
+            {
+                return withAbsolutePose_;
+            }
+
             dynamicgraph::Vector& getStackOfSupportContacts(dynamicgraph::Vector& stackOfSupportContacts, const int& time)
             {
                 if(time!=timeStackOfContacts_) computeStackOfContacts(time);
@@ -490,6 +500,7 @@ namespace sotStateObservation
 
             bool withUnmodeledMeasurements_;
             bool withModeledForces_;
+            bool withAbsolutePose_;
 
             // From input reconstructor
             std::vector<stateObservation::Vector> bias_;
