@@ -529,7 +529,7 @@ namespace sotStateObservation
 
         // Config
         withForce_=true;
-        config_.resize(2); config_.setZero();
+        config_.resize(3); config_.setZero();
         config_(1)=1;
         configSIN.setConstant(config_);
 
@@ -581,6 +581,14 @@ namespace sotStateObservation
             if (config(1)==1) estimator_.setWithForcesMeasurements(withForce_);
             if (config(1)==0) estimator_.setWithForcesMeasurements(false);
             config_(1)=config(1);
+        }
+
+        // For unmodeled Forces
+        if(config_(2)!=config(2))
+        {
+            if (config(2)==1) estimator_.setWithAbsolutePos(true);
+            if (config(2)==0) estimator_.setWithAbsolutePos(false);
+            config_(2)=config(2);
         }
 
         if(contactsModel_!=contactsModel)

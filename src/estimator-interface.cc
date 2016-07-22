@@ -390,7 +390,7 @@ namespace sotStateObservation
 
         /// Parameters
 
-        config_.resize(2); config_.setZero();
+        config_.resize(3); config_.setZero();
 
         // ForceThresholds
         forceThresholds_.resize(contact::nbMax);
@@ -714,7 +714,10 @@ namespace sotStateObservation
            }
        }
 
-       measurement_.segment(op_.i,6) = drift_;
+       if(withAbsolutePose_)
+       {
+           measurement_.segment(op_.i,6) = drift_;
+       }
    }
 }
 

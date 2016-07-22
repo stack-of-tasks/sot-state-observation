@@ -23,13 +23,9 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.setSamplingPeriod(0.005)  
         self.robot = robot
 
-	# State and measurement definition
-	self.setWithComBias(False)
-	self.setAbsolutePosition(False)
-
 	# Covariances
 	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1.e-2,)*6+(1e-15,)*2+(1.e-8,)*3)))
-	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3+(1e-13,)*6))) 
+	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3))) 
 	self.setUnmodeledForceVariance(1e-13)
 	self.setForceVariance(1e-4)
 	self.setAbsolutePosVariance(1e-4)
@@ -48,7 +44,9 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	# State and measurement definition
 	self.interface.setWithUnmodeledMeasurements(False)
 	self.interface.setWithModeledForces(True)
-	
+	self.interface.setWithAbsolutePose(False)
+	self.setWithComBias(False)
+
 	# Contacts velocities
 	self.leftFootVelocity = Multiply_matrix_vector ('leftFootVelocity')
 	plug(self.robot.frames['leftFootForceSensor'].jacobian,self.leftFootVelocity.sin1)
