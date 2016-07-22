@@ -567,6 +567,15 @@ namespace sotStateObservation
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
 
+        // For unmodeled Forces
+        if(config_(0)!=config(0))
+        {
+            if (config(0)==1) estimator_.setWithUnmodeledMeasurements(true);
+            if (config(0)==0) estimator_.setWithUnmodeledMeasurements(false);
+            config_(0)=config(0);
+        }
+
+        // For modeled forces
         if(config_(1)!=config(1) | withForce_!=estimator_.getWithForcesMeasurements())
         {
             if (config(1)==1) estimator_.setWithForcesMeasurements(withForce_);

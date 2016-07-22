@@ -150,9 +150,13 @@ namespace sotStateObservation
 
             Vector& getConfig(Vector& config, const int& time)
             {
-                 if(time!=timeContacts_) computeContacts(time);
-                 config=config_;
-                 return config;
+                if(time!=timeContacts_) computeContacts(time);
+
+                config_.setZero();
+                if(withUnmodeledMeasurements_) config_(0)=1;
+
+                config=convertVector<dynamicgraph::Vector>(config_);
+                return config;
             }
 
             unsigned& getContactsNbr(unsigned& contactsNbr, const int& time)
@@ -482,7 +486,7 @@ namespace sotStateObservation
 
             unsigned contactsNbr_, modeledContactsNbr_, unmodeledContactsNbr_, supportContactsNbr_;
             unsigned contactsModel_, elastPendulumModel_;
-            Vector config_;
+            stateObservation::Vector config_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;

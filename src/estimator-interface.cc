@@ -569,12 +569,10 @@ namespace sotStateObservation
             contactsNbr_+=2;
             modeledContactsNbr_=2;
             supportContactsNbr_=2;
-            config_(1)=0;
             contactsModel_=elastPendulumModel_+1;
         }
         else
         {
-            config_(1)=1;
             contactsModel_=1;
         }
     }
@@ -696,12 +694,16 @@ namespace sotStateObservation
        measurement_.segment(0,3)=accelerometer;
        measurement_.segment(3,3)=gyrometer;
 
-       for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
-       {
-           measurement_.segment(6,6)+=controlFrameForces_[*iterator];
-       }
+       op_.i=6;
 
-       op_.i=12;
+       if(withUnmodeledMeasurements_)
+       {
+           for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
+           {
+               measurement_.segment(6,6)+=controlFrameForces_[*iterator];
+           }
+           op_.i+=6;
+       }
 
        for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
        {
