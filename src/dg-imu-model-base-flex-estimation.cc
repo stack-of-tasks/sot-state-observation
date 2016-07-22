@@ -415,6 +415,14 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool >
                     (*this, & DGIMUModelBaseFlexEstimation::setWithUnmodeledMeasurements,docstring));
 
+        docstring  =
+                "\n"
+                "    Sets unmodeled force variance"
+                "\n";
+
+        addCommand(std::string("setUnmodeledForceVariance"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,double >
+                    (*this, & DGIMUModelBaseFlexEstimation::setUnmodeledForceVariance,docstring));
 
         docstring  =
                 "\n"

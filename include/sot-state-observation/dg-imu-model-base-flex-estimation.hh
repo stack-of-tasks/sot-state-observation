@@ -159,6 +159,11 @@ namespace sotStateObservation
                 withComBias_=b;
             }
 
+            void setUnmodeledForceVariance(const double & d)
+            {
+                estimator_.setUnmodeledForceVariance(d);
+            }
+
             void setForceVariance(const double & d)
             {
                 estimator_.setForceVariance(d);
