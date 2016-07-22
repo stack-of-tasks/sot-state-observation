@@ -263,6 +263,16 @@ namespace sotStateObservation
                 return withUnmodeledMeasurements_;
             }
 
+            void setWithModeledForces(const bool & b)
+            {
+                withModeledForces_=b;
+            }
+
+            bool getWithModeledForces() const
+            {
+                return withModeledForces_;
+            }
+
             dynamicgraph::Vector& getStackOfSupportContacts(dynamicgraph::Vector& stackOfSupportContacts, const int& time)
             {
                 if(time!=timeStackOfContacts_) computeStackOfContacts(time);
@@ -479,6 +489,7 @@ namespace sotStateObservation
             stateObservation::Vector measurement_;
 
             bool withUnmodeledMeasurements_;
+            bool withModeledForces_;
 
             // From input reconstructor
             std::vector<stateObservation::Vector> bias_;
