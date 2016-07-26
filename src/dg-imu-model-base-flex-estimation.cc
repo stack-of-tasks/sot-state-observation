@@ -417,6 +417,15 @@ namespace sotStateObservation
 
         docstring  =
                 "\n"
+                "    Sets if the config signal is used or not. "
+                "\n";
+
+        addCommand(std::string("setWithConfigSignal"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool >
+                    (*this, & DGIMUModelBaseFlexEstimation::setWithConfigSignal,docstring));
+
+        docstring  =
+                "\n"
                 "    Sets unmodeled force variance"
                 "\n";
 
@@ -453,11 +462,6 @@ namespace sotStateObservation
         addCommand(std::string("getRobotMass"),
                    new ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,double>
                     (*this, & DGIMUModelBaseFlexEstimation::getRobotMass ,docstring));
-
-        withComBias_=false;
-        estimator_.setWithComBias(withComBias_);
-
-        bias_.resize(2); bias_.setZero();
 
         stateObservation::ObserverBase::InputVector input;
         input.resize(inputSizeBase);
@@ -520,6 +524,11 @@ namespace sotStateObservation
         stateObservation::Vector measure(measurementSize);
         measurementSIN.setConstant(convertVector<dynamicgraph::Vector>(measure));
 
+        withComBias_=false;
+        estimator_.setWithComBias(withComBias_);
+
+        bias_.resize(2); bias_.setZero();
+
         contactsNbrSIN.setConstant(0);
 
         // Contacts model
@@ -540,6 +549,8 @@ namespace sotStateObservation
 
         Q_=estimator_.getProcessNoiseCovariance();
         recomputeQ_=false;
+
+        withConfigSignal_ = false;
 
     }
 
@@ -562,33 +573,18 @@ namespace sotStateObservation
         const dynamicgraph::Vector & input = inputSIN.access(inTime);
         const unsigned & contactNb = contactsNbrSIN.access(inTime);
         const unsigned & contactsModel = contactsModelSIN.access(inTime);
-        const dynamicgraph::Vector& config = configSIN.access(inTime);
 
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
 
-        // For unmodeled Forces
-        if(config_(0)!=config(0))
+        if (withConfigSignal_)
         {
-            if (config(0)==1) estimator_.setWithUnmodeledMeasurements(true);
-            if (config(0)==0) estimator_.setWithUnmodeledMeasurements(false);
-            config_(0)=config(0);
+            setConfig(inTime);
         }
-
-        // For modeled forces
-        if(config_(1)!=config(1) | withForce_!=estimator_.getWithForcesMeasurements())
+        else
         {
-            if (config(1)==1) estimator_.setWithForcesMeasurements(withForce_);
-            if (config(1)==0) estimator_.setWithForcesMeasurements(false);
-            config_(1)=config(1);
-        }
-
-        // For unmodeled Forces
-        if(config_(2)!=config(2))
-        {
-            if (config(2)==1) estimator_.setWithAbsolutePos(true);
-            if (config(2)==0) estimator_.setWithAbsolutePos(false);
-            config_(2)=config(2);
+            // For modeled forces
+            if(withForce_!=estimator_.getWithForcesMeasurements()) estimator_.setWithForcesMeasurements(withForce_);
         }
 
         if(contactsModel_!=contactsModel)
@@ -612,7 +608,6 @@ namespace sotStateObservation
         }
 
         estimator_.setMeasurement((convertVector<stateObservation::Vector>(measurement)).head(estimator_.getMeasurementSize()));
-        std::cout << estimator_.getMeasurementSize() << std::endl;
 
         stateObservation::Vector inputWBias = convertVector<stateObservation::Vector>(input);
         inputWBias.block(0,0,2,1)=inputWBias.block(0,0,2,1)+bias_;//for test purpose only

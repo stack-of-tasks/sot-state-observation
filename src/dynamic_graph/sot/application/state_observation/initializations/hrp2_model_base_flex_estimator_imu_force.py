@@ -81,6 +81,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
 	# Contacts model and config
 	plug(self.interface.contactsModel,self.contactsModel)
+	self.setWithConfigSignal(True)
 	plug(self.interface.config,self.config)
 	
         # Drift
