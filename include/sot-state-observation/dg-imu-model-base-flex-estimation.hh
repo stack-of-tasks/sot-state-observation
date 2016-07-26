@@ -186,12 +186,12 @@ namespace sotStateObservation
 
             void setWithAbsolutePosition(const bool & b)
             {
-                estimator_.setWithAbsolutePos(b);
+                withAbsolutePose_ =b;
             }
 
             void setWithUnmodeledMeasurements(const bool & b)
             {
-                estimator_.setWithUnmodeledMeasurements(b);
+                withUnmodeledForces_ = b;
             }
 
             void setWithConfigSignal(const bool & b)
@@ -486,6 +486,8 @@ namespace sotStateObservation
             dynamicgraph::Vector config_;
             bool withConfigSignal_;
             bool withForce_;
+            bool withUnmodeledForces_;
+            bool withAbsolutePose_;
 
             bool withComBias_;
 

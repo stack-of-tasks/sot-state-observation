@@ -537,7 +537,10 @@ namespace sotStateObservation
         estimator_.setContactModel(1);
 
         // Config
+        withConfigSignal_ = false;
         withForce_=true;
+        withUnmodeledForces_ = false;
+        withAbsolutePose_ = false;
         config_.resize(3); config_.setZero();
         config_(1)=1;
         configSIN.setConstant(config_);
@@ -549,8 +552,6 @@ namespace sotStateObservation
 
         Q_=estimator_.getProcessNoiseCovariance();
         recomputeQ_=false;
-
-        withConfigSignal_ = false;
 
     }
 
@@ -583,8 +584,9 @@ namespace sotStateObservation
         }
         else
         {
-            // For modeled forces
             if(withForce_!=estimator_.getWithForcesMeasurements()) estimator_.setWithForcesMeasurements(withForce_);
+            if(withUnmodeledForces_!=estimator_.getWithUnmodeledMeasurements()) estimator_.setWithUnmodeledMeasurements(withUnmodeledForces_);
+            if(withAbsolutePose_!=estimator_.getWithAbsolutePos()) estimator_.setWithAbsolutePos(withAbsolutePose_);
         }
 
         if(contactsModel_!=contactsModel)
