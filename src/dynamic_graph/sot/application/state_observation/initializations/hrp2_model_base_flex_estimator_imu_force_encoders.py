@@ -119,6 +119,14 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	plug (self.robot.dynamicEncoders.signal('right-wrist'),self.interface.position_lh)
 	plug (self.robot.dynamicEncoders.signal('left-wrist'),self.interface.position_rh)
 
+	# Contacts velocities
+	self.leftFootVelocity = Multiply_matrix_vector ('leftFootVelocity')
+	plug(self.robot.frames['leftFootForceSensor'].jacobian,self.leftFootVelocity.sin1)
+	plug(self.robot.dynamicEncoders.velocity,self.leftFootVelocity.sin2)
+	self.rightFootVelocity = Multiply_matrix_vector ('rightFootVelocity')
+	plug(self.robot.frames['rightFootForceSensor'].jacobian,self.rightFootVelocity.sin1)
+	plug(self.robot.dynamicEncoders.velocity,self.rightFootVelocity.sin2)
+
 	# Compute contacts number
 	plug (self.interface.supportContactsNbr,self.contactNbr)
 
@@ -257,7 +265,7 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	# Pluging position
 	plug(state, self.dynamicTmp.position)
 
-	self.derivative=False
+	self.derivative=True
 
 	# Pluging velocity
 	self.robot.enableVelocityDerivator = self.derivative
