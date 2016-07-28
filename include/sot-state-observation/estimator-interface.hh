@@ -504,14 +504,14 @@ namespace sotStateObservation
             unsigned contactsModel_, elastPendulumModel_;
             stateObservation::Vector config_;
 
-            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator_indirection<stateObservation::Matrix4> > inputHomoPosition_;
-            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputPosition_;
-            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputVelocity_;
-            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > inputForces_;
-            std::vector<stateObservation::Vector6,Eigen::aligned_allocator_indirection<stateObservation::Vector6> > controlFrameForces_;
+            std::vector<stateObservation::Matrix4,Eigen::aligned_allocator<stateObservation::Matrix4> > inputHomoPosition_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator<stateObservation::Vector6> > inputPosition_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator<stateObservation::Vector6> > inputVelocity_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator<stateObservation::Vector6> > inputForces_;
+            std::vector<stateObservation::Vector6,Eigen::aligned_allocator<stateObservation::Vector6> > controlFrameForces_;
 
-            std::vector<stateObservation::Vector3,Eigen::aligned_allocator_indirection<stateObservation::Vector3> > forceSensorsTransformation_;
-            std::vector<stateObservation::Matrix3,Eigen::aligned_allocator_indirection<stateObservation::Matrix3> > forceSensorsTransfoMatrix_;
+            std::vector<stateObservation::Vector3,Eigen::aligned_allocator<stateObservation::Vector3> > forceSensorsTransformation_;
+            std::vector<stateObservation::Matrix3,Eigen::aligned_allocator<stateObservation::Matrix3> > forceSensorsTransfoMatrix_;
 
             stateObservation::Vector6 drift_;
 
@@ -530,6 +530,7 @@ namespace sotStateObservation
 
             struct Optimization
             {
+                EIGEN_MAKE_ALIGNED_OPERATOR_NEW
                 unsigned modeledContactsNbrMax;
                 stateObservation::Vector inputConstSize;
                 stateObservation::Vector measurementConstSize;

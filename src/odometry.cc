@@ -250,14 +250,14 @@ namespace sotStateObservation
         }
     }
 
-    stateObservation::Matrix4 Odometry::regulateOdometryWithRef(stateObservation::Matrix4 posEnc, stateObservation::Vector posRef, double alpha)
+    stateObservation::Matrix4 Odometry::regulateOdometryWithRef(const stateObservation::Matrix4& posEnc, const stateObservation::Vector& posRef, double alpha)
     {
         op_.posUTheta_=kine::homogeneousMatrixToVector6(posEnc);
         op_.posUTheta_.segment(2,3)=alpha*posRef.segment(2,3)+(1-alpha)*op_.posUTheta_.segment(2,3);
         return kine::vector6ToHomogeneousMatrix(op_.posUTheta_);
     }
 
-    stateObservation::Matrix4 Odometry::homogeneousMatricesAverage(stateObservation::Matrix4 m1, stateObservation::Matrix4 m2, double alpha){
+    stateObservation::Matrix4 Odometry::homogeneousMatricesAverage(const stateObservation::Matrix4& m1, const stateObservation::Matrix4& m2, double alpha){
 
         // Rotational part
         op_.aa_=AngleAxis(Matrix3(m1.block(0,0,3,3).inverse()*m2.block(0,0,3,3)));

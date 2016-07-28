@@ -105,8 +105,8 @@ namespace sotStateObservation
             /// Methods
             void getInputs(const int& time);
             void computeOdometry(const int& time);
-            stateObservation::Matrix4 regulateOdometryWithRef(stateObservation::Matrix4 posEnc, stateObservation::Vector posRef, double alpha);
-            stateObservation::Matrix4 homogeneousMatricesAverage(stateObservation::Matrix4 m1, stateObservation::Matrix4 m2, double alpha);
+            stateObservation::Matrix4 regulateOdometryWithRef(const stateObservation::Matrix4& posEnc, const stateObservation::Vector& posRef, double alpha);
+            stateObservation::Matrix4 homogeneousMatricesAverage(const stateObservation::Matrix4& m1, const stateObservation::Matrix4& m2, double alpha);
 
             /// Signals
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> leftFootPositionSIN_;
@@ -144,6 +144,7 @@ namespace sotStateObservation
 
             struct Optimization
             {
+                EIGEN_MAKE_ALIGNED_OPERATOR_NEW
                 // for regulateOdometryWithRef
                 stateObservation::Vector6 posUTheta_;
                 stateObservation::Matrix3 rot_;
@@ -158,7 +159,6 @@ namespace sotStateObservation
 
         public:
           EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
       };
 
 } // namespace sotStateObservation

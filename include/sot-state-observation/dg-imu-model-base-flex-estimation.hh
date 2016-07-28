@@ -498,6 +498,9 @@ namespace sotStateObservation
             stateObservation::Matrix Q_;
             bool recomputeQ_;
 
+        public:
+          EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
         };
 
 } // namespace sotStateObservation
