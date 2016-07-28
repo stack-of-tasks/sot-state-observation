@@ -224,7 +224,7 @@ namespace sotStateObservation
                     config_(1)=config(1);
                 }
 
-                // For unmodeled Forces
+                // For absolute pose
                 if(config_(2)!=config(2))
                 {
                     if (config(2)==1) estimator_.setWithAbsolutePos(true);

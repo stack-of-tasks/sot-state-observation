@@ -523,7 +523,7 @@ namespace sotStateObservation
             bool withAbsolutePose_;
 
             // From input reconstructor
-            std::vector<stateObservation::Vector> bias_;
+            std::vector<stateObservation::Vector,Eigen::aligned_allocator<stateObservation::Vector> > bias_;
             bool derivateInertiaFD_;
             stateObservation::Vector lastInertia_;
             double dt_;
