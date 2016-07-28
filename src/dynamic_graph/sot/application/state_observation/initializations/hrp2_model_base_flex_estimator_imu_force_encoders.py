@@ -24,16 +24,12 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
         self.setSamplingPeriod(0.005)  
         self.robot = robot
 
-	# State and measurement definition
-	self.setWithForceSensors(True)
-	self.setWithUnmodeledMeasurements(False)
-	self.setWithComBias(False)
-	self.setAbsolutePosition(False)
-
 	# Covariances
-	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(0e0,)*3+(1e-4,)*3+(0e0,)*3+(1.e-2,)*6+(2.5e-10,)*2+(1.e-8,)*3)))
-	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3+(1e-13,)*6))) 
+	self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1.e-2,)*6+(1e-15,)*2+(1.e-8,)*3)))
+	self.setMeasurementNoiseCovariance(matrixToTuple(np.diag((1e-3,)*3+(1e-6,)*3))) 
+	self.setUnmodeledForceVariance(1e-13)
 	self.setForceVariance(1e-4)
+	self.setAbsolutePosVariance(1e-4)
 
 	# Contact model definition
 	self.setContactModel(1)
@@ -47,6 +43,12 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	self.interface.setLeftHandSensorTransformation((0.,0.,1.57))
 	self.interface.setRightHandSensorTransformation((0.,0.,1.57))
         self.interface.setFDInertiaDot(True)  
+
+	# State and measurement definition
+	self.interface.setWithUnmodeledMeasurements(False)
+	self.interface.setWithModeledForces(True)
+	self.interface.setWithAbsolutePose(False)
+	self.setWithComBias(False)
 
 	# Contacts forces
 	plug (self.robot.device.forceLLEG,self.interface.force_lf)
@@ -119,6 +121,11 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 
 	# Compute contacts number
 	plug (self.interface.supportContactsNbr,self.contactNbr)
+
+	# Contacts model and config
+	plug(self.interface.contactsModel,self.contactsModel)
+	self.setWithConfigSignal(True)
+	plug(self.interface.config,self.config)
 
         # Drift
         self.drift = DriftFromMocap(name+'Drift')
