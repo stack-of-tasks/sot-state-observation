@@ -104,20 +104,12 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 #	self.robot.dynamicEncoders=self.createDynamic(self.robot.device.state,'_dynamicEncoders')
 
 	# Reconstruction of the position of the contacts in dynamicEncoders
-#	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
-#	plug(self.robot.dynamicEncoders.signal('left-ankle'),self.leftFootPos.sin1)
-#	self.leftFootPos.sin2.value=self.robot.forceSensorInLeftAnkle
-#	self.rightFootPos=Multiply_of_matrixHomo("rightFootPos")
-#	plug(self.robot.dynamicEncoders.signal('right-ankle'),self.rightFootPos.sin1)
-#	self.rightFootPos.sin2.value=self.robot.forceSensorInRightAnkle
-
-	# Contacts positions
-#	plug (self.leftFootPos.sout,self.interface.position_lf)
-#	plug (self.rightFootPos.sout,self.interface.position_rf)
-	plug (self.odometry.leftFootPositionOut,self.interface.position_lf)
-	plug (self.odometry.rightFootPositionOut,self.interface.position_rf)
-	plug (self.robot.dynamicEncoders.signal('right-wrist'),self.interface.position_lh)
-	plug (self.robot.dynamicEncoders.signal('left-wrist'),self.interface.position_rh)
+	self.leftFootPos=Multiply_of_matrixHomo("leftFootPos")
+	plug(self.robot.dynamicEncoders.signal('left-ankle'),self.leftFootPos.sin1)
+	self.leftFootPos.sin2.value=self.robot.forceSensorInLeftAnkle
+	self.rightFootPos=Multiply_of_matrixHomo("rightFootPos")
+	plug(self.robot.dynamicEncoders.signal('right-ankle'),self.rightFootPos.sin1)
+	self.rightFootPos.sin2.value=self.robot.forceSensorInRightAnkle
 
 	# Contacts velocities
 	self.leftFootVelocity = Multiply_matrix_vector ('leftFootVelocity')
@@ -126,6 +118,15 @@ class HRP2ModelBaseFlexEstimatorIMUForceEncoders(DGIMUModelBaseFlexEstimation):
 	self.rightFootVelocity = Multiply_matrix_vector ('rightFootVelocity')
 	plug(self.robot.frames['rightFootForceSensor'].jacobian,self.rightFootVelocity.sin1)
 	plug(self.robot.dynamicEncoders.velocity,self.rightFootVelocity.sin2)
+
+	# Contacts positions and velocities
+	plug (self.leftFootPos.sout,self.interface.position_lf)
+	plug (self.rightFootPos.sout,self.interface.position_rf)
+	plug (self.leftFootVelocity.sout,self.interface.velocity_lf)
+	plug (self.rightFootVelocity.sout,self.interface.velocity_rf)
+
+	plug (self.robot.dynamicEncoders.signal('right-wrist'),self.interface.position_lh)
+	plug (self.robot.dynamicEncoders.signal('left-wrist'),self.interface.position_rh)
 
 	# Compute contacts number
 	plug (self.interface.supportContactsNbr,self.contactNbr)
