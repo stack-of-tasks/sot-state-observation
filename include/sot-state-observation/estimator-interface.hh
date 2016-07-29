@@ -352,6 +352,37 @@ namespace sotStateObservation
                 }
                 return positionSupport2;
             }
+            
+            Vector& getForceSupport1(Vector& forceSupport1, const int& time)
+            {
+                if(time!=timeContacts_) computeContacts(time);
+                if(stackOfSupportContacts_.size()>=1)
+                {
+                    iterator = stackOfSupportContacts_.begin();
+                    forceSupport1=convertVector<dynamicgraph::Vector>(inputForces_[*iterator]);
+                }
+                else
+                {
+                    forceSupport1.setZero();
+                }
+                return forceSupport1;
+            }
+
+            Vector& getForceSupport2(Vector& forceSupport2, const int& time)
+            {
+                if(time!=timeContacts_) computeContacts(time);
+                if(stackOfSupportContacts_.size()>=2)
+                {
+                    iterator = stackOfSupportContacts_.begin();
+                    ++iterator;
+                    forceSupport2=convertVector<dynamicgraph::Vector>(inputForces_[*iterator]);
+                }
+                else
+                {
+                    forceSupport2.setZero();
+                }
+                return forceSupport2;
+            }            
 
 
 
@@ -468,7 +499,9 @@ namespace sotStateObservation
             dynamicgraph::SignalPtr <unsigned, int> supportContactsNbrSOUT_;
             dynamicgraph::SignalPtr <Vector, int> stackOfSupportContactsSOUT_;
             dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionSupport1SOUT_;
-            dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionSupport2SOUT_;            
+            dynamicgraph::SignalPtr <MatrixHomogeneous, int> positionSupport2SOUT_;
+            dynamicgraph::SignalPtr <Vector, int> forceSupport1SOUT_;
+            dynamicgraph::SignalPtr <Vector, int> forceSupport2SOUT_;
 
             /// Methods
             void getForces(const int& time);

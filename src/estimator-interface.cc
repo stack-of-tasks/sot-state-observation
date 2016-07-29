@@ -54,6 +54,8 @@ namespace sotStateObservation
         stackOfSupportContactsSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::stackOfSupportContacts"),
         positionSupport1SOUT_ (NULL, "EstimatorInterface("+inName+")::output(HomoMatrix)::positionSupport1"),
         positionSupport2SOUT_ (NULL, "EstimatorInterface("+inName+")::output(HomoMatrix)::positionSupport2"),
+        forceSupport1SOUT_ (NULL, "EstimatorInterface("+inName+")::output(Vector)::forceSupport1"),
+        forceSupport2SOUT_ (NULL, "EstimatorInterface("+inName+")::output(Vector)::forceSupport2"),
         positionLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_lf"),
         velocityLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::velocity_lf"),
         forceLeftFootSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lf"),
@@ -214,6 +216,12 @@ namespace sotStateObservation
 
         signalRegistration (positionSupport2SOUT_);
         positionSupport2SOUT_.setFunction(boost::bind(&EstimatorInterface::getPositionSupport2, this, _1, _2));
+
+        signalRegistration (forceSupport1SOUT_);
+        forceSupport1SOUT_.setFunction(boost::bind(&EstimatorInterface::getForceSupport1, this, _1, _2));
+
+        signalRegistration (forceSupport2SOUT_);
+        forceSupport2SOUT_.setFunction(boost::bind(&EstimatorInterface::getForceSupport2, this, _1, _2));
 
         /// Commands
 
