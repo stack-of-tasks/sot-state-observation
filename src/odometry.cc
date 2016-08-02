@@ -297,7 +297,7 @@ namespace sotStateObservation
 
         for (int i=0; i<contact::nbMax; ++i){
             if(op_.alpha[i]!=0){//i==pivotSupport_){//
-                odometryHomoPosition_[i]=regulateOdometryWithRef(odometryHomoPosition_[i], referencePosition_[i], 1);//alpha_[i]);//
+                odometryHomoPosition_[i]=regulateOdometryWithRef(odometryHomoPosition_[i], referencePosition_[i], 1);//op_.alpha[i]);//
             } else {
                 odometryHomoPosition_[i]=odometryHomoPosition_[pivotSupport_]*inputHomoPosition_[pivotSupport_].inverse()*inputHomoPosition_[i];
             }
