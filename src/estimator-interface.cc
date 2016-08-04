@@ -82,14 +82,14 @@ namespace sotStateObservation
         timeSensorsPositions_(-1), timeForces_(-1),
         timeForcesInControlFrame_(-1), timeDrift_(-1), timeContacts_(-1),
         contactsModel_(1),elastPendulumModel_(1),
-        inputForces_(contact::nbMax),
-        controlFrameForces_(contact::nbMax),
-        inputPosition_(contact::nbMax),
-        inputHomoPosition_(contact::nbMax),
-        inputVelocity_(contact::nbMax),
-        forceSensorsTransformation_(contact::nbMax),
-        forceSensorsTransfoMatrix_(contact::nbMax),
-        bias_(contact::nbMax),
+        inputForces_(hrp2::contact::nbMax),
+        controlFrameForces_(hrp2::contact::nbMax),
+        inputPosition_(hrp2::contact::nbMax),
+        inputHomoPosition_(hrp2::contact::nbMax),
+        inputVelocity_(hrp2::contact::nbMax),
+        forceSensorsTransformation_(hrp2::contact::nbMax),
+        forceSensorsTransfoMatrix_(hrp2::contact::nbMax),
+        bias_(hrp2::contact::nbMax),
         withUnmodeledMeasurements_(false), withModeledForces_(true), withAbsolutePose_(false)
     {
 
@@ -401,35 +401,35 @@ namespace sotStateObservation
         config_.resize(3); config_.setZero();
 
         // ForceThresholds
-        forceThresholds_.resize(contact::nbMax);
+        forceThresholds_.resize(hrp2::contact::nbMax);
         forceThresholds_.setOnes();
         forceThresholds_*=0.02 * 56.8*stateObservation::cst::gravityConstant; // default value
-        forceThresholds_[contact::lh]=100;//2.5;
-        forceThresholds_[contact::rh]=100;//2.5;
+        forceThresholds_[hrp2::contact::lh]=100;//2.5;
+        forceThresholds_[hrp2::contact::rh]=100;//2.5;
 
         // ForceResidus
-        forceResidus_.resize(contact::nbMax);
-        forceResidus_[contact::lf]=7.8;
-        forceResidus_[contact::lf]=7.8;
-        forceResidus_[contact::lh]=11.25;
-        forceResidus_[contact::rh]=11.25;
+        forceResidus_.resize(hrp2::contact::nbMax);
+        forceResidus_[hrp2::contact::lf]=7.8;
+        forceResidus_[hrp2::contact::lf]=7.8;
+        forceResidus_[hrp2::contact::lh]=11.25;
+        forceResidus_[hrp2::contact::rh]=11.25;
 
         // Modeled
-        modeled_.resize(contact::nbMax);
-        modeled_[contact::lf]=true;
-        modeled_[contact::rf]=true;
-        modeled_[contact::lh]=false;
-        modeled_[contact::rh]=false;
+        modeled_.resize(hrp2::contact::nbMax);
+        modeled_[hrp2::contact::lf]=true;
+        modeled_[hrp2::contact::rf]=true;
+        modeled_[hrp2::contact::lh]=false;
+        modeled_[hrp2::contact::rh]=false;
 
         // Support
-        support_.resize(contact::nbMax);
-        support_[contact::lf]=true;
-        support_[contact::rf]=true;
-        support_[contact::lh]=false;
-        support_[contact::rh]=false;
+        support_.resize(hrp2::contact::nbMax);
+        support_[hrp2::contact::lf]=true;
+        support_[hrp2::contact::rf]=true;
+        support_[hrp2::contact::lh]=false;
+        support_[hrp2::contact::rh]=false;
 
         // From input reconstructor
-        for (int i=0; i<contact::nbMax;++i)
+        for (int i=0; i<hrp2::contact::nbMax;++i)
         {
             bias_[i].resize(6); bias_[i].setZero();
             forceSensorsTransformation_[i].resize(3);
@@ -458,19 +458,19 @@ namespace sotStateObservation
         timeSensorsPositions_=time;
 
         // Positions
-        inputHomoPosition_[contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightFootSIN_.access (time)));
-        inputHomoPosition_[contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftFootSIN_.access (time)));
-        inputHomoPosition_[contact::rh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightHandSIN_.access (time)));
-        inputHomoPosition_[contact::lh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftHandSIN_.access (time)));
+        inputHomoPosition_[hrp2::contact::rf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightFootSIN_.access (time)));
+        inputHomoPosition_[hrp2::contact::lf] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftFootSIN_.access (time)));
+        inputHomoPosition_[hrp2::contact::rh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionRightHandSIN_.access (time)));
+        inputHomoPosition_[hrp2::contact::lh] = convertMatrix<stateObservation::Matrix4>(Matrix(positionLeftHandSIN_.access (time)));
 
-        for (int i=0; i<contact::nbMax;++i)
+        for (int i=0; i<hrp2::contact::nbMax;++i)
         {
             inputPosition_[i]=kine::homogeneousMatrixToVector6(inputHomoPosition_[i]);
         }
 
         // Velocities
-        inputVelocity_[contact::rf] = convertVector<stateObservation::Vector6>(velocityRightFootSIN_.access (time));
-        inputVelocity_[contact::lf] = convertVector<stateObservation::Vector6>(velocityLeftFootSIN_.access (time));
+        inputVelocity_[hrp2::contact::rf] = convertVector<stateObservation::Vector6>(velocityRightFootSIN_.access (time));
+        inputVelocity_[hrp2::contact::lf] = convertVector<stateObservation::Vector6>(velocityLeftFootSIN_.access (time));
 
     }
 
@@ -478,10 +478,10 @@ namespace sotStateObservation
     {
         timeForces_=time;
 
-        inputForces_[contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
-        inputForces_[contact::lf] = convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
-        inputForces_[contact::rh] = convertVector<stateObservation::Vector>(forceRightHandSIN_.access (time));
-        inputForces_[contact::lh] = convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
+        inputForces_[hrp2::contact::rf] = convertVector<stateObservation::Vector>(forceRightFootSIN_.access (time));
+        inputForces_[hrp2::contact::lf] = convertVector<stateObservation::Vector>(forceLeftFootSIN_.access (time));
+        inputForces_[hrp2::contact::rh] = convertVector<stateObservation::Vector>(forceRightHandSIN_.access (time));
+        inputForces_[hrp2::contact::lh] = convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
     }
 
     void EstimatorInterface::getForcesInControlFrame(const int& time)
@@ -491,7 +491,7 @@ namespace sotStateObservation
         if(time!=timeForces_) getForces(time);
         if(time!=timeSensorsPositions_) getSensorsKineInControlFrame(time);
 
-        for (int i=0; i<contact::nbMax;++i)
+        for (int i=0; i<hrp2::contact::nbMax;++i)
         {          
             // force sensor position
             op_.Rc=inputHomoPosition_[i].block(0,0,3,3);
@@ -532,7 +532,7 @@ namespace sotStateObservation
         timeStackOfContacts_=time;
         if(time!=timeForces_) getForces(time);
 
-        for (int i=0; i<contact::nbMax;++i)
+        for (int i=0; i<hrp2::contact::nbMax;++i)
         {
             op_.found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
             op_.contactForce=inputForces_[i].segment(0,3).norm()-forceResidus_[i];

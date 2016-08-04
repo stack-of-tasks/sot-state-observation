@@ -30,6 +30,7 @@
 #include <sot/core/vector-roll-pitch-yaw.hh>
 
 #include <state-observation/tools/miscellaneous-algorithms.hpp>
+#include <state-observation/tools/hrp2.hpp>
 #include <sot-state-observation/tools/definitions.hh>
 
 #include <Eigen/StdVector>
@@ -227,7 +228,7 @@ namespace sotStateObservation
 
             void setLeftHandSensorTransformation(const dynamicgraph::Vector & v)
             {
-                forceSensorsTransformation_[contact::lh]=convertVector<stateObservation::Vector>(v);
+                forceSensorsTransformation_[hrp2::contact::lh]=convertVector<stateObservation::Vector>(v);
                 
                 stateObservation::Matrix3 Rr, Rp, Ry;
                 Rr << 1, 0,         0,
@@ -241,17 +242,17 @@ namespace sotStateObservation
                 Ry << cos(v(2)), -sin(v(2)), 0,
                       sin(v(2)), cos(v(2)),  0,
                       0,         0,          1;
-                forceSensorsTransfoMatrix_[contact::lh]=Ry*Rp*Rr;
+                forceSensorsTransfoMatrix_[hrp2::contact::lh]=Ry*Rp*Rr;
             }
 
             dynamicgraph::Vector getLeftHandSensorTransformation() const
             {
-                return convertVector<dynamicgraph::Vector>(forceSensorsTransformation_[contact::lh]);
+                return convertVector<dynamicgraph::Vector>(forceSensorsTransformation_[hrp2::contact::lh]);
             }
 
             void setRightHandSensorTransformation(const dynamicgraph::Vector & v)
             {
-                forceSensorsTransformation_[contact::rh]=convertVector<stateObservation::Vector>(v);
+                forceSensorsTransformation_[hrp2::contact::rh]=convertVector<stateObservation::Vector>(v);
 
                 stateObservation::Matrix3 Rr, Rp, Ry;
                 Rr << 1, 0,         0,
@@ -265,12 +266,12 @@ namespace sotStateObservation
                 Ry << std::cos(v(2)), -std::sin(v(2)), 0,
                       std::sin(v(2)), std::cos(v(2)),  0,
                       0,         0,          1;
-                forceSensorsTransfoMatrix_[contact::rh]=Ry*Rp*Rr;
+                forceSensorsTransfoMatrix_[hrp2::contact::rh]=Ry*Rp*Rr;
             }
 
             dynamicgraph::Vector getRightHandSensorTransformation() const
             {
-                return convertVector<dynamicgraph::Vector>(forceSensorsTransformation_[contact::rh]);
+                return convertVector<dynamicgraph::Vector>(forceSensorsTransformation_[hrp2::contact::rh]);
             }
 
             void setWithUnmodeledMeasurements(const bool & b)

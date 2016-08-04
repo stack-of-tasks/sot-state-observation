@@ -33,6 +33,7 @@
 
 #include <sot/core/matrix-homogeneous.hh>
 #include <state-observation/tools/miscellaneous-algorithms.hpp>
+#include <state-observation/tools/hrp2.hpp>
 #include <sot-state-observation/tools/definitions.hh>
 
 #include <Eigen/StdVector>
