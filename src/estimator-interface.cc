@@ -523,7 +523,7 @@ namespace sotStateObservation
             // Express forces in the local frame
             controlFrameForces_[i]
                     << op_.Rc*controlFrameForces_[i].head(3),
-                       op_.Rc*controlFrameForces_[i].tail(3)+kine::skewSymmetric(op_.pc)*controlFrameForces_[i].head(3);
+                       op_.Rc*controlFrameForces_[i].tail(3);
         }
     }
 
