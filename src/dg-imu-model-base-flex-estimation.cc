@@ -447,6 +447,41 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,double>
                     (*this, & DGIMUModelBaseFlexEstimation::getRobotMass ,docstring));
 
+        addCommand(std::string("setForcesLimit"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
+                    (*this, & DGIMUModelBaseFlexEstimation::setForcesLimit ,docstring));
+
+        addCommand(std::string("getForcesLimit"),
+                   new ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
+                    (*this, & DGIMUModelBaseFlexEstimation::getForcesLimit ,docstring));
+
+        addCommand(std::string("setTorquesLimit"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
+                    (*this, & DGIMUModelBaseFlexEstimation::setTorquesLimit ,docstring));
+
+        addCommand(std::string("getTorquesLimit"),
+                   new ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
+                    (*this, & DGIMUModelBaseFlexEstimation::getTorquesLimit ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets if there is a saturation or not in forces and torques. "
+                "\n";
+
+        addCommand(std::string("setLimitOn"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,bool >
+                    (*this, & DGIMUModelBaseFlexEstimation::setLimitOn,docstring));
+
+        docstring  =
+                "\n"
+                "    Gets if there is a saturation or not in forces and torques. "
+                "\n";
+
+        addCommand(std::string("getLimitOn"),
+                   new ::dynamicgraph::command::Getter <DGIMUModelBaseFlexEstimation,bool>
+                    (*this, & DGIMUModelBaseFlexEstimation::getLimitOn ,docstring));
+
+
         stateObservation::ObserverBase::InputVector input;
         input.resize(inputSizeBase);
         input <<    0.0135672,

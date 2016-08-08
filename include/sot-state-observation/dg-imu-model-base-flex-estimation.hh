@@ -233,6 +233,36 @@ namespace sotStateObservation
                 }
             }
 
+            void setForcesLimit (const dynamicgraph::Vector & v)
+            {
+                estimator_.setForcesLimit(convertVector<stateObservation::Vector>(v));
+            }
+
+            dynamicgraph::Vector getForcesLimit() const
+            {
+                return convertVector<dynamicgraph::Vector>(estimator_.getForcesLimit());
+            }
+
+            void setTorquesLimit (const dynamicgraph::Vector & v)
+            {
+                estimator_.setTorquesLimit(convertVector<stateObservation::Vector>(v));
+            }
+
+            dynamicgraph::Vector getTorquesLimit() const
+            {
+                return convertVector<dynamicgraph::Vector>(estimator_.getTorquesLimit());
+            }
+
+            void setLimitOn(const bool& b)
+            {
+                estimator_.setLimitOn(b);
+            }
+
+            virtual bool getLimitOn() const
+            {
+                return estimator_.getLimitOn();
+            }
+
             /**
             \name Parameters
             @{
