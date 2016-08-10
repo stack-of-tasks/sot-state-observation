@@ -14,13 +14,17 @@ from dynamic_graph.sot.core import Multiply_of_matrixHomo, Inverse_of_matrixHomo
 
 from dynamic_graph.ros import RosExport
 
+from dynamic_graph.sot.tools import MocapDataFilter
+
 class HRP2MocapToSOT:
   def __init__(self,robot):
     self.robot = robot
     self.ros = RosExport('rosExportMocap')
-    #self.ros.add('matrixHomoStamped', "chest", "/evart/hrp2_head_sf/PO")
-    self.ros.add('matrixHomoStamped', "chest", "/evart/helmet/helmet")
-    self.mocapSignal =  self.ros.signal('chest')
+    self.ros.add('matrixHomoStamped', "chest", "/evart/hrp2_head_sf/hrp2_head_sf")
+
+    self.mocapFilter = MocapDataFilter('MocapDataFilter')
+    plug(self.ros.signal('chest'),self.mocapFilter.sin)
+    self.mocapSignal =  self.mocapFilter.sout
   
   def initialize(self):
     
