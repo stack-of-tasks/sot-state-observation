@@ -506,7 +506,7 @@ namespace sotStateObservation
 
             /// Methods
             void getForces(const int& time);
-            void getForcesInControlFrame(const int& time);
+            void transformForcesFrames(const int& time);
             void getSensorsKineInControlFrame(const int& time);
             void getDrift(const int& time);
             void computeStackOfContacts(const int& time);
@@ -521,7 +521,7 @@ namespace sotStateObservation
 
             /// Parameters
             double timeStackOfContacts_, timeInput_, timeMeasurement_, timeSensorsPositions_,
-                   timeForces_, timeForcesInControlFrame_, timeDrift_, timeContacts_;
+                   timeForces_, timeTransformForcesFrames_, timeDrift_, timeContacts_;
 
             stateObservation::Vector forceThresholds_;
             stateObservation::Vector forceResidus_;

@@ -80,7 +80,7 @@ namespace sotStateObservation
         driftSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::drift"),
         timeStackOfContacts_(-1), timeInput_(-1), timeMeasurement_(-1),
         timeSensorsPositions_(-1), timeForces_(-1),
-        timeForcesInControlFrame_(-1), timeDrift_(-1), timeContacts_(-1),
+        timeTransformForcesFrames_(-1), timeDrift_(-1), timeContacts_(-1),
         contactsModel_(1),elastPendulumModel_(1),
         inputForces_(hrp2::contact::nbMax),
         controlFrameForces_(hrp2::contact::nbMax),
@@ -484,9 +484,9 @@ namespace sotStateObservation
         inputForces_[hrp2::contact::lh] = convertVector<stateObservation::Vector>(forceLeftHandSIN_.access (time));
     }
 
-    void EstimatorInterface::getForcesInControlFrame(const int& time)
+    void EstimatorInterface::transformForcesFrames(const int& time)
     {
-        timeForcesInControlFrame_=time;
+        timeTransformForcesFrames_=time;
 
         if(time!=timeForces_) getForces(time);
         if(time!=timeSensorsPositions_) getSensorsKineInControlFrame(time);
@@ -519,11 +519,6 @@ namespace sotStateObservation
                 // Substract the weight action from input forces
                 controlFrameForces_[i]-=op_.forceResidusVector;
             }
-
-            // Express forces in the local frame
-            controlFrameForces_[i]
-                    << op_.Rc*controlFrameForces_[i].head(3),
-                       op_.Rc*controlFrameForces_[i].tail(3);
         }
     }
 
@@ -690,7 +685,7 @@ namespace sotStateObservation
    void EstimatorInterface::computeMeasurement(const int& time)
    {
        timeMeasurement_=time;
-       if(time!=timeForcesInControlFrame_) getForcesInControlFrame(time);
+       if(time!=timeTransformForcesFrames_) transformForcesFrames(time);
        if(time!=timeSensorsPositions_) getSensorsKineInControlFrame(time);
        if(time!=timeContacts_) computeContacts(time);
        if(time!=timeDrift_) getDrift(time);
