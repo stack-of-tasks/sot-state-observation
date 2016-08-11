@@ -13,7 +13,8 @@ from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 from dynamic_graph.sot.core.matrix_util import matrixToTuple
 from dynamic_graph.sot.application.state_observation import Calibrate
 
-from dynamic_graph.sot.application.state_observation.initializations.hrp2_mocap_to_sot import HRP2MocapToSOT 
+from dynamic_graph.ros import RosExport
+from dynamic_graph.sot.tools import MocapDataFilter
 
 
 class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
@@ -83,13 +84,20 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 	plug(self.interface.contactsModel,self.contactsModel)
 	self.setWithConfigSignal(True)
 	plug(self.interface.config,self.config)
+
+	# Mocap signal
+    	self.ros = RosExport('rosExportMocap')
+    	self.ros.add('matrixHomoStamped', "chest", "/evart/hrp2_head_sf/hrp2_head_sf")
+		# Filtering
+    	self.mocapFilter = MocapDataFilter('MocapDataFilter')
+    	plug(self.ros.signal('chest),self.mocapFilter.sin)
+    	self.mocapSignal =  self.mocapFilter.sout
 	
         # Drift
-	self.mocap = HRP2MocapToSOT(self.robot)
         self.drift = DriftFromMocap(name+'Drift')
-	self.mocap.initialize()
-	plug(self.mocap.robotPositionInMocap.sout,self.drift.limbGlobal)
-	plug(self.mocap.robotPositionISot.sout,self.drift.limbLocal)
+	plug(self.mocapSignal,self.drift.limbGlobal)
+	plug(self.robot.dynamic.chest,self.drift.limbLocal)
+	self.drift.init()
 
 	# Measurement reconstruction
 	plug(self.robot.device.accelerometer,self.interface.accelerometer)
