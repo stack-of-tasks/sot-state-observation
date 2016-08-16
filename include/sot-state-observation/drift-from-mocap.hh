@@ -60,6 +60,12 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeDriftVector
               (::dynamicgraph::Vector & drift, const int& inTime);
 
+            ::dynamicgraph::sot::MatrixHomogeneous& computeDriftInv
+              (::dynamicgraph::sot::MatrixHomogeneous & driftInv, const int& inTime);
+
+            ::dynamicgraph::Vector& computeDriftInvVector
+              (::dynamicgraph::Vector & driftInv, const int& inTime);
+
             /**
               \brief limb to global frame position
             */
@@ -75,6 +81,10 @@ namespace sotStateObservation
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::sot::MatrixHomogeneous, int> driftSOUT;
 
             dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> driftVectorSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::sot::MatrixHomogeneous, int> driftInvSOUT;
+
+            dynamicgraph::SignalTimeDependent < ::dynamicgraph::Vector, int> driftInvVectorSOUT;
 
             dynamicgraph::sot::MatrixHomogeneous init_;
 
