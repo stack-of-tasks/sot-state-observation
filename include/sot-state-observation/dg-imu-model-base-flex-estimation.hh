@@ -38,8 +38,6 @@ namespace sotStateObservation
 
             ~DGIMUModelBaseFlexEstimation();
 
-
-
             /// Each entity should provide the name of the class it belongs to
             virtual const std::string& getClassName (void) const
             {
