@@ -25,6 +25,7 @@ namespace sotStateObservation
         configSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(Vector)::config"),
         stateSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::state"),
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
+        momentaSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momenta"),
         flexPositionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPosition"),
         flexVelocitySOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocity"),
         flexPoseThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPoseThetaU"),
@@ -57,6 +58,7 @@ namespace sotStateObservation
 
         signalRegistration (stateSOUT);
         signalRegistration (flexibilitySOUT);
+        signalRegistration (momentaSOUT);
         signalRegistration (flexPositionSOUT);
         signalRegistration (flexVelocitySOUT);
         signalRegistration (flexThetaUSOUT);
@@ -89,6 +91,8 @@ namespace sotStateObservation
 
         flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
 				    this, _1, _2));
+        momentaSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeMomenta,
+                                    this, _1, _2));
 
         flexPositionSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexPosition,
 				    this, _1, _2));
@@ -646,6 +650,16 @@ namespace sotStateObservation
         state = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
 
         return state;
+    }
+
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeMomenta
+                  (dynamicgraph::Vector & momenta, const int& inTime)
+    {
+        stateSOUT(inTime);
+
+        momenta = convertVector<dynamicgraph::Vector>(estimator_.getMomenta());
+
+        return momenta;
     }
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeFlexibility
