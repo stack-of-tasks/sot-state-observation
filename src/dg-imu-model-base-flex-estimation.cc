@@ -165,7 +165,7 @@ namespace sotStateObservation
         stateSizeString << stateSize;
 
         std::ostringstream measurementSizeString;
-        stateSizeString << measurementSize;
+        stateSizeString << measurementSizeBase;
 
         std::ostringstream inputSizeString;
         inputSizeString << inputSizeBase;
@@ -491,73 +491,18 @@ namespace sotStateObservation
                     (*this, & DGIMUModelBaseFlexEstimation::getLimitOn ,docstring));
 
 
-        stateObservation::ObserverBase::InputVector input;
-        input.resize(inputSizeBase);
-        input <<    0.0135672,
-                    0.001536,
-                    0.80771,
-                    -2.50425e-06,
-                    -1.03787e-08,
-                    5.4317e-08,
-                    -2.50434e-06,
-                    -1.03944e-08,
-                    5.45321e-08,
-                    48.1348,
-                    46.9498,
-                    1.76068,
-                    -0.0863332,
-                    -0.59487,
-                    -0.0402246,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    -0.098,
-                    -1.21619e-10,
-                    1.1174,
-                    3.06752e-22,
-                    -1.06094e-20,
-                    7.75345e-22,
-                    -2.84609e-06,
-                    -1.18496e-08,
-                    -4.52691e-18,
-                    2.95535e-20,
-                    -1.0346e-18,
-                    7.58731e-20,
-                    -0.000284609,
-                    -1.18496e-06,
-                    -4.52691e-16;
-//                    0.00949046,
-//                    0.095,
-//                    1.19005e-06,
-//                    0,
-//                    0,
-//                    0,
-//                    0.00949605,
-//                    -0.095,
-//                    1.19343e-06,
-//                    0,
-//                    0,
-//                    0;
+        stateObservation::ObserverBase::InputVector input(inputSizeBase); input.setZero();
         inputSIN.setConstant(convertVector<dynamicgraph::Vector>(input));
 
-        stateObservation::Vector measure(measurementSize);
+        stateObservation::Vector measure(measurementSizeBase); measure.setZero();
         measurementSIN.setConstant(convertVector<dynamicgraph::Vector>(measure));
+
+        contactsNbrSIN.setConstant(0);
 
         withComBias_=false;
         estimator_.setWithComBias(withComBias_);
 
         bias_.resize(2); bias_.setZero();
-
-        contactsNbrSIN.setConstant(0);
 
         // Contacts model
         contactsModelSIN.setConstant(1);
@@ -573,11 +518,7 @@ namespace sotStateObservation
         config_(1)=1;
         configSIN.setConstant(config_);
 
-        currentTime_=-1;
-
-        dynamicgraph::Vector state(estimator_.getStateSize()+estimator_.getWithComBias()*2);
-        state=computeState(state,0);
-
+        currentTime_=0;
         Q_=estimator_.getProcessNoiseCovariance();
         recomputeQ_=false;
 
@@ -586,7 +527,6 @@ namespace sotStateObservation
     DGIMUModelBaseFlexEstimation::~DGIMUModelBaseFlexEstimation()
     {
     }
-
 
 
     dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeState

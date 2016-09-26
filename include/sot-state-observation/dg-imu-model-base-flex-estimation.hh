@@ -488,7 +488,7 @@ namespace sotStateObservation
 
             ///Sizes of the states for the state, the measurement, and the input vector
             unsigned stateSize;
-            static const unsigned measurementSize=12;
+            static const unsigned measurementSizeBase=6;
             static const unsigned inputSizeBase=42;
             unsigned inputSize_;
             unsigned contactNumber_;
