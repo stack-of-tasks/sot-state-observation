@@ -693,7 +693,7 @@ namespace sotStateObservation
        const stateObservation::Vector& accelerometer=convertVector<stateObservation::Vector>(accelerometerSIN.access(time));
        const stateObservation::Vector& gyrometer=convertVector<stateObservation::Vector>(gyrometerSIN.access(time));
 
-       measurement_.resize(18+modeledContactsNbr_*6); measurement_.setZero();
+       measurement_.resize(6+withUnmodeledMeasurements_*6+withModeledForces_*modeledContactsNbr_*6+withAbsolutePose_*6); measurement_.setZero();
        measurement_.segment(0,3)=accelerometer;
        measurement_.segment(3,3)=gyrometer;
 
@@ -703,7 +703,7 @@ namespace sotStateObservation
        {
            for (iterator = stackOfUnmodeledContacts_.begin(); iterator != stackOfUnmodeledContacts_.end(); ++iterator)
            {
-               measurement_.segment(6,6)+=controlFrameForces_[*iterator];
+               measurement_.segment(op_.i,6)+=controlFrameForces_[*iterator];
            }
            op_.i+=6;
        }
