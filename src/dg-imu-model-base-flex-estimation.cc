@@ -515,7 +515,6 @@ namespace sotStateObservation
         withUnmodeledForces_ = false;
         withAbsolutePose_ = false;
         config_.resize(3); config_.setZero();
-        config_(1)=1;
         configSIN.setConstant(config_);
 
         currentTime_=0;
