@@ -280,6 +280,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeMomentaFromForces
                           (dynamicgraph::Vector & momenta, const int& inTime);
 
+            ::dynamicgraph::Vector& computeMomentaFromKinematics
+                          (dynamicgraph::Vector & momenta, const int& inTime);
+
             ::dynamicgraph::Vector& computeFlexibility
                           (dynamicgraph::Vector & flexibility, const int& inTime);
 
@@ -405,6 +408,7 @@ namespace sotStateObservation
             \brief Estimation of the momenta
             */
             dynamicgraph::Signal < ::dynamicgraph::Vector, int> momentaFromForcesSOUT;
+            dynamicgraph::Signal < ::dynamicgraph::Vector, int> momentaFromKinematicsSOUT;
 
             /**
             \brief Different parts of the vector of the flexibility estimation vector

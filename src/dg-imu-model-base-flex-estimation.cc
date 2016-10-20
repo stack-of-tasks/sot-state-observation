@@ -26,6 +26,7 @@ namespace sotStateObservation
         stateSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::state"),
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
         momentaFromForcesSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momentaFromForces"),
+        momentaFromKinematicsSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momentaFromKinematics"),
         flexPositionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPosition"),
         flexVelocitySOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocity"),
         flexPoseThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPoseThetaU"),
@@ -59,6 +60,7 @@ namespace sotStateObservation
         signalRegistration (stateSOUT);
         signalRegistration (flexibilitySOUT);
         signalRegistration (momentaFromForcesSOUT);
+        signalRegistration (momentaFromKinematicsSOUT);
         signalRegistration (flexPositionSOUT);
         signalRegistration (flexVelocitySOUT);
         signalRegistration (flexThetaUSOUT);
@@ -92,6 +94,9 @@ namespace sotStateObservation
         flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
 				    this, _1, _2));
         momentaFromForcesSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeMomentaFromForces,
+                                    this, _1, _2));
+
+        momentaFromKinematicsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeMomentaFromKinematics,
                                     this, _1, _2));
 
         flexPositionSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexPosition,
@@ -599,6 +604,16 @@ namespace sotStateObservation
         stateSOUT(inTime);
 
         momenta = convertVector<dynamicgraph::Vector>(estimator_.getMomentaFromForces());
+
+        return momenta;
+    }
+
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeMomentaFromKinematics
+                  (dynamicgraph::Vector & momenta, const int& inTime)
+    {
+        stateSOUT(inTime);
+
+        momenta = convertVector<dynamicgraph::Vector>(estimator_.getMomentaFromKinematics());
 
         return momenta;
     }
