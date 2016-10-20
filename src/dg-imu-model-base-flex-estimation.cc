@@ -25,7 +25,7 @@ namespace sotStateObservation
         configSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(Vector)::config"),
         stateSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::state"),
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
-        momentaSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momenta"),
+        momentaFromForcesSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momentaFromForces"),
         flexPositionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPosition"),
         flexVelocitySOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocity"),
         flexPoseThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPoseThetaU"),
@@ -58,7 +58,7 @@ namespace sotStateObservation
 
         signalRegistration (stateSOUT);
         signalRegistration (flexibilitySOUT);
-        signalRegistration (momentaSOUT);
+        signalRegistration (momentaFromForcesSOUT);
         signalRegistration (flexPositionSOUT);
         signalRegistration (flexVelocitySOUT);
         signalRegistration (flexThetaUSOUT);
@@ -91,7 +91,7 @@ namespace sotStateObservation
 
         flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
 				    this, _1, _2));
-        momentaSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeMomenta,
+        momentaFromForcesSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeMomentaFromForces,
                                     this, _1, _2));
 
         flexPositionSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexPosition,
@@ -542,6 +542,8 @@ namespace sotStateObservation
         const unsigned & contactNb = contactsNbrSIN.access(inTime);
         const unsigned & contactsModel = contactsModelSIN.access(inTime);
 
+        std::cout << inTime << std::endl;
+
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
 
@@ -591,12 +593,12 @@ namespace sotStateObservation
         return state;
     }
 
-    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeMomenta
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeMomentaFromForces
                   (dynamicgraph::Vector & momenta, const int& inTime)
     {
         stateSOUT(inTime);
 
-        momenta = convertVector<dynamicgraph::Vector>(estimator_.getMomenta());
+        momenta = convertVector<dynamicgraph::Vector>(estimator_.getMomentaFromForces());
 
         return momenta;
     }
