@@ -585,7 +585,6 @@ namespace sotStateObservation
                                           const stateObservation::Vector& comVector,
                                           stateObservation::Vector& inert)
     {
-
         double m=inertia(0,0); //<=== donne 56.8;
         //std::cout << "Masse=" << m << std::endl;
 
@@ -615,7 +614,6 @@ namespace sotStateObservation
         inert(3) -= m*(com(0))*(com(1));
         inert(4) -= m*(com(0))*(com(2));
         inert(5) -= m*(com(1))*(com(2));
-
     }
 
    void EstimatorInterface::computeInput(const int& time)

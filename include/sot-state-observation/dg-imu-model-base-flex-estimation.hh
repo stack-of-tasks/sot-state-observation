@@ -141,7 +141,6 @@ namespace sotStateObservation
                 estimator_.setKtv(convertMatrix<stateObservation::Matrix3>(m));
             }
 
-
             void setWithForce(const bool & b)
             {
                 withForce_=b;
@@ -283,6 +282,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeMomentaFromKinematics
                           (dynamicgraph::Vector & momenta, const int& inTime);
 
+            ::dynamicgraph::Vector& computeAccelerations
+                          (dynamicgraph::Vector & accelerations, const int& inTime);
+
             ::dynamicgraph::Vector& computeFlexibility
                           (dynamicgraph::Vector & flexibility, const int& inTime);
 
@@ -409,6 +411,11 @@ namespace sotStateObservation
             */
             dynamicgraph::Signal < ::dynamicgraph::Vector, int> momentaFromForcesSOUT;
             dynamicgraph::Signal < ::dynamicgraph::Vector, int> momentaFromKinematicsSOUT;
+
+            /**
+            \brief get Accelerations
+            */
+            dynamicgraph::Signal < ::dynamicgraph::Vector, int> accelerationsSOUT;
 
             /**
             \brief Different parts of the vector of the flexibility estimation vector
