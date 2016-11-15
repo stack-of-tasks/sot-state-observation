@@ -33,6 +33,7 @@ namespace sotStateObservation
         flexPoseThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPoseThetaU"),
         comBiasSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::comBias"),
         flexOmegaSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexOmega"),
+        flexOrientationSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(matrix)::flexOrientation"),
         flexTransformationMatrixSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(homogeneousMatrix)::flexTransformationMatrix"),
         flexThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexThetaU"),
         flexVelocityVectorSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocityVector"),
@@ -67,6 +68,7 @@ namespace sotStateObservation
         signalRegistration (flexVelocitySOUT);
         signalRegistration (flexThetaUSOUT);
         signalRegistration (flexOmegaSOUT);
+        signalRegistration (flexOrientationSOUT);
         signalRegistration (flexTransformationMatrixSOUT);
         signalRegistration (flexPoseThetaUSOUT);
         signalRegistration (flexVelocityVectorSOUT);
@@ -115,6 +117,9 @@ namespace sotStateObservation
 
         flexOmegaSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexOmega,
 				    this, _1, _2));
+
+        flexOrientationSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexOrientation,
+                                    this, _1, _2));
 
         flexTransformationMatrixSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexTransformationMatrix,
 				    this, _1, _2));
@@ -552,8 +557,6 @@ namespace sotStateObservation
         const unsigned & contactNb = contactsNbrSIN.access(inTime);
         const unsigned & contactsModel = contactsModelSIN.access(inTime);
 
-        std::cout << inTime << std::endl;
-
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
 
@@ -688,6 +691,17 @@ namespace sotStateObservation
                 (estimator_.getFlexibilityVector().segment(IMUElasticLocalFrameDynamicalSystem::state::angVel,3));
 
         return flexibilityOmega;
+    }
+
+    ::dynamicgraph::Matrix& DGIMUModelBaseFlexEstimation::computeFlexOrientation
+                        (::dynamicgraph::Matrix & flexibilityOrientation, const int& inTime)
+    {
+        stateSOUT(inTime);
+
+        flexibilityOrientation = convertMatrix<dynamicgraph::Matrix>
+                                 (kine::rotationVectorToRotationMatrix(estimator_.getFlexibilityVector().segment(IMUElasticLocalFrameDynamicalSystem::state::ori,3)));
+
+        return flexibilityOrientation;
     }
 
     ::dynamicgraph::sot::MatrixHomogeneous& DGIMUModelBaseFlexEstimation::computeFlexTransformationMatrix

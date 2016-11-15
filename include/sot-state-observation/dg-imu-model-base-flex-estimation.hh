@@ -300,6 +300,9 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeFlexOmega
                         (::dynamicgraph::Vector & flexibilityOmega, const int& inTime);
 
+            ::dynamicgraph::Matrix& computeFlexOrientation
+                                (::dynamicgraph::Matrix & flexibilityOrientation, const int& inTime);
+
             ::dynamicgraph::sot::MatrixHomogeneous& computeFlexTransformationMatrix
                         (::dynamicgraph::sot::MatrixHomogeneous & flexibilityTransformationMatrix,
                                                             const int& inTime);
@@ -431,6 +434,9 @@ namespace sotStateObservation
 
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> flexOmegaSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Matrix, int> flexOrientationSOUT;
 
             /**
             \brief Transformed parts of the flexibility state vector
