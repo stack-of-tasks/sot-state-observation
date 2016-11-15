@@ -87,7 +87,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
 	# Mocap signal
     	self.ros = RosExport('rosExportMocap')
-    	self.ros.add('matrixHomoStamped', "chest", "/evart/hrp2_head_sf/hrp2_head_sf")
+    	self.ros.add('matrixHomoStamped', "chest", "/evart/hrp2_14_head/hrp2_14_head")
 		# Filtering
     	self.mocapFilter = MocapDataFilter('MocapDataFilter')
     	plug(self.ros.signal('chest'),self.mocapFilter.sin)
