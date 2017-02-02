@@ -502,8 +502,8 @@ namespace sotStateObservation
             controlFrameForces_[i] << forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(0,3),
                                       forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(3,3);
 
-            // For unmodeled contacts
-            if(!modeled_[i])
+            // For hands
+            if(i == hrp2::contact::lh | i==hrp2::contact::rh)
             {
                 // Computation in the local frame of the weight action of theend-effector on the sensor
                 op_.weight << 0,
@@ -630,16 +630,33 @@ namespace sotStateObservation
        const stateObservation::Vector& dangMomentum=convertVector<stateObservation::Vector>(dangMomentumSIN.access(time));
        const stateObservation::Vector& imuVector=convertVector<stateObservation::Vector>(imuVectorSIN.access(time));
 
-       op_.contactKine.resize(modeledContactsNbr_*12);
-       op_.bias.resize(modeledContactsNbr_*12); op_.bias.setZero();
-       op_.i=0;
+       const stateObservation::Vector& rightStringPosition=convertVector<stateObservation::Vector>(positionRightStringSIN_.access(time));
+       const stateObservation::Vector& leftStringPosition=convertVector<stateObservation::Vector>(positionLeftStringSIN_.access(time));
 
-       for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
+
+       if(contactsModel_==1)
        {
-           op_.contactKine.segment(op_.i*12,6)=inputPosition_[*iterator];
-           op_.contactKine.segment(op_.i*12+6,6)=inputVelocity_[*iterator];
-           op_.bias.segment(op_.i*12,6)=bias_[*iterator];
-           ++op_.i;
+           op_.contactKine.resize(modeledContactsNbr_*12);
+           op_.bias.resize(modeledContactsNbr_*12); op_.bias.setZero();
+           op_.i=0;
+
+           for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
+           {
+               op_.contactKine.segment(op_.i*12,6)=inputPosition_[*iterator];
+               op_.contactKine.segment(op_.i*12+6,6)=inputVelocity_[*iterator];
+               op_.bias.segment(op_.i*12,6)=bias_[*iterator];
+               ++op_.i;
+           }
+       }
+       else
+       {
+           op_.contactKine.segment(0*12,6)=leftStringPosition;
+           op_.contactKine.segment(0*12+6,6).setZero();
+           op_.bias.segment(0*12,6).setZero();
+
+           op_.contactKine.segment(1*12,6)=rightStringPosition;
+           op_.contactKine.segment(1*12+6,6).setZero();
+           op_.bias.segment(1*12,6).setZero();
        }
 
        // Inertia and derivative

@@ -58,9 +58,6 @@ namespace sotStateObservation
         inputSOUT.addDependency(  contactsPositionSIN );
         inputSOUT.addDependency(  inputSOUT);
 
-
-
-
         // Input signal
         signalRegistration (comVectorSIN);
         dynamicgraph::Vector comVector(3);
