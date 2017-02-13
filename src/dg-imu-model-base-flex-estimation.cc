@@ -225,6 +225,17 @@ namespace sotStateObservation
 	     ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
                 (*this, &DGIMUModelBaseFlexEstimation::setFlexibilityGuess, docstring));
 
+        //setStateGuess
+        docstring =
+                "\n"
+                "    Set the anchorage position for the elastic strings model \n"
+                "\n";
+
+        addCommand(std::string("setPe"),
+             new
+             ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
+                (*this, &DGIMUModelBaseFlexEstimation::setPe, docstring));
+
          //setStateGuessCovariance
         docstring =
                 "\n"

@@ -650,6 +650,9 @@ namespace sotStateObservation
        }
        else
        {
+           op_.contactKine.resize(modeledContactsNbr_*12);
+           op_.bias.resize(modeledContactsNbr_*12); op_.bias.setZero();
+
            op_.contactKine.segment(0*12,6)=leftStringPosition;
            op_.contactKine.segment(0*12+6,6).setZero();
            op_.bias.segment(0*12,6).setZero();

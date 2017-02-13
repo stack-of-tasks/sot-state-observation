@@ -90,6 +90,11 @@ namespace sotStateObservation
                 estimator_.setContactModel(nb);
             }
 
+            void setPe(const dynamicgraph::Vector & pe)
+            {
+                estimator_.setPe(convertVector<stateObservation::Vector>(pe));
+            }
+
             void setProcessNoiseCovariance(const ::dynamicgraph::Matrix & q)
             {
                 Q_=convertMatrix<stateObservation::Matrix>(q);
