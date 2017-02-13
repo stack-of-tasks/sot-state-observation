@@ -15,6 +15,23 @@ from dynamic_graph.sot.application.state_observation import Calibrate
 
 from dynamic_graph.ros import RosExport
 
+def initDevice(robot):
+	robot.device.state.value=robot.halfSitting
+	robot.device.velocity.value=(0.,)*36
+	robot.device.forceLLEG.value=(1.8349814919184242, -7.4412430930486302, 256.06853454222494, -0.035428813912447302, 2.0798475785647286, 0.14169701504511384)
+	robot.device.forceRLEG.value=(2.4303733340459406, 11.156361786170869, 285.59013529212666, -0.69957871247984049, 2.0516111892090887, -0.22872430884228223)
+	robot.device.accelerometer.value=(0.12527866711822, 0.089756740219665537, 9.8059788372472152)
+	robot.device.gyrometer.value=(-0.0029326257213877862, 0.007655425240526083, -8.001571126249214e-05)
+	robot.device.forceLARM.value=(-2.04071, 3.25524, -5.89116, 0.0814646, 0.0779619, 0.0190317)
+	robot.device.forceRARM.value=(2.07224, -9.57906, 0.69111, -0.415802, 0.289026, 0.00621748)
+
+def computeDynamic(robot,i):
+	robot.dynamic.chest.recompute(i)
+	robot.dynamic.com.recompute(i)
+	robot.dynamic.Jcom.recompute(i)
+	robot.dynamic.angularmomentum.recompute(i)
+	robot.dynamic.inertia.recompute(i)
+	robot.dynamic.waist.recompute(i)
 
 class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
@@ -22,6 +39,9 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
         self.setSamplingPeriod(0.005)  
         self.robot = robot
+
+	initDevice(self.robot)
+	computeDynamic(self.robot,0)
 
         # Covariances
         self.setProcessNoiseCovariance(matrixToTuple(np.diag((1e-8,)*12+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1e-4,)*3+(1.e-2,)*6+(1e-15,)*2+(1.e-8,)*3)))
@@ -72,10 +92,11 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug (self.robot.dynamic.signal('left-wrist'),self.interface.position_rh)
         # Strings
         self.Peg = (0,0,4.60) # Position of the anchorage in the global frame
+	self.setPe(self.Peg)
         self.Prl1 = np.matrix([[1,0,0,0-3.19997004e-02],[0,1,0,0.15-0],[0,0,1,1.28-1],[0,0,0,1]]) # Positions of the contacts on the robot (in the local frame) with respect to the chest
         self.Prl2 = np.matrix([[1,0,0,0-3.19997004e-02],[0,1,0,-0.15-0],[0,0,1,1.28-1],[0,0,0,1]])
-        (self.contact1OpPoint,self.contact1Pos,self.contact1)=self.createContact('contact1', self.Prl1,self.Peg)
-        (self.contact2OpPoint,self.contact2Pos,self.contact2)=self.createContact('contact2', self.Prl2,self.Peg)
+        (self.contact1OpPoint,self.contact1Pos,self.contact1)=self.createContact('contact1', self.Prl1)
+        (self.contact2OpPoint,self.contact2Pos,self.contact2)=self.createContact('contact2', self.Prl2)
         plug(self.contact1.sout,self.interface.position_ls)
         plug(self.contact2.sout,self.interface.position_rs)
 
@@ -182,7 +203,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.drift.init()
 
 
-    def createContact(self,name, prl,peg):
+    def createContact(self,name, prl):
         self.contactOpPoint = OpPointModifier(name+'_opPoint')
         self.contactOpPoint.setEndEffector(False)
         self.contactOpPoint.setTransformation(matrixToTuple(prl))
@@ -192,8 +213,8 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         plug(self.contactOpPoint.position, self.contactPos.sin)
     
         self.contact = Stack_of_vector (name)
-        self.contact.sin1.value = peg
-        plug(self.contactPos.sout,self.contact.sin2)
+        plug(self.contactPos.sout,self.contact.sin1)
+        self.contact.sin2.value = (0,0,0)
         self.contact.selec1 (0, 3)
         self.contact.selec2 (0, 3)
 
