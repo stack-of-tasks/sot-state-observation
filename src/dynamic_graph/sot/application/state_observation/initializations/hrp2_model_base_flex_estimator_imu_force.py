@@ -6,7 +6,7 @@ from dynamic_graph import plug
 import dynamic_graph.signal_base as dgsb
 
 from dynamic_graph.sot.core import Stack_of_vector, MatrixHomoToPoseUTheta, OpPointModifier, Multiply_matrix_vector, MatrixHomoToPose
-from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, EstimatorInterface, DriftFromMocap
+from dynamic_graph.sot.application.state_observation import DGIMUModelBaseFlexEstimation, PositionStateReconstructor, InputReconstructor, EstimatorInterface, DriftFromMocap, FromLocalToGlobalFrame
 
 from dynamic_graph.sot.core.derivator import Derivator_of_Vector
 
@@ -32,6 +32,12 @@ def computeDynamic(robot,i):
 	robot.dynamic.angularmomentum.recompute(i)
 	robot.dynamic.inertia.recompute(i)
 	robot.dynamic.waist.recompute(i)
+
+class FromLocalToGLobalFrame(FromLocalToGlobalFrame):
+    def __init__(self, estimator, name='FromLocalToGLobalFrame'):
+	FromLocalToGlobalFrame.__init__(self, name)
+	self.estimator = estimator
+	plug(self.estimator.state, self.flexState)	
 
 class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
@@ -120,7 +126,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
             plug(self.mocapSignal,self.drift.limbGlobal)
             plug(self.robot.dynamic.chest,self.drift.limbLocal)
             self.drift.init()
-            plug(self.drift.driftVector,self.interface.drift)
+            plug(self.drift.driftInvVector,self.interface.drift)
 
         # Measurement reconstruction
         plug(self.robot.device.accelerometer,self.interface.accelerometer)

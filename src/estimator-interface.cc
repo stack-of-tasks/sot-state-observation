@@ -174,7 +174,7 @@ namespace sotStateObservation
         gyrometerSIN.setConstant(gyrometer);
 
         signalRegistration (driftSIN);
-        dynamicgraph::Vector drift(3);
+        dynamicgraph::Vector drift(6);
         driftSIN.setConstant(drift);
 
         // Output
