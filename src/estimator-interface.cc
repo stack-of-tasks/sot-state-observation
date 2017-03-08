@@ -396,6 +396,18 @@ namespace sotStateObservation
              ::dynamicgraph::command::Setter <EstimatorInterface,unsigned>
                 (*this, &EstimatorInterface::setElastPendulumModel, docstring));
 
+        //setSampligPeriod
+        docstring =
+                "\n"
+                "    Sets the sampling period.\n"
+                "    takes a floating point number\n"
+                "\n";
+
+        addCommand(std::string("setSamplingPeriod"),
+             new
+             dynamicgraph::command::Setter <EstimatorInterface,double>
+            (*this, &EstimatorInterface::setSamplingPeriod, docstring));
+
         /// Parameters
 
         config_.resize(3); config_.setZero();

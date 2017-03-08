@@ -80,6 +80,11 @@ namespace sotStateObservation
                     "Entity that compute the input and measurment vectors for the estimator plus the number of contacts";
             }
 
+            void setSamplingPeriod(const double & dt)
+            {
+                dt_=dt;
+            }
+
             void setForceThresholds(const Vector& forceThresholds)
             {
                 forceThresholds_=convertVector<stateObservation::Vector>(forceThresholds);

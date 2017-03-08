@@ -79,7 +79,7 @@ namespace sotStateObservation
                 "    takes a floating point number\n"
                 "\n";
 
-        addCommand(std::string("setSampligPeriod"),
+        addCommand(std::string("setSamplingPeriod"),
 	     new
 	     dynamicgraph::command::Setter <PositionStateReconstructor,double>
             (*this, &PositionStateReconstructor::setSampligPeriod, docstring));

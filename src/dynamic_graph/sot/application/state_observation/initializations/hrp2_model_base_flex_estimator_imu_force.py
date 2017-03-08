@@ -41,9 +41,9 @@ class FromLocalToGLobalFrame(FromLocalToGlobalFrame):
 
 class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
-    def __init__(self, robot, name='flextimator', useMocap=True):
+    def __init__(self, robot, name='flextimator', useMocap=True, dt=0.005):
         DGIMUModelBaseFlexEstimation.__init__(self,name)
-        self.setSamplingPeriod(0.005)  
+        self.setSamplingPeriod(dt)  
         self.robot = robot
 
 	initDevice(self.robot)
@@ -64,6 +64,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
 
         # Estimator interface
         self.interface=EstimatorInterface(name+"EstimatorInterface")
+	self.interface.setSamplingPeriod(dt)
         self.interface.setLeftHandSensorTransformation((0.,0.,1.57))
         self.interface.setRightHandSensorTransformation((0.,0.,1.57))
     
@@ -153,6 +154,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.inputPosVel.selec1 (0, 6)
         self.inputPosVel.selec2 (0, 6)
         self.IMUVector = PositionStateReconstructor (name+'EstimatorInput')
+	self.IMUVector.setSamplingPeriod(dt)
         plug(self.inputPosVel.sout,self.IMUVector.sin)
         self.IMUVector.inputFormat.value  = '001111'
         self.IMUVector.outputFormat.value = '011111'
@@ -171,6 +173,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.comVectorIn.selec1 (0, 3)
         self.comVectorIn.selec2 (0, 3)
         self.comVector = PositionStateReconstructor (name+'ComVector')
+	self.comVector.setSamplingPeriod(dt)
         plug(self.comVectorIn.sout,self.comVector.sin)
         self.comVector.inputFormat.value  = '000101'
         self.comVector.outputFormat.value = '010101'  
@@ -184,6 +187,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.angMomDerivator.dt.value = self.robot.timeStep 
 
 #        self.angMomDerivator = PositionStateReconstructor (name+'angMomDerivator')
+#	 self.angMomDerivator.setSamplingPeriod(dt)
 #        plug(self.robot.dynamic.angularmomentum,self.angMomDerivator.sin)
 #        self.angMomDerivator.inputFormat.value  = '000001'
 #        self.angMomDerivator.outputFormat.value = '000100'  
