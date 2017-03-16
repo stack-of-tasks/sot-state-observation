@@ -57,10 +57,11 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.setAbsolutePosVariance(1e-4)
 
         # Contact model definition
-        self.setKfe(matrixToTuple(np.diag((40000,40000,40000))))
+        # self.setKfe(matrixToTuple(np.diag((40000,40000,40000))))
+        self.setKfe(matrixToTuple(np.diag((150000,150000,150000))))
         self.setKfv(matrixToTuple(np.diag((600,600,600))))
         self.setKte(matrixToTuple(np.diag((600,600,600))))
-        self.setKtv(matrixToTuple(np.diag((60,60,60))))
+        self.setKtv(matrixToTuple(np.diag((10,10,10))))
 
         # Estimator interface
         self.interface=EstimatorInterface(name+"EstimatorInterface")
@@ -184,7 +185,7 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         # Compute derivative of Angular Momentum
         self.angMomDerivator = Derivator_of_Vector(name+'angMomDerivator')
         plug(self.robot.dynamic.angularmomentum,self.angMomDerivator.sin)
-        self.angMomDerivator.dt.value = self.robot.timeStep 
+        self.angMomDerivator.dt.value = dt
 
 #        self.angMomDerivator = PositionStateReconstructor (name+'angMomDerivator')
 #	 self.angMomDerivator.setSamplingPeriod(dt)
