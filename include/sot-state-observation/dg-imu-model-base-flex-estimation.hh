@@ -146,6 +146,26 @@ namespace sotStateObservation
                 estimator_.setKtv(convertMatrix<stateObservation::Matrix3>(m));
             }
 
+            void setKfeCordes(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKfeCordes(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKfvCordes(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKfvCordes(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKteCordes(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKteCordes(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKtvCordes(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKtvCordes(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
             void setWithForce(const bool & b)
             {
                 withForce_=b;

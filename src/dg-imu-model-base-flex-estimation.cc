@@ -387,6 +387,46 @@ namespace sotStateObservation
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
                     (*this, & DGIMUModelBaseFlexEstimation::setKtv ,docstring));
 
+
+        //set the linear and angular stifness et damping of the flexibility
+        docstring  =
+                "\n"
+                "    Sets the linear strings stifness of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKfeCordes"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKfeCordes ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the linear strings damping of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKfvCordes"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKfvCordes ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the angular strings stifness of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKteCordes"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKteCordes ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the angular strings damping of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKtvCordes"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKtvCordes ,docstring));
+
+
+
         docstring  =
                 "\n"
                 "    Sets the contact model number \n"

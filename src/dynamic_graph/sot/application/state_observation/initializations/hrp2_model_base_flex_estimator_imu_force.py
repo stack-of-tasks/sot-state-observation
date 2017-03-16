@@ -63,6 +63,11 @@ class HRP2ModelBaseFlexEstimatorIMUForce(DGIMUModelBaseFlexEstimation):
         self.setKte(matrixToTuple(np.diag((600,600,600))))
         self.setKtv(matrixToTuple(np.diag((10,10,10))))
 
+        self.setKfeCordes(matrixToTuple(np.diag((10000,10000,10000))))
+        self.setKfvCordes(matrixToTuple(np.diag((300,300,800))))
+        self.setKteCordes(matrixToTuple(np.diag((600,600,600))))
+        self.setKtvCordes(matrixToTuple(np.diag((60,60,60))))
+
         # Estimator interface
         self.interface=EstimatorInterface(name+"EstimatorInterface")
 	self.interface.setSamplingPeriod(dt)
