@@ -41,6 +41,7 @@ namespace sotStateObservation
 
     EstimatorInterface::EstimatorInterface( const std::string & inName):
         Entity(inName),
+        enabledContacts_lf_rf_lh_rhSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::enabledContacts_lf_rf_lh_rh"),
         inputSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::input"),
         inputConstSizeSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::inputConstSize"),
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
@@ -90,7 +91,7 @@ namespace sotStateObservation
         forceSensorsTransformation_(hrp2::contact::nbMax),
         forceSensorsTransfoMatrix_(hrp2::contact::nbMax),
         bias_(hrp2::contact::nbMax),
-        withUnmodeledMeasurements_(false), withModeledForces_(true), withAbsolutePose_(false)
+        withUnmodeledMeasurements_(false), withModeledForces_(true), withAbsolutePose_(false), externalContactPresence_(true)
     {
 
         /// Signals
@@ -100,6 +101,10 @@ namespace sotStateObservation
         stateObservation::Vector6 force;
         stateObservation::Vector6 velocity;
         dynamicgraph::Vector vpos; vpos.resize(6);
+
+        signalRegistration (enabledContacts_lf_rf_lh_rhSIN_);
+        dynamicgraph::Vector stack(4); stack.setZero();
+        enabledContacts_lf_rf_lh_rhSIN_.setConstant(stack);
 
         signalRegistration (positionLeftFootSIN_ << velocityLeftFootSIN_ << forceLeftFootSIN_);
         positionLeftFootSIN_.setConstant(pos);
@@ -396,6 +401,26 @@ namespace sotStateObservation
              ::dynamicgraph::command::Setter <EstimatorInterface,unsigned>
                 (*this, &EstimatorInterface::setElastPendulumModel, docstring));
 
+        docstring =
+                "\n"
+                "    Get externalContactPresence_\n"
+                "\n";
+
+        addCommand(std::string("getExternalContactPresence"),
+                   new
+                   ::dynamicgraph::command::Getter <EstimatorInterface,bool>
+                      (*this, &EstimatorInterface::getExternalContactPresence, docstring));
+
+        docstring =
+                "\n"
+                "    Set externalContactPresence_ \n"
+                "\n";
+
+        addCommand(std::string("setExternalContactPresence"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,bool>
+                (*this, &EstimatorInterface::setExternalContactPresence, docstring));
+
         //setSampligPeriod
         docstring =
                 "\n"
@@ -534,6 +559,20 @@ namespace sotStateObservation
         }
     }
 
+    bool EstimatorInterface::getContactPresence(int & i, const int& time)
+    {
+        if(externalContactPresence_)
+        {
+            const dynamicgraph::Vector& stackOfContacts=enabledContacts_lf_rf_lh_rhSIN_.access(time);
+            return stackOfContacts(i);
+        }
+        else
+        {
+            op_.contactForce=inputForces_[i].segment(0,3).norm()-forceResidus_[i];
+            return (op_.contactForce>forceThresholds_[i] ||  op_.contactForce<-forceThresholds_[i]);
+        }
+    }
+
     void EstimatorInterface::computeStackOfContacts(const int& time)
     {
         timeStackOfContacts_=time;
@@ -542,9 +581,8 @@ namespace sotStateObservation
         for (int i=0; i<hrp2::contact::nbMax;++i)
         {
             op_.found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
-            op_.contactForce=inputForces_[i].segment(0,3).norm()-forceResidus_[i];
 
-            if(op_.contactForce>forceThresholds_[i] ||  op_.contactForce<-forceThresholds_[i])
+            if(getContactPresence(i, time))
             {
                 if (!op_.found)
                 {

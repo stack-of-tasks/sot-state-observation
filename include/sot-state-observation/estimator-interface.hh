@@ -80,6 +80,8 @@ namespace sotStateObservation
                     "Entity that compute the input and measurment vectors for the estimator plus the number of contacts";
             }
 
+            bool getContactPresence(int & i, const int& time);
+
             void setSamplingPeriod(const double & dt)
             {
                 dt_=dt;
@@ -233,6 +235,16 @@ namespace sotStateObservation
                       sin(v(2)), cos(v(2)),  0,
                       0,         0,          1;
                 forceSensorsTransfoMatrix_[hrp2::contact::lh]=Ry*Rp*Rr;
+            }
+
+            void setExternalContactPresence(const bool & b)
+            {
+                externalContactPresence_=b;
+            }
+
+            bool getExternalContactPresence() const
+            {
+                return externalContactPresence_;
             }
 
             dynamicgraph::Vector getLeftHandSensorTransformation() const
@@ -423,6 +435,8 @@ namespace sotStateObservation
             /// Signals
             // Input signals
 
+            dynamicgraph::SignalPtr <Vector, int> enabledContacts_lf_rf_lh_rhSIN_;
+
             /**
             \brief Positions and forces at contacts
             */
@@ -527,6 +541,7 @@ namespace sotStateObservation
             unsigned contactsNbr_, modeledContactsNbr_, unmodeledContactsNbr_, supportContactsNbr_;
             unsigned contactsModel_, elastPendulumModel_;
             stateObservation::Vector config_;
+            bool externalContactPresence_;
 
             std::vector<stateObservation::Matrix4,Eigen::aligned_allocator<stateObservation::Matrix4> > inputHomoPosition_;
             std::vector<stateObservation::Vector6,Eigen::aligned_allocator<stateObservation::Vector6> > inputPosition_;
