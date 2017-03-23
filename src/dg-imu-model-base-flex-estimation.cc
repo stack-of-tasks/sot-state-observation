@@ -23,6 +23,9 @@ namespace sotStateObservation
         contactsNbrSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactNbr"),
         contactsModelSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactsModel"),
         configSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(Vector)::config"),
+        observationMatrixSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(matrix)::observationMatrix"),
+        AMatrixSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(matrix)::AMatrix"),
+        CMatrixSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(matrix)::CMatrix"),
         stateSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::state"),
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
         momentaFromForcesSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momentaFromForces"),
@@ -60,6 +63,9 @@ namespace sotStateObservation
         signalRegistration (configSIN);
 
         signalRegistration (stateSOUT);
+        signalRegistration (observationMatrixSOUT);
+        signalRegistration (AMatrixSOUT);
+        signalRegistration (CMatrixSOUT);
         signalRegistration (flexibilitySOUT);
         signalRegistration (momentaFromForcesSOUT);
         signalRegistration (momentaFromKinematicsSOUT);
@@ -93,6 +99,13 @@ namespace sotStateObservation
         signalRegistration (stateCovarianceSOUT);
 
         stateSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeState,
+                                     this, _1, _2));
+
+        observationMatrixSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getObservationMatrix,
+                                     this, _1, _2));
+        AMatrixSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getAMatrix,
+                                     this, _1, _2));
+        CMatrixSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getCMatrix,
                                      this, _1, _2));
 
         flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
@@ -656,6 +669,15 @@ namespace sotStateObservation
 
         return state;
     }
+
+    ::dynamicgraph::Matrix& DGIMUModelBaseFlexEstimation::getObservationMatrix
+            (::dynamicgraph::Matrix & observationMatrix, const int& inTime)
+    {
+        stateSOUT(inTime);
+        observationMatrix = convertMatrix<dynamicgraph::Matrix>(estimator_.computeLocalObservationMatrix());
+        return observationMatrix;
+    }
+
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeMomentaFromForces
                   (dynamicgraph::Vector & momenta, const int& inTime)
