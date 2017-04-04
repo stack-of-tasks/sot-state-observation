@@ -621,7 +621,6 @@ namespace sotStateObservation
         {
             contactsNbr_+=2;
             modeledContactsNbr_=2;
-            supportContactsNbr_=2;
             contactsModel_=elastPendulumModel_+1;
         }
         else
