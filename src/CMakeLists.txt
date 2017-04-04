@@ -47,6 +47,7 @@ ADD_LIBRARY(${LIBRARY_NAME}
   moving-frame-transformation.cc
   position-state-reconstructor.cc
   drift-from-mocap.cc
+  stop-watch.cpp
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
   )
 

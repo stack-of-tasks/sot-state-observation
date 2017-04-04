@@ -9,6 +9,12 @@
 
 #include <state-observation/flexibility-estimation/imu-elastic-local-frame-dynamical-system.hpp>
 
+#include <sot-state-observation/tools/stop-watch.hh>
+
+#define PROFILE_READ_INPUT_SIGNALS "DGIMUModelBaseFlexEstimation: read input signals: "
+#define PROFILE_READ_ESTIMATOR_CONFIG "DGIMUModelBaseFlexEstimation: estimator configuration: "
+#define PROFILE_READ_ESTIMATOR_ALONE "DGIMUModelBaseFlexEstimation: estimator without input signals computation: "
+
 namespace sotStateObservation
 {
     using namespace stateObservation;
@@ -616,11 +622,15 @@ namespace sotStateObservation
         {
             currentTime_=inTime;
 #endif
+
+        getProfiler().start(PROFILE_READ_INPUT_SIGNALS);
         const dynamicgraph::Vector & measurement = measurementSIN.access(inTime);
         const dynamicgraph::Vector & input = inputSIN.access(inTime);
         const unsigned & contactNb = contactsNbrSIN.access(inTime);
         const unsigned & contactsModel = contactsModelSIN.access(inTime);
+        getProfiler().stop(PROFILE_READ_INPUT_SIGNALS);
 
+        getProfiler().start(PROFILE_READ_ESTIMATOR_CONFIG);
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
 
@@ -661,11 +671,15 @@ namespace sotStateObservation
         inputWBias.block(0,0,2,1)=inputWBias.block(0,0,2,1)+bias_;//for test purpose only
 
         estimator_.setMeasurementInput(inputWBias);
+        getProfiler().stop(PROFILE_READ_ESTIMATOR_CONFIG);
 
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
         }
 #endif
+
+        getProfiler().start(PROFILE_READ_ESTIMATOR_ALONE);
         state = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
+        getProfiler().stop(PROFILE_READ_ESTIMATOR_ALONE);
 
         return state;
     }
@@ -995,5 +1009,16 @@ namespace sotStateObservation
 
         return prediction = convertVector <dynamicgraph::Vector>
                                         (estimator_.getLastPrediction());
+    }
+
+
+    void DGIMUModelBaseFlexEstimation::display(std::ostream& os) const
+    {
+        os << "DGIMUModelBaseFlexEstimation "<<getName();
+        try
+        {
+            getProfiler().report_all(3, os);
+        }
+        catch (int e) {}
     }
 }

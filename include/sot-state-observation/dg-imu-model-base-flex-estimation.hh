@@ -407,8 +407,7 @@ namespace sotStateObservation
             double& computeFlexibilityComputationTime
                         (double& flexibilityComputationTime, const int &inTime);
 
-
-
+            virtual void display(std::ostream& os) const;
 
             /**
             \brief Measurement of the IMU
