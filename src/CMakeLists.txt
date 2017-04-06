@@ -42,10 +42,12 @@ ADD_LIBRARY(${LIBRARY_NAME}
   stack-of-contacts.cc
   odometry.cc
   estimator-interface.cc
+  from-local-to-global-frame.cc
   filter.cc
   moving-frame-transformation.cc
   position-state-reconstructor.cc
   drift-from-mocap.cc
+  stop-watch.cpp
   ${${PROJECT_NAME}_ABSOLUTE_HEADERS}
   )
 

@@ -9,6 +9,12 @@
 
 #include <state-observation/flexibility-estimation/imu-elastic-local-frame-dynamical-system.hpp>
 
+#include <sot-state-observation/tools/stop-watch.hh>
+
+#define PROFILE_READ_INPUT_SIGNALS "DGIMUModelBaseFlexEstimation: read input signals: "
+#define PROFILE_READ_ESTIMATOR_CONFIG "DGIMUModelBaseFlexEstimation: estimator configuration: "
+#define PROFILE_READ_ESTIMATOR_ALONE "DGIMUModelBaseFlexEstimation: estimator without input signals computation: "
+
 namespace sotStateObservation
 {
     using namespace stateObservation;
@@ -23,6 +29,9 @@ namespace sotStateObservation
         contactsNbrSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactNbr"),
         contactsModelSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(unsigned)::contactsModel"),
         configSIN(0x0 , "DGIMUModelBaseFlexEstimation("+inName+")::input(Vector)::config"),
+        observationMatrixSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(matrix)::observationMatrix"),
+        AMatrixSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(matrix)::AMatrix"),
+        CMatrixSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(matrix)::CMatrix"),
         stateSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::state"),
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
         momentaFromForcesSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momentaFromForces"),
@@ -33,6 +42,7 @@ namespace sotStateObservation
         flexPoseThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPoseThetaU"),
         comBiasSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::comBias"),
         flexOmegaSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexOmega"),
+        flexOrientationSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(matrix)::flexOrientation"),
         flexTransformationMatrixSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(homogeneousMatrix)::flexTransformationMatrix"),
         flexThetaUSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexThetaU"),
         flexVelocityVectorSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocityVector"),
@@ -59,6 +69,9 @@ namespace sotStateObservation
         signalRegistration (configSIN);
 
         signalRegistration (stateSOUT);
+        signalRegistration (observationMatrixSOUT);
+        signalRegistration (AMatrixSOUT);
+        signalRegistration (CMatrixSOUT);
         signalRegistration (flexibilitySOUT);
         signalRegistration (momentaFromForcesSOUT);
         signalRegistration (momentaFromKinematicsSOUT);
@@ -67,6 +80,7 @@ namespace sotStateObservation
         signalRegistration (flexVelocitySOUT);
         signalRegistration (flexThetaUSOUT);
         signalRegistration (flexOmegaSOUT);
+        signalRegistration (flexOrientationSOUT);
         signalRegistration (flexTransformationMatrixSOUT);
         signalRegistration (flexPoseThetaUSOUT);
         signalRegistration (flexVelocityVectorSOUT);
@@ -93,6 +107,13 @@ namespace sotStateObservation
         stateSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeState,
                                      this, _1, _2));
 
+        observationMatrixSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getObservationMatrix,
+                                     this, _1, _2));
+        AMatrixSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getAMatrix,
+                                     this, _1, _2));
+        CMatrixSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::getCMatrix,
+                                     this, _1, _2));
+
         flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
 				    this, _1, _2));
         momentaFromForcesSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeMomentaFromForces,
@@ -115,6 +136,9 @@ namespace sotStateObservation
 
         flexOmegaSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexOmega,
 				    this, _1, _2));
+
+        flexOrientationSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexOrientation,
+                                    this, _1, _2));
 
         flexTransformationMatrixSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexTransformationMatrix,
 				    this, _1, _2));
@@ -219,6 +243,17 @@ namespace sotStateObservation
 	     new
 	     ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
                 (*this, &DGIMUModelBaseFlexEstimation::setFlexibilityGuess, docstring));
+
+        //setStateGuess
+        docstring =
+                "\n"
+                "    Set the anchorage position for the elastic strings model \n"
+                "\n";
+
+        addCommand(std::string("setPe"),
+             new
+             ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Vector>
+                (*this, &DGIMUModelBaseFlexEstimation::setPe, docstring));
 
          //setStateGuessCovariance
         docstring =
@@ -370,6 +405,46 @@ namespace sotStateObservation
         addCommand(std::string("setKtv"),
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
                     (*this, & DGIMUModelBaseFlexEstimation::setKtv ,docstring));
+
+
+        //set the linear and angular stifness et damping of the flexibility
+        docstring  =
+                "\n"
+                "    Sets the linear strings stifness of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKfeCordes"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKfeCordes ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the linear strings damping of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKfvCordes"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKfvCordes ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the angular strings stifness of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKteCordes"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKteCordes ,docstring));
+
+        docstring  =
+                "\n"
+                "    Sets the angular strings damping of the flexibility \n"
+                "\n";
+
+        addCommand(std::string("setKtvCordes"),
+                   new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
+                    (*this, & DGIMUModelBaseFlexEstimation::setKtvCordes ,docstring));
+
+
 
         docstring  =
                 "\n"
@@ -547,13 +622,15 @@ namespace sotStateObservation
         {
             currentTime_=inTime;
 #endif
+
+        getProfiler().start(PROFILE_READ_INPUT_SIGNALS);
         const dynamicgraph::Vector & measurement = measurementSIN.access(inTime);
         const dynamicgraph::Vector & input = inputSIN.access(inTime);
         const unsigned & contactNb = contactsNbrSIN.access(inTime);
         const unsigned & contactsModel = contactsModelSIN.access(inTime);
+        getProfiler().stop(PROFILE_READ_INPUT_SIGNALS);
 
-        std::cout << inTime << std::endl;
-
+        getProfiler().start(PROFILE_READ_ESTIMATOR_CONFIG);
         // Update of the state size
         if(estimator_.getWithComBias()!=withComBias_) estimator_.setWithComBias(withComBias_);
 
@@ -594,14 +671,27 @@ namespace sotStateObservation
         inputWBias.block(0,0,2,1)=inputWBias.block(0,0,2,1)+bias_;//for test purpose only
 
         estimator_.setMeasurementInput(inputWBias);
+        getProfiler().stop(PROFILE_READ_ESTIMATOR_CONFIG);
 
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
         }
 #endif
+
+        getProfiler().start(PROFILE_READ_ESTIMATOR_ALONE);
         state = convertVector<dynamicgraph::Vector>(estimator_.getFlexibilityVector());
+        getProfiler().stop(PROFILE_READ_ESTIMATOR_ALONE);
 
         return state;
     }
+
+    ::dynamicgraph::Matrix& DGIMUModelBaseFlexEstimation::getObservationMatrix
+            (::dynamicgraph::Matrix & observationMatrix, const int& inTime)
+    {
+        stateSOUT(inTime);
+        observationMatrix = convertMatrix<dynamicgraph::Matrix>(estimator_.computeLocalObservationMatrix());
+        return observationMatrix;
+    }
+
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeMomentaFromForces
                   (dynamicgraph::Vector & momenta, const int& inTime)
@@ -688,6 +778,17 @@ namespace sotStateObservation
                 (estimator_.getFlexibilityVector().segment(IMUElasticLocalFrameDynamicalSystem::state::angVel,3));
 
         return flexibilityOmega;
+    }
+
+    ::dynamicgraph::Matrix& DGIMUModelBaseFlexEstimation::computeFlexOrientation
+                        (::dynamicgraph::Matrix & flexibilityOrientation, const int& inTime)
+    {
+        stateSOUT(inTime);
+
+        flexibilityOrientation = convertMatrix<dynamicgraph::Matrix>
+                                 (kine::rotationVectorToRotationMatrix(estimator_.getFlexibilityVector().segment(IMUElasticLocalFrameDynamicalSystem::state::ori,3)));
+
+        return flexibilityOrientation;
     }
 
     ::dynamicgraph::sot::MatrixHomogeneous& DGIMUModelBaseFlexEstimation::computeFlexTransformationMatrix
@@ -908,5 +1009,16 @@ namespace sotStateObservation
 
         return prediction = convertVector <dynamicgraph::Vector>
                                         (estimator_.getLastPrediction());
+    }
+
+
+    void DGIMUModelBaseFlexEstimation::display(std::ostream& os) const
+    {
+        os << "DGIMUModelBaseFlexEstimation "<<getName();
+        try
+        {
+            getProfiler().report_all(3, os);
+        }
+        catch (int e) {}
     }
 }

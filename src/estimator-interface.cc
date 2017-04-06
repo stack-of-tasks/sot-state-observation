@@ -41,6 +41,7 @@ namespace sotStateObservation
 
     EstimatorInterface::EstimatorInterface( const std::string & inName):
         Entity(inName),
+        enabledContacts_lf_rf_lh_rhSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::enabledContacts_lf_rf_lh_rh"),
         inputSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::input"),
         inputConstSizeSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::inputConstSize"),
         measurementSOUT_ (NULL, "EstimatorInterface("+inName+")::output(vector)::measurement"),
@@ -90,7 +91,7 @@ namespace sotStateObservation
         forceSensorsTransformation_(hrp2::contact::nbMax),
         forceSensorsTransfoMatrix_(hrp2::contact::nbMax),
         bias_(hrp2::contact::nbMax),
-        withUnmodeledMeasurements_(false), withModeledForces_(true), withAbsolutePose_(false)
+        withUnmodeledMeasurements_(false), withModeledForces_(true), withAbsolutePose_(false), externalContactPresence_(true)
     {
 
         /// Signals
@@ -100,6 +101,10 @@ namespace sotStateObservation
         stateObservation::Vector6 force;
         stateObservation::Vector6 velocity;
         dynamicgraph::Vector vpos; vpos.resize(6);
+
+        signalRegistration (enabledContacts_lf_rf_lh_rhSIN_);
+        dynamicgraph::Vector stack(4); stack.setZero();
+        enabledContacts_lf_rf_lh_rhSIN_.setConstant(stack);
 
         signalRegistration (positionLeftFootSIN_ << velocityLeftFootSIN_ << forceLeftFootSIN_);
         positionLeftFootSIN_.setConstant(pos);
@@ -174,7 +179,7 @@ namespace sotStateObservation
         gyrometerSIN.setConstant(gyrometer);
 
         signalRegistration (driftSIN);
-        dynamicgraph::Vector drift(3);
+        dynamicgraph::Vector drift(6);
         driftSIN.setConstant(drift);
 
         // Output
@@ -396,6 +401,38 @@ namespace sotStateObservation
              ::dynamicgraph::command::Setter <EstimatorInterface,unsigned>
                 (*this, &EstimatorInterface::setElastPendulumModel, docstring));
 
+        docstring =
+                "\n"
+                "    Get externalContactPresence_\n"
+                "\n";
+
+        addCommand(std::string("getExternalContactPresence"),
+                   new
+                   ::dynamicgraph::command::Getter <EstimatorInterface,bool>
+                      (*this, &EstimatorInterface::getExternalContactPresence, docstring));
+
+        docstring =
+                "\n"
+                "    Set externalContactPresence_ \n"
+                "\n";
+
+        addCommand(std::string("setExternalContactPresence"),
+             new
+             ::dynamicgraph::command::Setter <EstimatorInterface,bool>
+                (*this, &EstimatorInterface::setExternalContactPresence, docstring));
+
+        //setSampligPeriod
+        docstring =
+                "\n"
+                "    Sets the sampling period.\n"
+                "    takes a floating point number\n"
+                "\n";
+
+        addCommand(std::string("setSamplingPeriod"),
+             new
+             dynamicgraph::command::Setter <EstimatorInterface,double>
+            (*this, &EstimatorInterface::setSamplingPeriod, docstring));
+
         /// Parameters
 
         config_.resize(3); config_.setZero();
@@ -502,8 +539,8 @@ namespace sotStateObservation
             controlFrameForces_[i] << forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(0,3),
                                       forceSensorsTransfoMatrix_[i] * inputForces_[i].segment(3,3);
 
-            // For unmodeled contacts
-            if(!modeled_[i])
+            // For hands
+            if(i == hrp2::contact::lh | i==hrp2::contact::rh)
             {
                 // Computation in the local frame of the weight action of theend-effector on the sensor
                 op_.weight << 0,
@@ -522,6 +559,20 @@ namespace sotStateObservation
         }
     }
 
+    bool EstimatorInterface::getContactPresence(int & i, const int& time)
+    {
+        if(externalContactPresence_)
+        {
+            const dynamicgraph::Vector& stackOfContacts=enabledContacts_lf_rf_lh_rhSIN_.access(time);
+            return stackOfContacts(i);
+        }
+        else
+        {
+            op_.contactForce=inputForces_[i].segment(0,3).norm()-forceResidus_[i];
+            return (op_.contactForce>forceThresholds_[i] ||  op_.contactForce<-forceThresholds_[i]);
+        }
+    }
+
     void EstimatorInterface::computeStackOfContacts(const int& time)
     {
         timeStackOfContacts_=time;
@@ -530,9 +581,8 @@ namespace sotStateObservation
         for (int i=0; i<hrp2::contact::nbMax;++i)
         {
             op_.found = (std::find(stackOfContacts_.begin(), stackOfContacts_.end(), i) != stackOfContacts_.end());
-            op_.contactForce=inputForces_[i].segment(0,3).norm()-forceResidus_[i];
 
-            if(op_.contactForce>forceThresholds_[i] ||  op_.contactForce<-forceThresholds_[i])
+            if(getContactPresence(i, time))
             {
                 if (!op_.found)
                 {
@@ -571,7 +621,6 @@ namespace sotStateObservation
         {
             contactsNbr_+=2;
             modeledContactsNbr_=2;
-            supportContactsNbr_=2;
             contactsModel_=elastPendulumModel_+1;
         }
         else
@@ -630,16 +679,36 @@ namespace sotStateObservation
        const stateObservation::Vector& dangMomentum=convertVector<stateObservation::Vector>(dangMomentumSIN.access(time));
        const stateObservation::Vector& imuVector=convertVector<stateObservation::Vector>(imuVectorSIN.access(time));
 
-       op_.contactKine.resize(modeledContactsNbr_*12);
-       op_.bias.resize(modeledContactsNbr_*12); op_.bias.setZero();
-       op_.i=0;
+       const stateObservation::Vector& rightStringPosition=convertVector<stateObservation::Vector>(positionRightStringSIN_.access(time));
+       const stateObservation::Vector& leftStringPosition=convertVector<stateObservation::Vector>(positionLeftStringSIN_.access(time));
 
-       for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
+
+       if(contactsModel_==1)
        {
-           op_.contactKine.segment(op_.i*12,6)=inputPosition_[*iterator];
-           op_.contactKine.segment(op_.i*12+6,6)=inputVelocity_[*iterator];
-           op_.bias.segment(op_.i*12,6)=bias_[*iterator];
-           ++op_.i;
+           op_.contactKine.resize(modeledContactsNbr_*12);
+           op_.bias.resize(modeledContactsNbr_*12); op_.bias.setZero();
+           op_.i=0;
+
+           for (iterator = stackOfModeledContacts_.begin(); iterator != stackOfModeledContacts_.end(); ++iterator)
+           {
+               op_.contactKine.segment(op_.i*12,6)=inputPosition_[*iterator];
+               op_.contactKine.segment(op_.i*12+6,6)=inputVelocity_[*iterator];
+               op_.bias.segment(op_.i*12,6)=bias_[*iterator];
+               ++op_.i;
+           }
+       }
+       else
+       {
+           op_.contactKine.resize(modeledContactsNbr_*12);
+           op_.bias.resize(modeledContactsNbr_*12); op_.bias.setZero();
+
+           op_.contactKine.segment(0*12,6)=leftStringPosition;
+           op_.contactKine.segment(0*12+6,6).setZero();
+           op_.bias.segment(0*12,6).setZero();
+
+           op_.contactKine.segment(1*12,6)=rightStringPosition;
+           op_.contactKine.segment(1*12+6,6).setZero();
+           op_.bias.segment(1*12,6).setZero();
        }
 
        // Inertia and derivative

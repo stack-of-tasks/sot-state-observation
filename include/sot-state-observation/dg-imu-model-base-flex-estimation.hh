@@ -20,6 +20,7 @@
 #include <state-observation/flexibility-estimation/model-base-ekf-flex-estimator-imu.hpp>
 
 #include <sot-state-observation/tools/definitions.hh>
+#include <iostream>
 
 namespace sotStateObservation
 {
@@ -90,6 +91,11 @@ namespace sotStateObservation
                 estimator_.setContactModel(nb);
             }
 
+            void setPe(const dynamicgraph::Vector & pe)
+            {
+                estimator_.setPe(convertVector<stateObservation::Vector>(pe));
+            }
+
             void setProcessNoiseCovariance(const ::dynamicgraph::Matrix & q)
             {
                 Q_=convertMatrix<stateObservation::Matrix>(q);
@@ -139,6 +145,26 @@ namespace sotStateObservation
             void setKtv(const dynamicgraph::Matrix & m)
             {
                 estimator_.setKtv(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKfeCordes(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKfeCordes(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKfvCordes(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKfvCordes(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKteCordes(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKteCordes(convertMatrix<stateObservation::Matrix3>(m));
+            }
+
+            void setKtvCordes(const dynamicgraph::Matrix & m)
+            {
+                estimator_.setKtvCordes(convertMatrix<stateObservation::Matrix3>(m));
             }
 
             void setWithForce(const bool & b)
@@ -276,6 +302,25 @@ namespace sotStateObservation
             ::dynamicgraph::Vector& computeState
                         (::dynamicgraph::Vector & state, const int& inTime);
 
+            ::dynamicgraph::Matrix& getObservationMatrix
+                    (::dynamicgraph::Matrix & observationMatrix, const int& inTime);
+
+            ::dynamicgraph::Matrix& getAMatrix
+                    (::dynamicgraph::Matrix & AMatrix, const int& inTime)
+            {
+                estimator_.getFlexibilityVector();
+                AMatrix = convertMatrix<dynamicgraph::Matrix>(estimator_.getAMatrix());
+                return AMatrix;
+            }
+
+            ::dynamicgraph::Matrix& getCMatrix
+                    (::dynamicgraph::Matrix & CMatrix, const int& inTime)
+            {
+                estimator_.getFlexibilityVector();
+                CMatrix = convertMatrix<dynamicgraph::Matrix>(estimator_.getCMatrix());
+                return CMatrix;
+            }
+
             ::dynamicgraph::Vector& computeMomentaFromForces
                           (dynamicgraph::Vector & momenta, const int& inTime);
 
@@ -299,6 +344,9 @@ namespace sotStateObservation
 
             ::dynamicgraph::Vector& computeFlexOmega
                         (::dynamicgraph::Vector & flexibilityOmega, const int& inTime);
+
+            ::dynamicgraph::Matrix& computeFlexOrientation
+                                (::dynamicgraph::Matrix & flexibilityOrientation, const int& inTime);
 
             ::dynamicgraph::sot::MatrixHomogeneous& computeFlexTransformationMatrix
                         (::dynamicgraph::sot::MatrixHomogeneous & flexibilityTransformationMatrix,
@@ -359,8 +407,7 @@ namespace sotStateObservation
             double& computeFlexibilityComputationTime
                         (double& flexibilityComputationTime, const int &inTime);
 
-
-
+            virtual void display(std::ostream& os) const;
 
             /**
             \brief Measurement of the IMU
@@ -395,6 +442,10 @@ namespace sotStateObservation
                             < ::dynamicgraph::Vector, int> forcesSupport1SOUT;
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> forcesSupport2SOUT;
+
+            dynamicgraph::Signal < ::dynamicgraph::Matrix, int> observationMatrixSOUT;
+            dynamicgraph::Signal < ::dynamicgraph::Matrix, int> AMatrixSOUT;
+            dynamicgraph::Signal < ::dynamicgraph::Matrix, int> CMatrixSOUT;
 
             /**
             \brief Estimation of the state
@@ -431,6 +482,9 @@ namespace sotStateObservation
 
             dynamicgraph::SignalTimeDependent
                             < ::dynamicgraph::Vector, int> flexOmegaSOUT;
+
+            dynamicgraph::SignalTimeDependent
+                            < ::dynamicgraph::Matrix, int> flexOrientationSOUT;
 
             /**
             \brief Transformed parts of the flexibility state vector
