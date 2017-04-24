@@ -147,24 +147,24 @@ namespace sotStateObservation
                 estimator_.setKtv(convertMatrix<stateObservation::Matrix3>(m));
             }
 
-            void setKfeCordes(const dynamicgraph::Matrix & m)
+            void setKfeRopes(const dynamicgraph::Matrix & m)
             {
-                estimator_.setKfeCordes(convertMatrix<stateObservation::Matrix3>(m));
+                estimator_.setKfeRopes(convertMatrix<stateObservation::Matrix3>(m));
             }
 
-            void setKfvCordes(const dynamicgraph::Matrix & m)
+            void setKfvRopes(const dynamicgraph::Matrix & m)
             {
-                estimator_.setKfvCordes(convertMatrix<stateObservation::Matrix3>(m));
+                estimator_.setKfvRopes(convertMatrix<stateObservation::Matrix3>(m));
             }
 
-            void setKteCordes(const dynamicgraph::Matrix & m)
+            void setKteRopes(const dynamicgraph::Matrix & m)
             {
-                estimator_.setKteCordes(convertMatrix<stateObservation::Matrix3>(m));
+                estimator_.setKteRopes(convertMatrix<stateObservation::Matrix3>(m));
             }
 
-            void setKtvCordes(const dynamicgraph::Matrix & m)
+            void setKtvRopes(const dynamicgraph::Matrix & m)
             {
-                estimator_.setKtvCordes(convertMatrix<stateObservation::Matrix3>(m));
+                estimator_.setKtvRopes(convertMatrix<stateObservation::Matrix3>(m));
             }
 
             void setWithForce(const bool & b)
@@ -321,11 +321,11 @@ namespace sotStateObservation
                 return CMatrix;
             }
 
-            ::dynamicgraph::Vector& computeMomentaFromForces
-                          (dynamicgraph::Vector & momenta, const int& inTime);
+            ::dynamicgraph::Vector& computeMomentaDotFromForces
+                          (dynamicgraph::Vector & momentaDot, const int& inTime);
 
-            ::dynamicgraph::Vector& computeMomentaFromKinematics
-                          (dynamicgraph::Vector & momenta, const int& inTime);
+            ::dynamicgraph::Vector& computeMomentaDotFromKinematics
+                          (dynamicgraph::Vector & momentaDot, const int& inTime);
 
             ::dynamicgraph::Vector& computeAccelerations
                           (dynamicgraph::Vector & accelerations, const int& inTime);
@@ -460,8 +460,8 @@ namespace sotStateObservation
             /**
             \brief Estimation of the momenta
             */
-            dynamicgraph::Signal < ::dynamicgraph::Vector, int> momentaFromForcesSOUT;
-            dynamicgraph::Signal < ::dynamicgraph::Vector, int> momentaFromKinematicsSOUT;
+            dynamicgraph::Signal < ::dynamicgraph::Vector, int> momentaDotFromForcesSOUT;
+            dynamicgraph::Signal < ::dynamicgraph::Vector, int> momentaDotFromKinematicsSOUT;
 
             /**
             \brief get Accelerations

@@ -34,8 +34,8 @@ namespace sotStateObservation
         CMatrixSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(matrix)::CMatrix"),
         stateSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::state"),
         flexibilitySOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexibility"),
-        momentaFromForcesSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momentaFromForces"),
-        momentaFromKinematicsSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momentaFromKinematics"),
+        momentaDotFromForcesSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momentaDotFromForces"),
+        momentaDotFromKinematicsSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::momentaDotFromKinematics"),
         accelerationsSOUT("DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::accelerations"),
         flexPositionSOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexPosition"),
         flexVelocitySOUT(flexibilitySOUT, "DGIMUModelBaseFlexEstimation("+inName+")::output(vector)::flexVelocity"),
@@ -73,8 +73,8 @@ namespace sotStateObservation
         signalRegistration (AMatrixSOUT);
         signalRegistration (CMatrixSOUT);
         signalRegistration (flexibilitySOUT);
-        signalRegistration (momentaFromForcesSOUT);
-        signalRegistration (momentaFromKinematicsSOUT);
+        signalRegistration (momentaDotFromForcesSOUT);
+        signalRegistration (momentaDotFromKinematicsSOUT);
         signalRegistration (accelerationsSOUT);
         signalRegistration (flexPositionSOUT);
         signalRegistration (flexVelocitySOUT);
@@ -116,10 +116,10 @@ namespace sotStateObservation
 
         flexibilitySOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeFlexibility,
 				    this, _1, _2));
-        momentaFromForcesSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeMomentaFromForces,
+        momentaDotFromForcesSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeMomentaDotFromForces,
                                     this, _1, _2));
 
-        momentaFromKinematicsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeMomentaFromKinematics,
+        momentaDotFromKinematicsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeMomentaDotFromKinematics,
                                     this, _1, _2));
 
         accelerationsSOUT.setFunction(boost::bind(&DGIMUModelBaseFlexEstimation::computeAccelerations,
@@ -247,7 +247,7 @@ namespace sotStateObservation
         //setStateGuess
         docstring =
                 "\n"
-                "    Set the anchorage position for the elastic strings model \n"
+                "    Set the anchorage position for the elastic ropes model \n"
                 "\n";
 
         addCommand(std::string("setPe"),
@@ -410,39 +410,39 @@ namespace sotStateObservation
         //set the linear and angular stifness et damping of the flexibility
         docstring  =
                 "\n"
-                "    Sets the linear strings stifness of the flexibility \n"
+                "    Sets the linear ropes stifness of the flexibility \n"
                 "\n";
 
-        addCommand(std::string("setKfeCordes"),
+        addCommand(std::string("setKfeRopes"),
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
-                    (*this, & DGIMUModelBaseFlexEstimation::setKfeCordes ,docstring));
+                    (*this, & DGIMUModelBaseFlexEstimation::setKfeRopes ,docstring));
 
         docstring  =
                 "\n"
-                "    Sets the linear strings damping of the flexibility \n"
+                "    Sets the linear ropes damping of the flexibility \n"
                 "\n";
 
-        addCommand(std::string("setKfvCordes"),
+        addCommand(std::string("setKfvRopes"),
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
-                    (*this, & DGIMUModelBaseFlexEstimation::setKfvCordes ,docstring));
+                    (*this, & DGIMUModelBaseFlexEstimation::setKfvRopes ,docstring));
 
         docstring  =
                 "\n"
-                "    Sets the angular strings stifness of the flexibility \n"
+                "    Sets the angular ropes stifness of the flexibility \n"
                 "\n";
 
-        addCommand(std::string("setKteCordes"),
+        addCommand(std::string("setKteRopes"),
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
-                    (*this, & DGIMUModelBaseFlexEstimation::setKteCordes ,docstring));
+                    (*this, & DGIMUModelBaseFlexEstimation::setKteRopes ,docstring));
 
         docstring  =
                 "\n"
-                "    Sets the angular strings damping of the flexibility \n"
+                "    Sets the angular ropes damping of the flexibility \n"
                 "\n";
 
-        addCommand(std::string("setKtvCordes"),
+        addCommand(std::string("setKtvRopes"),
                    new ::dynamicgraph::command::Setter <DGIMUModelBaseFlexEstimation,dynamicgraph::Matrix>
-                    (*this, & DGIMUModelBaseFlexEstimation::setKtvCordes ,docstring));
+                    (*this, & DGIMUModelBaseFlexEstimation::setKtvRopes ,docstring));
 
 
 
@@ -617,6 +617,8 @@ namespace sotStateObservation
                   (dynamicgraph::Vector & state, const int& inTime)
     {
 
+        std::cout << "\n" << inTime << std::endl;
+
 #ifdef SOT_STATE_OBSERVATION_CHECK_UNIQUENESS_IN_TIME
         if (inTime!=currentTime_)
         {
@@ -693,24 +695,24 @@ namespace sotStateObservation
     }
 
 
-    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeMomentaFromForces
-                  (dynamicgraph::Vector & momenta, const int& inTime)
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeMomentaDotFromForces
+                  (dynamicgraph::Vector & momentaDot, const int& inTime)
     {
         stateSOUT(inTime);
 
-        momenta = convertVector<dynamicgraph::Vector>(estimator_.getMomentaFromForces());
+        momentaDot = convertVector<dynamicgraph::Vector>(estimator_.getMomentaDotFromForces());
 
-        return momenta;
+        return momentaDot;
     }
 
-    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeMomentaFromKinematics
-                  (dynamicgraph::Vector & momenta, const int& inTime)
+    ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeMomentaDotFromKinematics
+                  (dynamicgraph::Vector & momentaDot, const int& inTime)
     {
         stateSOUT(inTime);
 
-        momenta = convertVector<dynamicgraph::Vector>(estimator_.getMomentaFromKinematics());
+        momentaDot = convertVector<dynamicgraph::Vector>(estimator_.getMomentaDotFromKinematics());
 
-        return momenta;
+        return momentaDot;
     }
 
     ::dynamicgraph::Vector& DGIMUModelBaseFlexEstimation::computeAccelerations
