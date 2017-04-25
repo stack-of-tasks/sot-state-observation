@@ -67,8 +67,8 @@ namespace sotStateObservation
         forceLeftHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_lh"),
         positionRightHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(HomoMatrix)::position_rh"),
         forceRightHandSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::force_rh"),
-        positionLeftStringSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::position_ls"),
-        positionRightStringSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::position_rs"),
+        positionLeftRopeSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::position_ls"),
+        positionRightRopeSIN_ (NULL, "EstimatorInterface("+inName+")::input(vector)::position_rs"),
         comVectorSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::comVector"),
         inertiaSIN(NULL , "EstimatorInterface("+inName+")::input(matrix)::inertia"),
         dinertiaSIN(NULL , "EstimatorInterface("+inName+")::input(vector)::dinertia"),
@@ -134,13 +134,13 @@ namespace sotStateObservation
         forceRightHandSIN_.setConstant(convertVector<dynamicgraph::Vector>(force));
         forceRightHandSIN_.setTime (timeStackOfContacts_);
 
-        signalRegistration (positionLeftStringSIN_);
-        positionLeftStringSIN_.setConstant(vpos);
-        positionLeftStringSIN_.setTime (timeStackOfContacts_);
+        signalRegistration (positionLeftRopeSIN_);
+        positionLeftRopeSIN_.setConstant(vpos);
+        positionLeftRopeSIN_.setTime (timeStackOfContacts_);
 
-        signalRegistration (positionRightStringSIN_);
-        positionRightStringSIN_.setConstant(vpos);
-        positionRightStringSIN_.setTime (timeStackOfContacts_);
+        signalRegistration (positionRightRopeSIN_);
+        positionRightRopeSIN_.setConstant(vpos);
+        positionRightRopeSIN_.setTime (timeStackOfContacts_);
 
         signalRegistration (comVectorSIN);
         dynamicgraph::Vector comVector(3);
@@ -616,7 +616,7 @@ namespace sotStateObservation
         supportContactsNbr_=stackOfSupportContacts_.size();
         unmodeledContactsNbr_=stackOfUnmodeledContacts_.size();
 
-        // Treat the case where the robot is supported by the strings
+        // Treat the case where the robot is supported by the ropes
         if(supportContactsNbr_<1)
         {
             contactsNbr_+=2;
@@ -679,8 +679,8 @@ namespace sotStateObservation
        const stateObservation::Vector& dangMomentum=convertVector<stateObservation::Vector>(dangMomentumSIN.access(time));
        const stateObservation::Vector& imuVector=convertVector<stateObservation::Vector>(imuVectorSIN.access(time));
 
-       const stateObservation::Vector& rightStringPosition=convertVector<stateObservation::Vector>(positionRightStringSIN_.access(time));
-       const stateObservation::Vector& leftStringPosition=convertVector<stateObservation::Vector>(positionLeftStringSIN_.access(time));
+       const stateObservation::Vector& rightRopePosition=convertVector<stateObservation::Vector>(positionRightRopeSIN_.access(time));
+       const stateObservation::Vector& leftRopePosition=convertVector<stateObservation::Vector>(positionLeftRopeSIN_.access(time));
 
 
        if(contactsModel_==1)
@@ -702,11 +702,11 @@ namespace sotStateObservation
            op_.contactKine.resize(modeledContactsNbr_*12);
            op_.bias.resize(modeledContactsNbr_*12); op_.bias.setZero();
 
-           op_.contactKine.segment(0*12,6)=leftStringPosition;
+           op_.contactKine.segment(0*12,6)=leftRopePosition;
            op_.contactKine.segment(0*12+6,6).setZero();
            op_.bias.segment(0*12,6).setZero();
 
-           op_.contactKine.segment(1*12,6)=rightStringPosition;
+           op_.contactKine.segment(1*12,6)=rightRopePosition;
            op_.contactKine.segment(1*12+6,6).setZero();
            op_.bias.segment(1*12,6).setZero();
        }
